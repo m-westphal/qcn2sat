@@ -28,19 +28,23 @@ def readGQRCSP(csp):
 
     return constraints
 
-def encodeDict(i, j, baserel, dict):
-    br = string.join([str(i), " ", str(j), " ", baserel])
+def encodeDict(i, j, baserel, d):   # assign a boolean variable id to baserel in R_ij
     try:
-        return dict[br]
+        return d[i][j][baserel]
     except KeyError:
         assert i < j
         try:
-            dict["max"] += 1
+            d["max"] += 1
         except KeyError:
-            dict["max"] = 1
+            d["max"] = 1
 
-        ret = dict["max"]
-        dict[br] = ret
+        ret = d["max"]
+        if not i in d:
+            d[i] = dict()
+        if not j in d[i]:
+            d[i][j] = dict()
+        assert not baserel in d[i][j]
+        d[i][j][baserel] = ret
         return ret
 
 def readCompTable(calculus):
