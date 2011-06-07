@@ -2,7 +2,7 @@
 
 # ex: set tabstop=4 expandtab softtabstop=4:
 
-# qcsp2sat.py: A script to convert qualitative CSPs to CNF formulae
+# qcsp2sat.py: a script to convert qualitative CSPs to CNF formulae
 # Copyright (C) 2009-2011  Matthias Westphal
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 
 
-import re, sys, string
+import copy, re, sys, string
 
 class cnf:
     def __init__(self, only_estimate_size=False):
@@ -251,21 +251,37 @@ def writeSATgac(fd, constraints, calculus):
 
 if __name__ == '__main__':
     only_estimate_size = False
+    model = None
 
-    arguments = sys.argv[1:]
-    if arguments and arguments[0] == "--only-estimate":
-        only_estimate_size = True
-        del arguments[0]
-    if len(arguments) != 2:
-        print "qcsp2sat.py: A script to convert qualitative CSPs to CNF formulae"
+    arguments = [ ]
+    for a in sys.argv[1:]:
+        if a[0:2] == "--":
+            if a == "--only-estimate":
+                only_estimate_size = True
+                continue
+            if a == "--direct" and model is None:
+                model = 'direct'
+                continue
+            raise SystemExit("Unknown option '%s'" % a)
+        else:
+            arguments.append(a)
+
+    if len(arguments) != 2 or model is None:
+        print "qcsp2sat.py: a script to convert qualitative CSPs to CNF formulae"
         print "Copyright (C) 2009-2011  Matthias Westphal"
         print "This program comes with ABSOLUTELY NO WARRANTY."
         print "This is free software, and you are welcome to redistribute it"
         print "under certain conditions; see `GPL-3' for details."
-        raise SystemExit("Usage: qcsp2sat.py [--only-estimate] GQR_COMPOSITION_TABLE_FILE GQR_QCSP")
+        print
+        print "Usage: qcsp2sat.py GQR_COMPOSITION_TABLE_FILE GQR_QCSP"
+        print "\t--only-estimate calculate size of CNF, but do not store it"
+        print "\t--direct        direct encoding"
+        print
+        raise SystemExit("Error in commandline arguments")
 
     composition_table = arguments[0]
     qcsp = readGQRCSP(arguments[1])
 #    print "Loaded QCSP with", max([ t for (_, t, _) in qcsp])+1, "qualitative variables"
 
-    writeSATdirect(qcsp, composition_table, only_estimate_size)
+    if model == 'direct':
+        writeSATdirect(qcsp, composition_table, only_estimate_size)
