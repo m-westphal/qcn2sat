@@ -29,13 +29,14 @@ class cnf:
         self.clauses = []
         self.number_of_clauses = 0
         self.bytes = 0
+
     def add_clause(self, clause):
         self.number_of_clauses += 1
         self.variables = max( max([abs(l) for l in clause]), self.variables )
-        if self.only_estimate_size:
-            self.bytes += len(self.encode_clause(clause))+1
-        else:
-            self.clauses.append(clause)
+        cl = self.encode_clause(clause)
+        self.bytes += len(cl)+1
+        if not only_estimate_size:
+            self.clauses.append(cl)
 
     def generate_header(self):
         assert self.variables > 0
@@ -50,12 +51,10 @@ class cnf:
     def write(self):
         print self.generate_header()
         for c in self.clauses:
-            print self.encode_clause(c)
+            print c
+
     def get_size(self):
-        if only_estimate_size:
-            return len(self.generate_header())+1+self.bytes
-        else:
-            return -1 # not implemented in this case
+        return len(self.generate_header())+1+self.bytes
 
 def readGQRCSP(csp):
     constraints = [ ]
