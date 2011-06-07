@@ -1,11 +1,26 @@
 #! /usr/bin/env python
 
+# qcsp2sat.py: A script to convert qualitative CSPs to CNF formulae
+# Copyright (C) 2009-2011  Matthias Westphal
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
 # ex: set tabstop=4 expandtab softtabstop=4:
 
-
-import re
-import sys
-import string
+import re, sys, string
 
 def gen_clause(vs):
     clause = [`v` for v in vs] # turn into strings
@@ -82,7 +97,7 @@ def full_qcsp(constraints, ALL_RELATIONS):  # turn the CSP into a complete const
 
     return max_node, CSP
 
-def writeSATdirect(constraints, calculus):
+def writeSATdirect(constraints, calculus, only_estimate_size=False):
     comptable, ALL_RELATIONS = readCompTable(calculus)
 
     max_node, CSP = full_qcsp(constraints, ALL_RELATIONS)
@@ -90,20 +105,29 @@ def writeSATdirect(constraints, calculus):
     boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
     clauses = [ ]
 
+    cnf_bytes = 0
 #    print "Construct ALO, AMO clauses:",
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
             r = CSP[i][j]
             # ALO
             clause = gen_clause([ encodeDict(i, j, br, boolvars) for br in r])
-            clauses.append(clause)
+            if only_estimate_size:
+                cnf_bytes += len(clause)
+                clauses.append([])
+            else:
+                clauses.append(clause)
 
             # AMO
             for br in r:
                 for br2 in r:
                     if br < br2:
                         clause = gen_clause([ -1 * encodeDict(i, j, br, boolvars), -1 * encodeDict(i, j, br2, boolvars) ])
-                        clauses.append(clause)
+                        if only_estimate_size:
+                            cnf_bytes += len(clause)
+                            clauses.append([])
+                        else:
+                            clauses.append(clause)
                     else:
                         assert br == br2 or br2 < br
 
@@ -111,7 +135,6 @@ def writeSATdirect(constraints, calculus):
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
             r_ij = CSP[i][j]
-
             for k in xrange(j+1, max_node+1):
                 r_ik = CSP[i][k]
                 r_jk = CSP[j][k]
@@ -123,14 +146,23 @@ def writeSATdirect(constraints, calculus):
                         cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
                         cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
                         clause = gen_clause(cl)
-                        clauses.append(clause)
+                        if only_estimate_size:
+                            cnf_bytes += len(clause)
+                            clauses.append([])
+                        else:
+                            clauses.append(clause)
 
-    header = "p cnf %d %d\n" % ( boolvars["max"], len(clauses))
+    header = "p cnf %d %d" % ( boolvars["max"], len(clauses))
 #    print "All done! Writing SAT instance (%s bytes)." % human_readable(cnf_bytes)
 #    print "\t-> %d variables, %d clauses" % (dict["max"], len(clauses))
-    print header
-    for c in clauses:
-        print c
+    if only_estimate_size:
+        cnf_bytes += len(header)+1 # + 1 new line
+        cnf_bytes += len(clauses) # new line characters
+        print "Computed %d bytes (%d MiB) of CNF formulae" % (cnf_bytes, cnf_bytes/1024**2)
+    else:
+        print header
+        for c in clauses:
+            print c
 
 def writeSATgac(fd, constraints, calculus):
     print "Read qualitative composition table:",
@@ -209,11 +241,17 @@ def writeSATgac(fd, constraints, calculus):
         fd.write(c + "\n")
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
+    only_estimate_size = False
+
+    arguments = sys.argv[1:]
+    if arguments and arguments[0] == "--estimate":
+        only_estimate_size = True
+        del arguments[0]
+    if len(arguments) != 2:
         raise SystemExit("Usage: <script> GQR_COMPOSITION_TABLE_FILE GQR_QCSP")
 
-    composition_table = sys.argv[1]
-    qcsp = readGQRCSP(sys.argv[2])
+    composition_table = arguments[0]
+    qcsp = readGQRCSP(arguments[1])
 #    print "Loaded QCSP with", max([ t for (_, t, _) in qcsp])+1, "qualitative variables"
 
-    writeSATdirect(qcsp, composition_table)
+    writeSATdirect(qcsp, composition_table, only_estimate_size)
