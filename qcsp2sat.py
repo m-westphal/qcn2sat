@@ -49,12 +49,23 @@ class cnf:
         return string.join(clause+['0'])
 
     def write(self):
-        print self.generate_header()
-        for c in self.clauses:
-            print c
+        if self.only_estimate_size:
+            print "Constructed %d variables and %d clauses" % (self.get_nr_variables(), self.get_nr_clauses())
+            print "Computed %d bytes (%d MiB) of CNF formulae" % (self.get_size(), self.get_size()/1024**2)
+        else:
+            print self.generate_header()
+            for c in self.clauses:
+                print c
 
     def get_size(self):
         return len(self.generate_header())+1+self.bytes
+
+    def get_nr_variables(self):
+        return self.variables
+
+    def get_nr_clauses(self):
+        return self.number_of_clauses
+
 
 def readGQRCSP(csp):
     constraints = [ ]
@@ -168,60 +179,42 @@ def writeSATdirect(constraints, calculus, only_estimate_size=False):
                         cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
                         instance.add_clause(cl)
 
-    if only_estimate_size:
-        print "Computed %d bytes (%d MiB) of CNF formulae" % (instance.get_size(), instance.get_size()/1024**2)
-    else:
-        instance.write()
+    instance.write()
 
-def writeSATgac(fd, constraints, calculus):
-    print "Read qualitative composition table:",
+def writeSATgac(constraints, calculus,only_estimate_size=False):
     comptable, ALL_RELATIONS = readCompTable(calculus)
-    print "done (%d base relation)" % len(ALL_RELATIONS)
 
     max_node, CSP = full_qcsp(constraints, ALL_RELATIONS)
 
-    dict = { }
-    cnf_bytes = 0
+    boolvars = dict()
 
-    print "Preparing dictionary and data structures:",
-    for i in range(max_node+1):
-        for j in range(i+1, max_node+1):
-            for br in CSP[i*(max_node+1)+j]:
-                encodeDict(i, j, br, dict)
-        progress(i, max_node)
-    print "done (allocated %d boolean variables for domain values)" % dict["max"]
-
-    clauses = [ ]
-    print "Construct ALO, AMO clauses:",
+    instance = cnf(only_estimate_size)
+#    print "Construct ALO, AMO clauses:",
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
-            r = CSP[i*(max_node+1)+j]
+            r = CSP[i][j]
             # ALO
-            clause = gen_clause([ encodeDict(i, j, br, dict) for br in r])
-            cnf_bytes += len(clause)
-            clauses.append(clause)
+            clause = [ encodeDict(i, j, br, boolvars) for br in r ]
+            instance.add_clause(clause)
 
             # AMO
             for br in r:
                 for br2 in r:
                     if br < br2:
-                        clause = gen_clause([ -1 * encodeDict(i, j, br, dict), -1 * encodeDict(i, j, br2, dict) ])
-                        cnf_bytes += len(clause)
-                        clauses.append(clause)
+                        clause = [ -1 * encodeDict(i, j, br, boolvars), -1 * encodeDict(i, j, br2, boolvars) ]
+                        instance.add_clause(clause)
                     else:
                         assert br == br2 or br2 < br
-        progress(i, max_node)
-    print "done (%s bytes prepared)" % human_readable(cnf_bytes)
 
     # SUPPORT
-    print "Construct GAC clauses:",
+#    print "Construct GAC clauses:",
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
-            r_ij = CSP[i*(max_node+1)+j]
+            r_ij = CSP[i][j]
 
             for k in xrange(j+1, max_node+1): # 3 for loops iterate over constraints
-                r_ik = CSP[i*(max_node+1)+k]
-                r_jk = CSP[j*(max_node+1)+k]
+                r_ik = CSP[i][k]
+                r_jk = CSP[j][k]
                 # r_ij, r_ik, r_jk are all sides of the triangle
 
                 # for each falsifying triple of labels
@@ -229,25 +222,16 @@ def writeSATgac(fd, constraints, calculus):
                 c_clauses = [ ]
                 for br1 in r_ij:
                     for br2 in r_jk:
+                        supported = comptable[br1 + " " + br2]
                         for br3 in r_ik:
-                            if br3 in comptable[br1 + " " + br2]:
+                            if br3 in supported:    # consistent labeling
                                 continue
-                            cl = [ -1 * encodeDict(i, j, br1, dict), -1 * encodeDict(j, k, br2, dict), -1 * encodeDict(i, k, br3, dict) ]
+                            cl = [ -1 * encodeDict(i, j, br1, boolvars), -1 * encodeDict(j, k, br2, boolvars), -1 * encodeDict(i, k, br3, boolvars) ]
                             c_clauses.append(cl)
-                for c in c_clauses:
-                    cl = gen_clause(c)
-                    cnf_bytes += len(cl)
-                    clauses.append(cl)
-        progress(i, max_node)
-    print "done (%s bytes prepared)" % human_readable(cnf_bytes)
+                for cl in c_clauses:
+                    instance.add_clause(cl)
 
-    header = "p cnf %d %d\n" % ( dict["max"], len(clauses))
-    cnf_bytes += len(header)
-#    print "All done! Writing SAT instance (%s bytes)." % human_readable(cnf_bytes)
-#    print "\t-> %d variables, %d clauses" % (dict["max"], len(clauses))
-    fd.write(header)
-    for c in clauses:
-        fd.write(c + "\n")
+    instance.write()
 
 if __name__ == '__main__':
     only_estimate_size = False
@@ -259,8 +243,19 @@ if __name__ == '__main__':
             if a == "--only-estimate":
                 only_estimate_size = True
                 continue
-            if a == "--direct" and model is None:
-                model = 'direct'
+            if a == "--direct":
+                if model is None:
+                    model = 'direct'
+                else:
+                    model = None
+                    break
+                continue
+            if a == "--direct-gac":
+                if model is None:
+                    model = 'direct-gac'
+                else:
+                    model = None
+                    break
                 continue
             raise SystemExit("Unknown option '%s'" % a)
         else:
@@ -276,6 +271,10 @@ if __name__ == '__main__':
         print "Usage: qcsp2sat.py GQR_COMPOSITION_TABLE_FILE GQR_QCSP"
         print "\t--only-estimate calculate size of CNF, but do not store it"
         print "\t--direct        direct encoding"
+        print "\t--direct-gac    direct encoding with clauses that establish GAC"
+        print
+        print "WARNING: the script is completely untested (especially --direct-gac)"
+        print "and potentially unsound!"
         print
         raise SystemExit("Error in commandline arguments")
 
@@ -285,3 +284,5 @@ if __name__ == '__main__':
 
     if model == 'direct':
         writeSATdirect(qcsp, composition_table, only_estimate_size)
+    if model == 'direct-gac':
+        writeSATgac(qcsp, composition_table, only_estimate_size)
