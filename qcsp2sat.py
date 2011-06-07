@@ -253,7 +253,7 @@ if __name__ == '__main__':
     only_estimate_size = False
 
     arguments = sys.argv[1:]
-    if arguments and arguments[0] == "--estimate":
+    if arguments and arguments[0] == "--only-estimate":
         only_estimate_size = True
         del arguments[0]
     if len(arguments) != 2:
@@ -262,7 +262,7 @@ if __name__ == '__main__':
         print "This program comes with ABSOLUTELY NO WARRANTY."
         print "This is free software, and you are welcome to redistribute it"
         print "under certain conditions; see `GPL-3' for details."
-        raise SystemExit("Usage: qcsp2sat.py GQR_COMPOSITION_TABLE_FILE GQR_QCSP")
+        raise SystemExit("Usage: qcsp2sat.py [--only-estimate] GQR_COMPOSITION_TABLE_FILE GQR_QCSP")
 
     composition_table = arguments[0]
     qcsp = readGQRCSP(arguments[1])
