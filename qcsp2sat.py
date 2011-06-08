@@ -44,7 +44,7 @@ class cnf:
         header = "p cnf %d %d" % (self.variables, self.number_of_clauses)
         return header
 
-    def encode_clause(self, c):	# turn clause into string
+    def encode_clause(self, c): # turn clause into string
         clause = [`v` for v in c] # turn into strings
         return string.join(clause+['0'])
 
@@ -123,7 +123,7 @@ def readCompTable(calculus):
 
     return table, frozenset(ALL_RELATIONS)
 
-def full_qcsp(constraints, ALL_RELATIONS):  # turn the CSP into a complete constraint network
+def completeConstraintGraph(constraints, ALL_RELATIONS):  # turn the CSP into a complete constraint network
     max_node = max( [ t for (_, t, _) in constraints ] )
     CSP = dict()
     for i in xrange(0, max_node+1):
@@ -161,7 +161,7 @@ def directDomEncoding(instance, CSP, max_node, boolvars):  # build (var,val) as 
 def writeSATdirect(constraints, calculus, only_estimate_size=False):
     comptable, ALL_RELATIONS = readCompTable(calculus)
 
-    max_node, CSP = full_qcsp(constraints, ALL_RELATIONS)
+    max_node, CSP = completeConstraintGraph(constraints, ALL_RELATIONS)
 
     boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
 
@@ -185,10 +185,10 @@ def writeSATdirect(constraints, calculus, only_estimate_size=False):
                         instance.add_clause(cl)
     instance.write()
 
-def writeSATgac(constraints, calculus,only_estimate_size=False):
+def writeSATgac(constraints, calculus, only_estimate_size=False):
     comptable, ALL_RELATIONS = readCompTable(calculus)
 
-    max_node, CSP = full_qcsp(constraints, ALL_RELATIONS)
+    max_node, CSP = completeConstraintGraph(constraints, ALL_RELATIONS)
 
     boolvars = dict()
 
@@ -221,6 +221,134 @@ def writeSATgac(constraints, calculus,only_estimate_size=False):
                     instance.add_clause(cl)
     instance.write()
 
+def lexBFS(vertices, edges):
+    assert vertices
+    assert edges
+
+    queue = [ vertices.copy() ]
+    order = [ ]
+
+    while queue:
+        if not queue[0]:
+            del queue[0]
+            continue
+        v = queue[0].pop()
+        if not queue[0]:
+            del queue[0]
+
+        order.append(v)
+
+        replaced = dict()
+        for y in edges[v]:
+            for q in queue:
+                if y in q:
+                    rep = set()
+                    if not v in replaced:
+                        replaced[v] = rep
+                        queue.insert(queue.index(q), rep)
+                    else:
+                        rep = replaced[v]
+                    q.remove(y)
+                    rep.add(y)
+
+    return dict( [ (v, order.index(v)) for v in order ] )
+
+def eliminationGame(vertices, edges, order):
+    import copy
+    assert vertices
+    assert edges
+
+    new_edges = [ edges.copy() ]
+
+    queue = list(vertices)
+    queue.sort(lambda a,b: order[b] - order[a]) # highest weight first
+
+    while queue:
+        v = queue[0]
+        del queue[0]
+
+        tmp = copy.deepcopy(new_edges[-1])
+
+        for x in tmp[v]:
+            assert v in tmp[x]
+            for y in tmp[v]:
+                if x != y:
+                    tmp[x].add(y)
+                    tmp[y].add(x)
+        for z in tmp[v]:
+            tmp[z].remove(v)
+        del tmp[v]
+        for z in tmp:
+            for Z in tmp[z]:
+                assert z in tmp[Z]
+        new_edges.append(tmp)
+
+    del new_edges[-1]
+
+    final = copy.deepcopy(edges)
+    for graph in new_edges:
+        for v in graph:
+            for n in graph[v]:
+                final[v].add(n)
+                assert v in graph[n]
+#                final[n].add(v)
+
+    ret = set()
+    for v1 in vertices:
+        for v2 in vertices:
+            if v2 in final[v1]:
+                ret.add( (v1, v2) )
+    return frozenset(ret)
+
+def writeSATpartition(constraints, calculus, only_estimate_size=False):
+    comptable, ALL_RELATIONS = readCompTable(calculus)
+
+    max_node = max( [ t for _, t, _ in constraints] )
+    CSP = dict()
+    for i, j, r in constraints:
+        if not i in CSP:
+            CSP[i] = dict()
+        CSP[i][j] = r
+        assert r != ALL_RELATIONS
+
+    boolvars = dict()
+
+    instance = cnf(only_estimate_size)
+    directDomEncoding(instance, CSP, max_node, boolvars)
+
+    # constraint graph for triangulation
+    vertices = set( [ t for _, t, _ in constraints ] + [ t for t, _, _ in constraints] )
+    edges = dict( [ (v, set()) for v in vertices ] )
+    for i in CSP:
+        for j in CSP[i]:
+            edges[i].add(j)
+            edges[j].add(i)
+
+    order = lexBFS(vertices, edges)
+    chordal_graph = eliminationGame(vertices, edges, order)
+    fullcsp = completeConstraintGraph(constraints, ALL_RELATIONS)[1]
+#    print "Construct support clauses restricted to chordal graph (cubic time/space):",
+    for i in xrange(max_node+1):
+        for j in xrange(i+1, max_node+1):
+            r_ij = fullcsp[i][j]
+            if not (i,j) in chordal_graph:
+                assert r_ij == ALL_RELATIONS
+                continue
+            for k in xrange(j+1, max_node+1):
+                if not ((j,k) in chordal_graph and (i,k) in chordal_graph):
+                    continue
+                r_ik = fullcsp[i][k]
+                r_jk = fullcsp[j][k]
+                for br1 in r_ij:
+                    not_b_ij = -1 * encodeDict(i, j, br1, boolvars)
+                    for br2 in r_jk:
+                        intersection = frozenset(r_ik) & comptable[br1 + " " + br2]
+
+                        cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
+                        cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
+                        instance.add_clause(cl)
+    instance.write()
+
 if __name__ == '__main__':
     only_estimate_size = False
     model = None
@@ -231,25 +359,20 @@ if __name__ == '__main__':
             if a == "--only-estimate":
                 only_estimate_size = True
                 continue
-            if a == "--direct-support":
-                if model is None:
-                    model = 'direct-support'
-                else:
-                    model = None
+            M = [ "direct-sup", "direct-gac", "direct-part-sup" ]
+            for m in M:
+                if a[2:] == m:
+                    if model is None:
+                        model = m
+                    else:
+                        model = "invalid"
                     break
-                continue
-            if a == "--direct-gac":
-                if model is None:
-                    model = 'direct-gac'
-                else:
-                    model = None
-                    break
-                continue
-            raise SystemExit("Unknown option '%s'" % a)
+            else:
+                raise SystemExit("Unknown option '%s'" % a)
         else:
             arguments.append(a)
 
-    if len(arguments) != 2 or model is None:
+    if len(arguments) != 2 or model is None or model == "invalid":
         print "qcsp2sat.py: convert qualitative CSPs to CNF formulae (version %s)" % __VERSION
         print "Copyright (C) 2009-2011  Matthias Westphal"
         print "This program comes with ABSOLUTELY NO WARRANTY."
@@ -257,15 +380,18 @@ if __name__ == '__main__':
         print "under certain conditions; see `GPL-3' for details."
         print
         print "Usage: qcsp2sat.py GQR_COMPOSITION_TABLE_FILE GQR_QCSP"
-        print "\t--only-estimate    calculate size of CNF, but do not store clauses"
-        print "\t--direct-support   direct encoding with simple support clauses"
-        print "\t                   (see \"SAT 1-D support encoding\" in \"Towards"
-        print "\t                   An Efficient SAT Encoding for Temporal"
-        print "\t                   Reasoning\", Pham et al.)"
-        print "\t--direct-gac       direct encoding with clauses that establish GAC"
-        print "\t                   (see \"GAC via Unit Propagation\", Bacchus;"
-        print "\t                   NOTE: the script does not compute prime"
-        print "\t                   implicates!)"
+        print "\t--only-estimate        calculate size of CNF, but do not store clauses"
+        print "\t--direct-sup           direct encoding with simple support clauses"
+        print "\t                       (see \"SAT 1-D support encoding\" in \"Towards"
+        print "\t                       An Efficient SAT Encoding for Temporal"
+        print "\t                       Reasoning\", Pham et al.)"
+        print "\t--direct-gac           direct encoding with clauses that establish GAC"
+        print "\t                       (see \"GAC via Unit Propagation\", Bacchus;"
+        print "\t                       NOTE: the script does not compute prime"
+        print "\t                       implicates!)"
+        print "\t--direct-part-sup      direct encoding restricted to tree decomposition"
+        print "\t                       (see ?) [EXPERIMENTAL!] (potentially unsound for"
+        print "\t                       several calculi)"
         print
         print "WARNING: the script is completely untested and potentially unsound!"
         print
@@ -275,7 +401,9 @@ if __name__ == '__main__':
     qcsp = readGQRCSP(arguments[1])
 #    print "Loaded QCSP with", max([ t for (_, t, _) in qcsp])+1, "qualitative variables"
 
-    if model == 'direct-support':
+    if model == 'direct-sup':
         writeSATdirect(qcsp, composition_table, only_estimate_size)
     if model == 'direct-gac':
         writeSATgac(qcsp, composition_table, only_estimate_size)
+    if model == 'direct-part-sup':
+        writeSATpartition(qcsp, composition_table, only_estimate_size)
