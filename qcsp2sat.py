@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
+__VERSION="0.1 alpha"
 
 import copy, re, sys, string
 
@@ -262,7 +262,7 @@ if __name__ == '__main__':
             arguments.append(a)
 
     if len(arguments) != 2 or model is None:
-        print "qcsp2sat.py: a script to convert qualitative CSPs to CNF formulae"
+        print "qcsp2sat.py: a script to convert qualitative CSPs to CNF formulae (version %s)" % __VERSION
         print "Copyright (C) 2009-2011  Matthias Westphal"
         print "This program comes with ABSOLUTELY NO WARRANTY."
         print "This is free software, and you are welcome to redistribute it"
