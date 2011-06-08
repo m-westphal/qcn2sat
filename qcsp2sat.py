@@ -255,8 +255,6 @@ def lexBFS(vertices, edges):
 
 def eliminationGame(vertices, edges, order):
     import copy
-    assert vertices
-    assert edges
 
     new_edges = [ edges.copy() ]
 
@@ -274,30 +272,22 @@ def eliminationGame(vertices, edges, order):
             for y in tmp[v]:
                 if x != y:
                     tmp[x].add(y)
-                    tmp[y].add(x)
         for z in tmp[v]:
             tmp[z].remove(v)
         del tmp[v]
-        for z in tmp:
-            for Z in tmp[z]:
-                assert z in tmp[Z]
         new_edges.append(tmp)
 
     del new_edges[-1]
 
-    final = copy.deepcopy(edges)
+    final = dict( [ (v, set()) for v in vertices ] )
     for graph in new_edges:
         for v in graph:
             for n in graph[v]:
                 final[v].add(n)
-                assert v in graph[n]
-#                final[n].add(v)
 
     ret = set()
     for v1 in vertices:
-        for v2 in vertices:
-            if v2 in final[v1]:
-                ret.add( (v1, v2) )
+        ret |= set( [ (v1, v2) for v2 in final[v1] ] )
     return frozenset(ret)
 
 def writeSATpartition(constraints, calculus, only_estimate_size=False):
