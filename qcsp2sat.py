@@ -2,7 +2,7 @@
 
 # ex: set tabstop=4 expandtab softtabstop=4:
 
-# qcsp2sat.py: a script to convert qualitative CSPs to CNF formulae
+# qcsp2sat.py: convert qualitative CSPs to CNF formulae
 # Copyright (C) 2009-2011  Matthias Westphal
 #
 # This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ class cnf:
     def generate_header(self):
         assert self.variables > 0
         assert self.number_of_clauses > 0
-        header = "p cnf %d %d\n" % (self.variables, self.number_of_clauses)
+        header = "p cnf %d %d" % (self.variables, self.number_of_clauses)
         return header
 
     def encode_clause(self, c):	# turn clause into string
@@ -138,17 +138,12 @@ def full_qcsp(constraints, ALL_RELATIONS):  # turn the CSP into a complete const
 
     return max_node, CSP
 
-def writeSATdirect(constraints, calculus, only_estimate_size=False):
-    comptable, ALL_RELATIONS = readCompTable(calculus)
-
-    max_node, CSP = full_qcsp(constraints, ALL_RELATIONS)
-
-    boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
-
-    instance = cnf(only_estimate_size)
-#    print "Construct ALO, AMO clauses:",
+def directDomEncoding(instance, CSP, max_node, boolvars):  # build (var,val) as bool variables with ALO/AMO clauses
+    #    print "Construct ALO, AMO clauses:",
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
+            if not i in CSP or not j in CSP[i]:
+                continue
             r = CSP[i][j]
             # ALO
             clause = [ encodeDict(i, j, br, boolvars) for br in r ]
@@ -162,6 +157,16 @@ def writeSATdirect(constraints, calculus, only_estimate_size=False):
                         instance.add_clause(clause)
                     else:
                         assert br == br2 or br2 < br
+
+def writeSATdirect(constraints, calculus, only_estimate_size=False):
+    comptable, ALL_RELATIONS = readCompTable(calculus)
+
+    max_node, CSP = full_qcsp(constraints, ALL_RELATIONS)
+
+    boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
+
+    instance = cnf(only_estimate_size)
+    directDomEncoding(instance, CSP, max_node, boolvars)
 
 #    print "Construct support clauses (cubic time/space):",
     for i in xrange(max_node+1):
@@ -178,7 +183,6 @@ def writeSATdirect(constraints, calculus, only_estimate_size=False):
                         cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
                         cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
                         instance.add_clause(cl)
-
     instance.write()
 
 def writeSATgac(constraints, calculus,only_estimate_size=False):
@@ -189,22 +193,7 @@ def writeSATgac(constraints, calculus,only_estimate_size=False):
     boolvars = dict()
 
     instance = cnf(only_estimate_size)
-#    print "Construct ALO, AMO clauses:",
-    for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
-            r = CSP[i][j]
-            # ALO
-            clause = [ encodeDict(i, j, br, boolvars) for br in r ]
-            instance.add_clause(clause)
-
-            # AMO
-            for br in r:
-                for br2 in r:
-                    if br < br2:
-                        clause = [ -1 * encodeDict(i, j, br, boolvars), -1 * encodeDict(i, j, br2, boolvars) ]
-                        instance.add_clause(clause)
-                    else:
-                        assert br == br2 or br2 < br
+    directDomEncoding(instance, CSP, max_node, boolvars)
 
     # SUPPORT
 #    print "Construct GAC clauses:",
@@ -230,7 +219,6 @@ def writeSATgac(constraints, calculus,only_estimate_size=False):
                             c_clauses.append(cl)
                 for cl in c_clauses:
                     instance.add_clause(cl)
-
     instance.write()
 
 if __name__ == '__main__':
@@ -243,9 +231,9 @@ if __name__ == '__main__':
             if a == "--only-estimate":
                 only_estimate_size = True
                 continue
-            if a == "--direct":
+            if a == "--direct-support":
                 if model is None:
-                    model = 'direct'
+                    model = 'direct-support'
                 else:
                     model = None
                     break
@@ -262,19 +250,24 @@ if __name__ == '__main__':
             arguments.append(a)
 
     if len(arguments) != 2 or model is None:
-        print "qcsp2sat.py: a script to convert qualitative CSPs to CNF formulae (version %s)" % __VERSION
+        print "qcsp2sat.py: convert qualitative CSPs to CNF formulae (version %s)" % __VERSION
         print "Copyright (C) 2009-2011  Matthias Westphal"
         print "This program comes with ABSOLUTELY NO WARRANTY."
         print "This is free software, and you are welcome to redistribute it"
         print "under certain conditions; see `GPL-3' for details."
         print
         print "Usage: qcsp2sat.py GQR_COMPOSITION_TABLE_FILE GQR_QCSP"
-        print "\t--only-estimate calculate size of CNF, but do not store it"
-        print "\t--direct        direct encoding"
-        print "\t--direct-gac    direct encoding with clauses that establish GAC"
+        print "\t--only-estimate    calculate size of CNF, but do not store clauses"
+        print "\t--direct-support   direct encoding with simple support clauses"
+        print "\t                   (see \"SAT 1-D support encoding\" in \"Towards"
+        print "\t                   An Efficient SAT Encoding for Temporal"
+        print "\t                   Reasoning\", Pham et al.)"
+        print "\t--direct-gac       direct encoding with clauses that establish GAC"
+        print "\t                   (see \"GAC via Unit Propagation\", Bacchus;"
+        print "\t                   NOTE: the script does not compute prime"
+        print "\t                   implicates!)"
         print
-        print "WARNING: the script is completely untested (especially --direct-gac)"
-        print "and potentially unsound!"
+        print "WARNING: the script is completely untested and potentially unsound!"
         print
         raise SystemExit("Error in commandline arguments")
 
@@ -282,7 +275,7 @@ if __name__ == '__main__':
     qcsp = readGQRCSP(arguments[1])
 #    print "Loaded QCSP with", max([ t for (_, t, _) in qcsp])+1, "qualitative variables"
 
-    if model == 'direct':
+    if model == 'direct-support':
         writeSATdirect(qcsp, composition_table, only_estimate_size)
     if model == 'direct-gac':
         writeSATgac(qcsp, composition_table, only_estimate_size)
