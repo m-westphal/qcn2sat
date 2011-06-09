@@ -23,7 +23,7 @@ __VERSION="0.1 alpha"
 import copy, re, sys, string
 import collections, bz2
 
-class cnf:
+class cnf_output:
     def __init__(self, only_estimate_size=False):
         self.only_estimate_size = only_estimate_size
         self.variables = 0
@@ -53,7 +53,7 @@ class cnf:
         clause = [`v` for v in c] # turn into strings
         return string.join(clause+['0\n'])
 
-    def write(self):    # TODO: invalidates class content!
+    def flush(self):    # invalidates class content
         if self.only_estimate_size:
             print "Constructed %d variables and %d clauses" % (self.get_nr_variables(), self.get_nr_clauses())
             print "Computed %d bytes (%d MiB) of CNF formulae" % (self.get_size(), self.get_size()/1024**2)
@@ -76,7 +76,6 @@ class cnf:
 
     def get_nr_clauses(self):
         return self.number_of_clauses
-
 
 def readGQRCSP(csp):
     constraints = [ ]
@@ -169,15 +168,12 @@ def directDomEncoding(instance, CSP, max_node, boolvars):  # build (var,val) as 
                     else:
                         assert br == br2 or br2 < br
 
-def writeSATdirect(constraints, calculus, only_estimate_size=False):
-    comptable, ALL_RELATIONS = readCompTable(calculus)
-
-    max_node, CSP = completeConstraintGraph(constraints, ALL_RELATIONS)
+def writeSATdirect(constraints, signature, comptable, out):
+    max_node, CSP = completeConstraintGraph(constraints, signature)
 
     boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
 
-    instance = cnf(only_estimate_size)
-    directDomEncoding(instance, CSP, max_node, boolvars)
+    directDomEncoding(out, CSP, max_node, boolvars)
 
 #    print "Construct support clauses (cubic time/space):",
     for i in xrange(max_node+1):
@@ -193,18 +189,14 @@ def writeSATdirect(constraints, calculus, only_estimate_size=False):
 
                         cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
                         cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
-                        instance.add_clause(cl)
-    instance.write()
+                        out.add_clause(cl)
 
-def writeSATgac(constraints, calculus, only_estimate_size=False):
-    comptable, ALL_RELATIONS = readCompTable(calculus)
-
-    max_node, CSP = completeConstraintGraph(constraints, ALL_RELATIONS)
+def writeSATgac(constraints, signature, comptable, out):
+    max_node, CSP = completeConstraintGraph(constraints, signature)
 
     boolvars = dict()
 
-    instance = cnf(only_estimate_size)
-    directDomEncoding(instance, CSP, max_node, boolvars)
+    directDomEncoding(out, CSP, max_node, boolvars)
 
     # SUPPORT
 #    print "Construct GAC clauses:",
@@ -215,7 +207,6 @@ def writeSATgac(constraints, calculus, only_estimate_size=False):
             for k in xrange(j+1, max_node+1): # 3 for loops iterate over constraints
                 r_ik = CSP[i][k]
                 r_jk = CSP[j][k]
-                # r_ij, r_ik, r_jk are all sides of the triangle
 
                 # for each falsifying triple of labels
                 #    add \not triple_1, ..., \not triple_n  (BLOCKS this assignment)
@@ -229,8 +220,7 @@ def writeSATgac(constraints, calculus, only_estimate_size=False):
                             cl = [ -1 * encodeDict(i, j, br1, boolvars), -1 * encodeDict(j, k, br2, boolvars), -1 * encodeDict(i, k, br3, boolvars) ]
                             c_clauses.append(cl)
                 for cl in c_clauses:
-                    instance.add_clause(cl)
-    instance.write()
+                    out.add_clause(cl)
 
 def lexBFS(vertices, edges):
     assert vertices
@@ -301,21 +291,18 @@ def eliminationGame(vertices, edges, order):
         ret |= set( [ (v1, v2) for v2 in final[v1] ] )
     return frozenset(ret)
 
-def writeSATpartition(constraints, calculus, only_estimate_size=False):
-    comptable, ALL_RELATIONS = readCompTable(calculus)
-
+def writeSATpartition(constraints, signature, comptable, out):
     max_node = max( [ t for _, t, _ in constraints] )
     CSP = dict()
     for i, j, r in constraints:
         if not i in CSP:
             CSP[i] = dict()
         CSP[i][j] = r
-        assert r != ALL_RELATIONS
+        assert frozenset(r) != signature
 
     boolvars = dict()
 
-    instance = cnf(only_estimate_size)
-    directDomEncoding(instance, CSP, max_node, boolvars)
+    directDomEncoding(out, CSP, max_node, boolvars)
 
     # constraint graph for triangulation
     vertices = set( [ t for _, t, _ in constraints ] + [ t for t, _, _ in constraints] )
@@ -327,13 +314,13 @@ def writeSATpartition(constraints, calculus, only_estimate_size=False):
 
     order = lexBFS(vertices, edges)
     chordal_graph = eliminationGame(vertices, edges, order)
-    fullcsp = completeConstraintGraph(constraints, ALL_RELATIONS)[1]
+    fullcsp = completeConstraintGraph(constraints, signature)[1]
 #    print "Construct support clauses restricted to chordal graph (cubic time/space):",
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
             r_ij = fullcsp[i][j]
             if not (i,j) in chordal_graph:
-                assert r_ij == ALL_RELATIONS
+                assert frozenset(r_ij) == signature
                 continue
             for k in xrange(j+1, max_node+1):
                 if not ((j,k) in chordal_graph and (i,k) in chordal_graph):
@@ -347,8 +334,7 @@ def writeSATpartition(constraints, calculus, only_estimate_size=False):
 
                         cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
                         cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
-                        instance.add_clause(cl)
-    instance.write()
+                        out.add_clause(cl)
 
 if __name__ == '__main__':
     only_estimate_size = False
@@ -398,13 +384,17 @@ if __name__ == '__main__':
         print
         raise SystemExit("Error in commandline arguments")
 
-    composition_table = arguments[0]
+    comptable, signature = readCompTable(arguments[0])
+#    print "Loaded calculus with", len(signature), "qualitative binary relations"
     qcsp = readGQRCSP(arguments[1])
 #    print "Loaded QCSP with", max([ t for (_, t, _) in qcsp])+1, "qualitative variables"
 
+
+    instance = cnf_output(only_estimate_size)
     if model == 'direct-sup':
-        writeSATdirect(qcsp, composition_table, only_estimate_size)
+        writeSATdirect(qcsp, signature, comptable, instance)
     if model == 'direct-gac':
-        writeSATgac(qcsp, composition_table, only_estimate_size)
+        writeSATgac(qcsp, signature, comptable, instance)
     if model == 'direct-part-sup':
-        writeSATpartition(qcsp, composition_table, only_estimate_size)
+        writeSATpartition(qcsp, signature, comptable, instance)
+    instance.flush() # note, invalidates content as well
