@@ -21,12 +21,15 @@
 __VERSION="0.1 alpha"
 
 import copy, re, sys, string
+import collections, bz2
 
 class cnf:
     def __init__(self, only_estimate_size=False):
         self.only_estimate_size = only_estimate_size
         self.variables = 0
-        self.clauses = []
+        self.bzip2 = bz2.BZ2Compressor(9)
+        self.clauses_bz2 = collections.deque()
+        self.fd = sys.stdout
         self.number_of_clauses = 0
         self.bytes = 0
 
@@ -34,9 +37,11 @@ class cnf:
         self.number_of_clauses += 1
         self.variables = max( max([abs(l) for l in clause]), self.variables )
         cl = self.encode_clause(clause)
-        self.bytes += len(cl)+1
+        self.bytes += len(cl)
         if not only_estimate_size:
-            self.clauses.append(cl)
+            chunk = self.bzip2.compress(cl)
+            if chunk:
+                self.clauses_bz2.append(chunk)
 
     def generate_header(self):
         assert self.variables > 0
@@ -46,16 +51,22 @@ class cnf:
 
     def encode_clause(self, c): # turn clause into string
         clause = [`v` for v in c] # turn into strings
-        return string.join(clause+['0'])
+        return string.join(clause+['0\n'])
 
-    def write(self):
+    def write(self):    # TODO: invalidates class content!
         if self.only_estimate_size:
             print "Constructed %d variables and %d clauses" % (self.get_nr_variables(), self.get_nr_clauses())
             print "Computed %d bytes (%d MiB) of CNF formulae" % (self.get_size(), self.get_size()/1024**2)
         else:
-            print self.generate_header()
-            for c in self.clauses:
-                print c
+            self.clauses_bz2.append(self.bzip2.flush())
+            del self.bzip2
+
+            self.fd.write(self.generate_header()+'\n')
+            decomp = bz2.BZ2Decompressor()
+            while self.clauses_bz2:
+                chunk = self.clauses_bz2.popleft()
+                self.fd.write(decomp.decompress(chunk))
+            del decomp
 
     def get_size(self):
         return len(self.generate_header())+1+self.bytes
