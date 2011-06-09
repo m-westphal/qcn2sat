@@ -168,7 +168,7 @@ def directDomEncoding(instance, CSP, max_node, boolvars):  # build (var,val) as 
                     else:
                         assert br == br2 or br2 < br
 
-def writeSATdirect(constraints, signature, comptable, out):
+def writeSATsup(constraints, signature, comptable, out, cgraph):
     max_node, CSP = completeConstraintGraph(constraints, signature)
 
     boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
@@ -178,8 +178,12 @@ def writeSATdirect(constraints, signature, comptable, out):
 #    print "Construct support clauses (cubic time/space):",
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
+            if not (i,j) in cgraph:
+                continue
             r_ij = CSP[i][j]
             for k in xrange(j+1, max_node+1):
+                if not ((i,k) in cgraph and (j,k) in cgraph):
+                    continue
                 r_ik = CSP[i][k]
                 r_jk = CSP[j][k]
                 for br1 in r_ij:
@@ -191,7 +195,7 @@ def writeSATdirect(constraints, signature, comptable, out):
                         cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
                         out.add_clause(cl)
 
-def writeSATgac(constraints, signature, comptable, out):
+def writeSATgac(constraints, signature, comptable, out, cgraph):
     max_node, CSP = completeConstraintGraph(constraints, signature)
 
     boolvars = dict()
@@ -202,12 +206,14 @@ def writeSATgac(constraints, signature, comptable, out):
 #    print "Construct GAC clauses:",
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
+            if not (i,j) in cgraph:
+                continue
             r_ij = CSP[i][j]
-
             for k in xrange(j+1, max_node+1): # 3 for loops iterate over constraints
+                if not ((i,k) in cgraph and (j,k) in cgraph):
+                    continue
                 r_ik = CSP[i][k]
                 r_jk = CSP[j][k]
-
                 # for each falsifying triple of labels
                 #    add \not triple_1, ..., \not triple_n  (BLOCKS this assignment)
                 c_clauses = [ ]
@@ -294,110 +300,93 @@ def eliminationGame(vertices, edges, order):
         ret |= set( [ (v1, v2) for v2 in final[v1] ] )
     return frozenset(ret)
 
-def writeSATpartition(constraints, signature, comptable, out):
-    max_node = max( [ t for _, t, _ in constraints] )
-    CSP = dict()
-    for i, j, r in constraints:
-        if not i in CSP:
-            CSP[i] = dict()
-        CSP[i][j] = r
-        assert frozenset(r) != signature
-
-    boolvars = dict()
-
-    directDomEncoding(out, CSP, max_node, boolvars)
-
-    # constraint graph for triangulation
-    vertices = set( [ t for _, t, _ in constraints ] + [ t for t, _, _ in constraints] )
-    edges = dict( [ (v, set()) for v in vertices ] )
-    for i in CSP:
-        for j in CSP[i]:
-            edges[i].add(j)
-            edges[j].add(i)
-
-    order = lexBFS(vertices, edges)
-    chordal_graph = eliminationGame(vertices, edges, order)
-    fullcsp = completeConstraintGraph(constraints, signature)[1]
-#    print "Construct support clauses restricted to chordal graph (cubic time/space):",
-    for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
-            r_ij = fullcsp[i][j]
-            if not (i,j) in chordal_graph:
-                assert frozenset(r_ij) == signature
-                continue
-            for k in xrange(j+1, max_node+1):
-                if not ((j,k) in chordal_graph and (i,k) in chordal_graph):
-                    continue
-                r_ik = fullcsp[i][k]
-                r_jk = fullcsp[j][k]
-                for br1 in r_ij:
-                    not_b_ij = -1 * encodeDict(i, j, br1, boolvars)
-                    for br2 in r_jk:
-                        intersection = frozenset(r_ik) & comptable[br1 + " " + br2]
-
-                        cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
-                        cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
-                        out.add_clause(cl)
-
-if __name__ == '__main__':
+def parse_cmdline(argv):
     only_estimate_size = False
-    model = None
-
     arguments = [ ]
-    for a in sys.argv[1:]:
+    graph_type = None
+    clause_type = None
+    for a in argv:
         if a[0:2] == "--":
             if a == "--only-estimate":
                 only_estimate_size = True
                 continue
-            M = [ "direct-sup", "direct-gac", "direct-part-sup" ]
-            for m in M:
+            C = [ "support", "gac" ]
+            G = [ "complete", "partition-lexbfs" ]
+            for m in C:
                 if a[2:] == m:
-                    if model is None:
-                        model = m
+                    if clause_type is None:
+                        clause_type = m
                     else:
-                        model = "invalid"
+                        raise SystemExit("Two conflicting clause encodings selected")
                     break
             else:
-                raise SystemExit("Unknown option '%s'" % a)
+                for m in G:
+                    if a[2:] == m:
+                        if graph_type is None:
+                            graph_type = m
+                        else:
+                            raise SystemExit("Two conflicting graph encodings selected")
+                        break
+                else:
+                    raise SystemExit("Unknown option '%s'" % a)
         else:
             arguments.append(a)
 
-    if len(arguments) != 2 or model is None or model == "invalid":
+    return only_estimate_size, clause_type, graph_type, arguments
+
+def check_options(arguments, clause_type, graph_type):
+    if len(arguments) != 2 or clause_type is None or graph_type is None:
         print "qcsp2sat.py: convert qualitative CSPs to CNF formulae (version %s)" % __VERSION
         print "Copyright (C) 2009-2011  Matthias Westphal"
         print "This program comes with ABSOLUTELY NO WARRANTY."
         print "This is free software, and you are welcome to redistribute it"
         print "under certain conditions; see `GPL-3' for details."
         print
-        print "Usage: qcsp2sat.py GQR_COMPOSITION_TABLE_FILE GQR_QCSP"
+        print "Usage: qcsp2sat.py OPTIONS GQR_COMPOSITION_TABLE_FILE GQR_QCSP"
         print "    --only-estimate      calculate size of CNF, but do not store clauses"
-        print "    --direct-sup         direct encoding with simple support clauses"
+        print "    --complete           write complete constrain graph on vars 1 .. n"
+        print "    --partition-lexbfs   triangulate graph with lexbfs ordering"
+        print "                         (see ?) [EXPERIMENTAL!] (potentially unsound for"
+        print "                         several calculi)"
+        print "    --support            direct encoding with simple support clauses"
         print "                         (see \"SAT 1-D support encoding\" in \"Towards"
         print "                         An Efficient SAT Encoding for Temporal"
         print "                         Reasoning\", Pham et al.)"
-        print "    --direct-gac         direct encoding with clauses that establish GAC"
+        print "    --gac                direct encoding with clauses that establish GAC"
         print "                         (see \"GAC via Unit Propagation\", Bacchus;"
         print "                         NOTE: the script does not compute prime"
         print "                         implicates!)"
-        print "    --direct-part-sup    direct encoding restricted to tree decomposition"
-        print "                         (see ?) [EXPERIMENTAL!] (potentially unsound for"
-        print "                         several calculi)"
         print
         print "WARNING: the script is completely untested and potentially unsound!"
         print
         raise SystemExit("Error in commandline arguments")
+
+if __name__ == '__main__':
+    only_estimate_size, clause_type, graph_type, arguments = parse_cmdline(sys.argv[1:])
+    check_options(arguments, clause_type, graph_type)
 
     comptable, signature = readCompTable(arguments[0])
 #    print "Loaded calculus with", len(signature), "qualitative binary relations"
     qcsp = readGQRCSP(arguments[1])
 #    print "Loaded QCSP with", max([ t for (_, t, _) in qcsp])+1, "qualitative variables"
 
+    cgraph = None
+    if graph_type == 'complete':
+        vararray = range(0, max([ t for (_, t, _) in qcsp])+1)
+        cgraph = frozenset([ (x,y) for x in vararray for y in vararray ])
+    elif graph_type == 'partition-lexbfs':
+            vertices = set( [ t for _, t, _ in qcsp ] + [ t for t, _, _ in qcsp] )
+            edges = dict( [ (v, set()) for v in vertices ] )
+            for i, j, _ in qcsp:
+                edges[i].add(j)
+                edges[j].add(i)
+
+            order = lexBFS(vertices, edges)
+            cgraph = eliminationGame(vertices, edges, order)
 
     instance = cnf_output(only_estimate_size)
-    if model == 'direct-sup':
-        writeSATdirect(qcsp, signature, comptable, instance)
-    if model == 'direct-gac':
-        writeSATgac(qcsp, signature, comptable, instance)
-    if model == 'direct-part-sup':
-        writeSATpartition(qcsp, signature, comptable, instance)
+    if clause_type == 'support':
+        writeSATsup(qcsp, signature, comptable, instance, cgraph)
+    if clause_type == 'gac':
+        writeSATgac(qcsp, signature, comptable, instance, cgraph)
     instance.flush() # note, invalidates content as well
