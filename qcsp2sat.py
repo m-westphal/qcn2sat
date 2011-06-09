@@ -31,14 +31,16 @@ class cnf_output:
         self.clauses_bz2 = collections.deque()
         self.fd = sys.stdout
         self.number_of_clauses = 0
-        self.bytes = 0
+        if self.only_estimate_size:
+            self.bytes = 0
 
     def add_clause(self, clause):
         self.number_of_clauses += 1
         self.variables = max( max([abs(l) for l in clause]), self.variables )
         cl = self.encode_clause(clause)
-        self.bytes += len(cl)
-        if not only_estimate_size:
+        if only_estimate_size:
+            self.bytes += len(cl)
+        else:
             chunk = self.bzip2.compress(cl)
             if chunk:
                 self.clauses_bz2.append(chunk)
@@ -46,7 +48,7 @@ class cnf_output:
     def generate_header(self):
         assert self.variables > 0
         assert self.number_of_clauses > 0
-        header = "p cnf %d %d" % (self.variables, self.number_of_clauses)
+        header = "p cnf %d %d\n" % (self.variables, self.number_of_clauses)
         return header
 
     def encode_clause(self, c): # turn clause into string
@@ -55,27 +57,19 @@ class cnf_output:
 
     def flush(self):    # invalidates class content
         if self.only_estimate_size:
-            print "Constructed %d variables and %d clauses" % (self.get_nr_variables(), self.get_nr_clauses())
-            print "Computed %d bytes (%d MiB) of CNF formulae" % (self.get_size(), self.get_size()/1024**2)
+            size = len(self.generate_header())+self.bytes
+            print "Constructed %d variables and %d clauses" % (self.variables, self.number_of_clauses)
+            print "Computed %d bytes (%d MiB) of CNF formulae" % (size, size/1024**2)
         else:
             self.clauses_bz2.append(self.bzip2.flush())
             del self.bzip2
 
-            self.fd.write(self.generate_header()+'\n')
+            self.fd.write(self.generate_header())
             decomp = bz2.BZ2Decompressor()
             while self.clauses_bz2:
                 chunk = self.clauses_bz2.popleft()
                 self.fd.write(decomp.decompress(chunk))
             del decomp
-
-    def get_size(self):
-        return len(self.generate_header())+1+self.bytes
-
-    def get_nr_variables(self):
-        return self.variables
-
-    def get_nr_clauses(self):
-        return self.number_of_clauses
 
 def readGQRCSP(csp):
     constraints = [ ]
