@@ -211,12 +211,15 @@ def writeSATgac(constraints, calculus, only_estimate_size=False):
                 c_clauses = [ ]
                 for br1 in r_ij:
                     for br2 in r_jk:
-                        supported = comptable[br1 + " " + br2]
-                        for br3 in r_ik:
-                            if br3 in supported:    # consistent labeling
-                                continue
-                            cl = [ -1 * encodeDict(i, j, br1, boolvars), -1 * encodeDict(j, k, br2, boolvars), -1 * encodeDict(i, k, br3, boolvars) ]
+                        supported = comptable[br1 + " " + br2] & frozenset(r_ik)
+                        if not supported:
+                            cl = [ -1 * encodeDict(i, j, br1, boolvars), -1 * encodeDict(j, k, br2, boolvars) ]
                             c_clauses.append(cl)
+                        else:
+                            not_supported = frozenset(r_ik) - supported
+                            for br3 in not_supported:
+                                cl = [ -1 * encodeDict(i, j, br1, boolvars), -1 * encodeDict(j, k, br2, boolvars), -1 * encodeDict(i, k, br3, boolvars) ]
+                                c_clauses.append(cl)
                 for cl in c_clauses:
                     instance.add_clause(cl)
     instance.write()
