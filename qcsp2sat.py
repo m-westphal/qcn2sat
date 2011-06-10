@@ -350,6 +350,13 @@ if __name__ == '__main__':
     comptable, signature = readCompTable(arguments[0])
 #    print "Loaded calculus with", len(signature), "qualitative binary relations"
     qcsp = readGQRCSPstdin()
+
+    if not qcsp: # no constraints read; assume problem was unsatisfiable
+        print "p cnf 1 1"
+        print "1 0"
+        print "-1 0"
+        raise SystemExit()
+
 #    print "Loaded QCSP with", max([ t for (_, t, _) in qcsp])+1, "qualitative variables"
 
     cgraph = None
