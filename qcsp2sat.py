@@ -261,8 +261,8 @@ def eliminationGame(vertices, edges, order):
         tmp = copy.deepcopy(new_edges[-1]) # G^{i-1}
 
         # Turn v into a clique in tmp
-        for x, y in product(tmp[v], tmp[v]):
-            if (not x in tmp) or (not y in tmp) or x == y:
+        for x, y in product(new_edges[-1][v], new_edges[-1][v]):
+            if x == y:
                 continue
             tmp[x].add(y)
             tmp[y].add(x)
