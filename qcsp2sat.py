@@ -229,69 +229,57 @@ def lexBFS(vertices, edges):
     assert vertices
     assert edges
 
-    queue = [ vertices.copy() ]
-    order = [ ]
+    order = dict()
 
-    while queue:
-        if not queue[0]:
-            del queue[0]
-            continue
-        v = queue[0].pop()
-        if not queue[0]:
-            del queue[0]
+    label = dict()
+    for v in vertices:
+        label[v] = [ ]
+    for i in xrange(len(vertices), 0, -1):
+        todo = [ v for v in vertices if not v in order ]
+        todo.sort(key=lambda x: label[x])
+        todo.reverse()
+        assert label[todo[0]] >= label[todo[-1]]
+        v = todo[0]
+        order[v] = i
+        for w in edges[v]:
+            if not w in order:
+                label[w].append(i)
 
-        order.append(v)
-
-        replaced = dict()
-        for y in edges[v]:
-            for q in queue:
-                if y in q:
-                    rep = set()
-                    if not v in replaced:
-                        replaced[v] = rep
-                        queue.insert(queue.index(q), rep)
-                    else:
-                        rep = replaced[v]
-                    q.remove(y)
-                    rep.add(y)
-
-    return dict( [ (v, order.index(v)) for v in order ] )
+    return order
 
 def eliminationGame(vertices, edges, order):
+    from itertools import product
     import copy
 
-    new_edges = [ edges.copy() ]
+    new_edges = [ edges.copy() ] # G^0
 
     queue = list(vertices)
-    queue.sort(lambda a,b: order[b] - order[a]) # highest weight first
+    queue.sort(key=lambda x: order[x]) # lowest weight first
+    assert order[queue[0]] <= order[queue[1]]
 
-    while queue:
-        v = queue[0]
-        del queue[0]
+    for v in queue:
+        tmp = copy.deepcopy(new_edges[-1]) # G^{i-1}
 
-        tmp = copy.deepcopy(new_edges[-1])
-
-        for x in tmp[v]:
-            assert v in tmp[x]
-            for y in tmp[v]:
-                if x != y:
-                    tmp[x].add(y)
-        for z in tmp[v]:
-            tmp[z].remove(v)
-        del tmp[v]
-        new_edges.append(tmp)
-
-    del new_edges[-1]
+        # Turn v into a clique in tmp
+        for x, y in product(tmp[v], tmp[v]):
+            if (not x in tmp) or (not y in tmp) or x == y:
+                continue
+            tmp[x].add(y)
+            tmp[y].add(x)
+        # remove v from G^i
+        for x in tmp:
+            tmp[x].discard(v) # remove edges to v if present
+        del tmp[v] # remove v itself
+        new_edges.append(tmp) # add G^i
 
     final = dict( [ (v, set()) for v in vertices ] )
-    for graph in new_edges:
+    for graph in new_edges[:-1]:
         for v in graph:
-            for n in graph[v]:
-                final[v].add(n)
+            final[v] |= graph[v]
 
     ret = set()
-    for v1 in vertices:
-        ret |= set( [ (v1, v2) for v2 in final[v1] ] )
+    for v in vertices:
+        ret |= set( [ (v, x) for x in final[v] ] )
     return frozenset(ret)
 
 def parse_cmdline(argv):
