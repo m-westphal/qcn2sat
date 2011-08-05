@@ -167,7 +167,11 @@ def writeSATsup(constraints, signature, comptable, out, cgraph):
 
     boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
 
-    directDomEncoding(out, CSP, max_node, boolvars)
+    import allen
+
+    allen.nebel_buerckert_encode_variables(out, CSP, max_node, cgraph, boolvars)
+    return
+#    directDomEncoding(out, CSP, max_node, boolvars)
 
 #    print "Construct support clauses (cubic time/space):",
     for i in xrange(max_node+1):
