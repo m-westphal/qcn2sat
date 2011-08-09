@@ -37,125 +37,229 @@ def encodeDict(i, j, baserel, d):   # assign a boolean variable id to baserel in
         d[i][j][baserel] = ret
         return ret
 
-def base_relation_to_start_end_points(x, y, b, d):
+def base_relation_to_start_end_points(x,y,b):
     conj = set() # literals
     if b == '=':
-        conj.add( encode(x, '-', y, '-', '=', d) )
-        conj.add( encode(x, '+', y, '+', '=', d) )
+        conj.add( literal('p',x,'-','=',y,'-') )
+        conj.add( literal('p',x,'+','=',y,'+') )
         ###### complete ...
-        conj.add( encode(x, '-', y, '-', '<=', d) )
-        conj.add( encode(x, '+', y, '+', '<=', d) )
-        conj.add( encode(x, '-', y, '-', '>=', d) )
-        conj.add( encode(x, '+', y, '+', '>=', d) )
-        conj.add( encode(x, '-', y, '+', '<=', d) )
-        conj.add( encode(y, '-', x, '+', '<=', d) )
+        conj.add( literal('p',x,'-','<=',y,'-') )
+        conj.add( literal('p',x,'-','>=',y,'-') )
+        conj.add( literal('p',x,'+','<=',y, '+') )
+        conj.add( literal('p',x,'+','>=',y, '+') )
+        conj.add( literal('p',x,'-','<=',y,'+') )
+        conj.add( literal('p',y,'-','<=',x,'+') )
     elif b == '<':
-        conj.add( encode(x, '+', y, '-', '<=', d) )
-        conj.add( -1 * encode(x, '+', y, '-', '=', d) )
+        conj.add( literal('p',x,'+','<=',y,'-') )
+        conj.add( literal('n',x,'+','=',y,'-') )
         ###### complete ...
-#        conj.add( encode(x, '-', y, '-', '<=', d) )
-#        conj.add( -1 * encode(x, '-', y, '-', '=', d) )
-#        conj.add( encode(x, '-', y, '+', '<=', d) )
-#        conj.add( -1 * encode(x, '-', y, '+', '=', d) )
-        conj.add( encode(x, '+', y, '+', '<=', d) )
-        conj.add( -1 * encode(x, '+', y, '+', '=', d) )
+        conj.add( literal('p',x,'+','<=',y,'+') )
+        conj.add( literal('n',x,'+','=',y,'+') )
+        conj.add( literal('p',x,'-','<=',y,'-') )
+        conj.add( literal('n',x,'-','=',y,'-') )
+        conj.add( literal('p',x,'-','<=',y,'+') )
+        conj.add( literal('n',x,'-','=',y,'+') )
+
+#        conj.add( ('p',x,'+','<=',y, '+') )
+#        conj.add( ('n',x,'+','=',y,'+') )
     elif b == '>':
-        return base_relation_to_start_end_points(y,x,'<',d)
+        return base_relation_to_start_end_points(y,x,'<')
     elif b == 'm':
-        conj.add( encode(x, '+', y, '-', '=', d) )
+        conj.add( literal('p',x,'+','=',y,'-') )
     elif b == 'mi':
-        return base_relation_to_start_end_points(y,x,'m',d)
+        return base_relation_to_start_end_points(y,x,'m')
     elif b == 'd':
-        conj.add( encode(y, '-', x, '-', '<=', d) )
-        conj.add( -1 * encode(y, '-', x, '-', '=', d) )
-        conj.add( encode(x, '+', y, '+', '<=', d) )
-        conj.add( -1 * encode(x, '+', y, '+', '=', d) )
+        conj.add( literal('p',y,'-','<=',x,'-') )
+        conj.add( literal('n',y,'-','=',x,'-',) )
+        conj.add( literal('p',x,'+','<=',y,'+') )
+        conj.add( literal('n',x,'+','=',y,'+') )
         ###### complete ...
-        conj.add( encode(y, '-', x, '+', '<=', d) )
-        conj.add( -1 * encode(y, '-', x, '+', '=', d) )
-        conj.add( encode(x, '-', y, '+', '<=', d) )
-        conj.add( -1 * encode(x, '-', y, '+', '=', d) )
+        conj.add( literal('p',y,'-','<=',x,'+') )
+        conj.add( literal('n',y,'-','=',x,'+') )
+        conj.add( literal('p',x,'-','<=',y,'+') )
+        conj.add( literal('n',x,'-','=',y,'+') )
     elif b == 'di':
-        return base_relation_to_start_end_points(y,x,'d',d)
+        return base_relation_to_start_end_points(y,x,'d')
     elif b == 's':
-        conj.add( encode(x, '-', y, '-', '=', d) )
-        conj.add( encode(x, '+', y, '+', '<=', d) )
-        conj.add( -1 * encode(x, '+', y, '+', '=', d) )
+        conj.add( literal('p',x,'-','=',y,'-') )
+        conj.add( literal('p',x,'+','<=',y,'+') )
+        conj.add( literal('n',x,'+','=',y,'+') )
     elif b == 'si':
-        return base_relation_to_start_end_points(y,x,'s',d)
+        return base_relation_to_start_end_points(y,x,'s')
     elif b == 'f':
-        conj.add( encode(x, '-', y, '+', '<=', d) )
-        conj.add( -1 * encode(x, '-', y, '+', '=', d) )
-        conj.add( encode(x, '+', y, '+', '=', d) )
+        conj.add( literal('p',x, '-','<=',y, '+') )
+        conj.add( literal('n',x, '-','=', y, '+') )
+        conj.add( literal('p',x, '+','=', y, '+') )
     elif b == 'fi':
-        return base_relation_to_start_end_points(y,x,'f',d)
+        return base_relation_to_start_end_points(y,x,'f')
     elif b == 'o':
-        conj.add( encode(y, '-', x, '+', '<=', d) )
-        conj.add( -1 * encode(y, '-', x, '+', '=', d) )
-        conj.add( encode(x, '+', y, '+', '<=', d) )
-        conj.add( -1 * encode(x, '+', y, '+', '=', d) )
-        ##### complete ...
-#        conj.add( encode(x, '+', y, '+', '<=', d) )
-#        conj.add( -1 * encode(x, '+', y, '+', '=', d) )
-#        conj.add( encode(x, '-', y, '-', '<=', d) )
-#        conj.add( -1 * encode(x, '-', y, '+', '=', d) )
+        conj.add( literal('p',y,'-','<=',x,'+') )
+        conj.add( literal('n',y,'-','=',x,'+') )
+        conj.add( literal('p',x,'+','<=',y,'+') )
+        conj.add( literal('n',x,'+','=', y,'+') )
+
+        conj.add( literal('p',x,'-','<=',y,'-') )
+        conj.add( literal('n',x,'-','=',y,'-') )
+
+        conj.add( literal('p',x,'-','<=',y,'+') )
+        conj.add( literal('n',x,'-','=',y,'+') )
     elif b == 'oi':
-        return base_relation_to_start_end_points(y,x,'o',d)
+        return base_relation_to_start_end_points(y,x,'o')
     else: # unknown base relation
         assert False
 
-    conj.add( encode(x, '-', x, '+', '<=', d) )
-    conj.add( -1 * encode(x, '-', x, '+', '=', d) )
-    conj.add( encode(y, '-', y, '+', '<=', d) )
-    conj.add( -1 * encode(y, '-', y, '+', '=', d) )
+    # well-formed intervals
+    conj.add( literal('p',x,'-','<=',x,'+') )
+    conj.add( literal('n',x,'-','=',x,'+') )
+    conj.add( literal('p',y,'-','<=',y,'+') )
+    conj.add( literal('n',y,'-','=',y,'+') )
 
-    # contradiction free ...
-    assert len(conj) == len( set([abs(l) for l in conj] ) )
     assert conj
 
     return conj
 
-def unit_resolution(cnf): # fails upon conflict
-    # subsumption testing
-    for x in cnf:
-        for y in cnf:
-            if x != y and x <= y:
-                cnf.remove(y)
-#                print "\tRemove", y, "cause of", x
-                assert cnf
-                return unit_resolution(cnf)
-        double = set([abs(t) for t in x if -1*t in x])
-        if double:
-            t = frozenset([ t for t in x if abs(t) not in double ])
-            cnf.remove(x)
-            if not t:
-                assert cnf
-                return unit_resolution(cnf)
-#            print "\tWds.", x, "replace with", t
-            return unit_resolution(cnf | set([t]))
-    return cnf
-    units = frozenset( [ list(u)[0] for u in cnf if len(u) == 1 ] )
-    for u in units:
-        for v in units:
-            assert u == v or abs(u) != abs(v)
-    non_units = [ nu for nu in cnf if len(nu) > 1 ]
+class literal:
+    def __init__(self, n, a, s1, r, b, s2):
+        assert n != 'n' or r == "="
+        assert r in ['<=', '=', '>=']
+        assert n in ['p','n']
 
-    new = set()
-    done = True
-    for c in non_units:
-        nc = frozenset([ l for l in c if not (-1 * l) in units ])
-        if nc != c:
-            print "Minimizing:", list(c), "to", list(nc), "\t\tunits", [ t for t in units ]
-            done = False
-        assert nc
-        new.add(nc)
+        self.n = n
+        self.x = a
+        self.s1 = s1
+        self.y = b
+        self.s2 = s2
+        self.r = r
 
-    ncnf = frozenset([ frozenset([t]) for t in units] + [t for t in new])
-    assert ncf
-    if done:
-        return ncnf
-    else:
-        return unit_resolution(ncnf)
+        self.canonical_form()
+
+        self.hashvalue = self.n + self.x + self.s1 + self.r + self.y + self.s2
+        self.hashvalue = self.hashvalue.__hash__()
+
+    def __hash__(self):
+        return self.hashvalue
+
+    def __eq__(self, other):
+        return (self.n,self.x,self.s1,self.r,self.y,self.s2) == (other.n,other.x,other.s1,other.r,other.y,other.s2)
+
+    def __str__(self):
+        s = None
+        if self.n == 'n':
+            s = '-'
+        else:
+            s = ' '
+        s += '(' + self.x + self.s1 + ' '
+        if len(self.r) == 1:
+            s += '='
+        s += self.r + ' ' + self.y + self.s2 + ')'
+        return s
+
+    def canonical_form(self):
+        x = self.x
+        y = self.y
+        if x == 'y' and y == 'x':
+            r = '='
+            if self.r == '<=':
+                r = '>='
+            elif self.r == '>=':
+                r = '<='
+            (self.x, self.y) = ('x', 'y')
+            (self.s1, self.s2) = (self.s2, self.s1)
+            self.r = r
+    def is_positive(self):
+        if self.n == 'p':
+            return True
+        return False
+    def get_atom(self):
+        return (self.x,self.s1,self.r,self.y,self.s2)
+    def get_negation(self):
+        if self.n == 'p':
+            return literal('n',self.x,self.s1,self.r,self.y,self.s2)
+        return literal('p',self.x,self.s1,self.r,self.y,self.s2)
+
+def simplify_cnf(cnf): # subsumption testing, tautologies, unit_propagation
+    print "\tSimplify CNF:", len(cnf), " -> ",
+
+    subsumptions = 0
+    simplifications = 0
+    tautologies = 0
+    ups = 0
+
+    while True:
+        done = True
+        clauses = list(cnf)
+        clauses.sort(key=lambda x: len(x)) # optimizing ...
+        for clause_a in clauses:
+            if not done:
+                break
+            for clause_b in clauses:
+                if not clause_a == clause_b and clause_a <= clause_b:
+                    cnf.remove(clause_b)
+                    subsumptions += 1
+                    done = False
+            if done and len(clause_a) == 2:
+                disj = list(clause_a)
+                var1 = (disj[0].x, disj[0].s1, disj[0].y, disj[0].s2)
+                var2 = (disj[1].x, disj[1].s1, disj[1].y, disj[1].s2)
+                if disj[0].is_positive() and disj[1].is_positive() and \
+                    var1 == var2:
+                        if (disj[0].r == '<=' and disj[1].r == '>=') or \
+                            (disj[0].r == '>=' and disj[1].r == '<='):
+                            cnf.remove(clause_a)
+                            tautologies += 1
+                            done = False
+            for l in clause_a:
+                if not done:
+                    break
+                for l2 in clause_a:
+                    if l.get_atom() == l2.get_atom() and l.is_positive() ^ l2.is_positive():
+                        nclause = frozenset([t for t in clause_a if not t == l and not t == l2])
+                        if nclause:
+                            cnf.add(nclause)
+                        cnf.remove(clause_a)
+                        simplifications += 1
+                        done = False
+#                        print l, l2
+#                        __print_nf([clause_a])
+#                        assert False
+
+            if not done:
+                break
+
+            # UP
+            if len(clause_a) == 1:
+                l = list(clause_a)[0]
+                if l.r != '=':
+                    continue
+                nl = l.get_negation()
+                for clause_b in clauses:
+                    if not clause_a == clause_b and nl in clause_b:
+                        ups += 1
+                        cnf.remove(clause_b)
+                        new = frozenset([t for t in clause_b if not t == nl])
+
+#                        __print_nf([clause_a])
+#                        __print_nf([clause_b])
+
+                        assert new # otherwise contradiction...
+                        assert not nl in new
+                        cnf.add(new)
+                        done = False
+#                        assert False # theory UP unnecessary ...
+                        break
+
+        if done:
+            print len(cnf), "(subs.: %d, taut.: %d, simpl: %d, up: %d)" % (subsumptions, tautologies, simplifications, ups)
+            return cnf
+
+def __print_nf(formula):
+    print "{",
+    for x in formula:
+        print " {",
+        for a in x:
+            print a,
+        print " }",
+    print "}"
 
 def nebel_buerckert_ordhorn(x, y, relation, d): # build CNF
     clauses = set()
@@ -163,20 +267,25 @@ def nebel_buerckert_ordhorn(x, y, relation, d): # build CNF
 
     disj = set()
     for b in relation:
-        conj = base_relation_to_start_end_points(x,y,b,d)
+        conj = base_relation_to_start_end_points('x','y',b)
         disj.add(frozenset(conj))
 
-    print "\tDNF:\t", [ list(e) for e in  disj ]
+    print "\tDNF:\t",
+    __print_nf(disj)
 
     import itertools
     for element in itertools.product(*disj):
         clauses.add( frozenset(element) )
-    print "\tF-CNF:\t", [ list(e) for e in clauses ]
+#    print "\tF-CNF:\t",
+#    __print_nf(clauses)
 
-    reduced = unit_resolution(clauses)
+    reduced = simplify_cnf(clauses)
     assert reduced
+    for e in reduced:
+        assert e
 
-    print "\tCNF:\t", [ list(e) for e in reduced ]
+    print "\tCNF:\t",
+    __print_nf(reduced)
 
     return [ list(e) for e in reduced ]
 
@@ -199,6 +308,7 @@ def nebel_buerckert_encode_variables(instance, CSP, max_node, cgraph, boolvars):
     lines = flines.readlines()
     flines.close()
 
+    fails = 0
     for i, l in enumerate(lines):
         t = l[2:-3].split(' ')
         if t == ['']: # empty relation
@@ -207,8 +317,14 @@ def nebel_buerckert_encode_variables(instance, CSP, max_node, cgraph, boolvars):
         cnf = nebel_buerckert_ordhorn(0, 1, t, boolvars)
         # assert horn encoding
         for c in cnf:
-            if len([t for t in c if t > 0] ) > 1:
-                raise SystemExit("[ERROR]: "+str(c)+" is not a horn clause :(")
+            if len([l for l in c if l.is_positive()] ) > 1:
+                __print_nf([c])
+#                raise SystemExit("[ERROR]: ... is not a horn clause :(")
+                fails += 1
+                print "[ERROR]: ... is not a horn clause :("
+                print fails, "errors so far ..."
+                break
+    print "Failed: ", fails
     assert False
 
     # full ORD theory
