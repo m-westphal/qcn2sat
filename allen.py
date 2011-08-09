@@ -90,8 +90,7 @@ def base_relation_to_start_end_points(x, y, b, d):
     elif b == 'fi':
         return base_relation_to_start_end_points(y,x,'f',d)
     elif b == 'o':
-        conj.add( encode(y, '-', x, '+', '<=', d) ) ## WHY are 
-        conj.add( encode(y, '+', x, '-', '>=', d) ) ## these not the same ?
+        conj.add( encode(y, '-', x, '+', '<=', d) )
         conj.add( -1 * encode(y, '-', x, '+', '=', d) )
         conj.add( encode(x, '+', y, '+', '<=', d) )
         conj.add( -1 * encode(x, '+', y, '+', '=', d) )
@@ -192,7 +191,7 @@ def encode(x, s1, y, s2, rel, d):
             srel = '='
         else:
             assert rel == '>='
-        return encodeDict(y, x, s1+s2+srel, d)
+        return encodeDict(y, x, s2+s1+srel, d)
 
 def nebel_buerckert_encode_variables(instance, CSP, max_node, cgraph, boolvars):
     ### DEBUG CODE ###
