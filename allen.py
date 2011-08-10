@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# -*- coding: UTF-8 -*-
 
 # ex: set tabstop=4 expandtab softtabstop=4:
 
@@ -49,6 +50,9 @@ def base_relation_to_start_end_points(x,y,b):
         conj.add( literal('p',x,'+','>=',y, '+') )
         conj.add( literal('p',x,'-','<=',y,'+') )
         conj.add( literal('p',y,'-','<=',x,'+') )
+
+        conj.add( literal('n',x,'-','=',y,'+') )
+        conj.add( literal('n',x,'+','=',y,'-') )
     elif b == '<':
         conj.add( literal('p',x,'+','<=',y,'-') )
         conj.add( literal('n',x,'+','=',y,'-') )
@@ -119,6 +123,7 @@ def base_relation_to_start_end_points(x,y,b):
     return conj
 
 class literal:
+#    def __init__(self, n, a, r, b): # TODO rewrite signature too simple points (not interval start/end shit)
     def __init__(self, n, a, s1, r, b, s2):
         assert n != 'n' or r == "="
         assert r in ['<=', '=', '>=']
@@ -147,7 +152,7 @@ class literal:
         if self.n == 'n':
             s = '-'
         else:
-            s = ' '
+            s = '+'
         s += '(' + self.x + self.s1 + ' '
         if len(self.r) == 1:
             s += '='
@@ -177,12 +182,11 @@ class literal:
             return literal('n',self.x,self.s1,self.r,self.y,self.s2)
         return literal('p',self.x,self.s1,self.r,self.y,self.s2)
 
-def simplify_cnf(cnf): # subsumption testing, tautologies, unit_propagation
+def simplify_cnf(cnf): # subsumption testing, unit_propagation
     print "\tSimplify CNF:", len(cnf), " -> ",
 
     subsumptions = 0
     simplifications = 0
-    tautologies = 0
     ups = 0
 
     while True:
@@ -197,31 +201,15 @@ def simplify_cnf(cnf): # subsumption testing, tautologies, unit_propagation
                     cnf.remove(clause_b)
                     subsumptions += 1
                     done = False
-            if done and len(clause_a) == 2:
-                disj = list(clause_a)
-                var1 = (disj[0].x, disj[0].s1, disj[0].y, disj[0].s2)
-                var2 = (disj[1].x, disj[1].s1, disj[1].y, disj[1].s2)
-                if disj[0].is_positive() and disj[1].is_positive() and \
-                    var1 == var2:
-                        if (disj[0].r == '<=' and disj[1].r == '>=') or \
-                            (disj[0].r == '>=' and disj[1].r == '<='):
-                            cnf.remove(clause_a)
-                            tautologies += 1
-                            done = False
             for l in clause_a:
                 if not done:
                     break
                 for l2 in clause_a:
                     if l.get_atom() == l2.get_atom() and l.is_positive() ^ l2.is_positive():
-                        nclause = frozenset([t for t in clause_a if not t == l and not t == l2])
-                        if nclause:
-                            cnf.add(nclause)
                         cnf.remove(clause_a)
                         simplifications += 1
                         done = False
-#                        print l, l2
-#                        __print_nf([clause_a])
-#                        assert False
+                        break
 
             if not done:
                 break
@@ -249,17 +237,53 @@ def simplify_cnf(cnf): # subsumption testing, tautologies, unit_propagation
                         break
 
         if done:
-            print len(cnf), "(subs.: %d, taut.: %d, simpl: %d, up: %d)" % (subsumptions, tautologies, simplifications, ups)
+            print len(cnf), "(subs.: %d, simpl: %d, up: %d)" % (subsumptions, simplifications, ups)
             return cnf
 
 def __print_nf(formula):
     print "{",
     for x in formula:
-        print " {",
+        print "{",
         for a in x:
             print a,
-        print " }",
+        print "}",
     print "}"
+
+def background_theory(clause):
+    cl = set(clause)
+
+    done = False
+    while not done: # TODO: loop potentially uninteresting :/
+        done = True
+        for l1 in cl:
+            if not done:
+                break
+            for l2 in cl:
+                if l1 == l2:
+                    continue
+                if (l1.x,l1.s1,l1.y,l1.s2) == (l2.x,l2.s1,l2.y,l2.s2) and \
+                    l1.r == '<=' and l2.r == '>=':
+                    return None
+                # transitivity on well-formed intervals
+                if (l1.x, l1.y) != (l2.x,l2.y):
+                    continue
+                if (l1.s1, l2.s1) == ('+','-') and \
+                    l1.s2 == l2.s2 == '-' and l1.r == ">=" and l2.r == "<=":
+                    return None
+                if (l1.s1, l2.s1) == ('-','+') and \
+                    l1.s2 == l2.s2 == '+' and l1.r == "<=" and l2.r == ">=":
+                    return None
+                if (l1.s2, l2.s2) == ('+','-') and \
+                    l1.s1 == l2.s1 == '+' and l1.r == "<=" and l2.r == ">=":
+                    return None
+                if (l1.s2, l2.s2) == ('+','-') and \
+                    l1.s1 == l2.s1 == '-' and l1.r == "<=" and l2.r == ">=":
+                    return None
+
+                if (l1.s1, l2.s1) == ('+','-') and (l1.s2, l2.s2) == ('-','+') and \
+                    l1.r == ">=" and l2.r == "<=":
+                        return None
+    return frozenset(cl)
 
 def nebel_buerckert_ordhorn(x, y, relation, d): # build CNF
     clauses = set()
@@ -275,7 +299,9 @@ def nebel_buerckert_ordhorn(x, y, relation, d): # build CNF
 
     import itertools
     for element in itertools.product(*disj):
-        clauses.add( frozenset(element) )
+        s = background_theory(element)
+        if s:
+            clauses.add(s)
 #    print "\tF-CNF:\t",
 #    __print_nf(clauses)
 
@@ -287,7 +313,7 @@ def nebel_buerckert_ordhorn(x, y, relation, d): # build CNF
     print "\tCNF:\t",
     __print_nf(reduced)
 
-    return [ list(e) for e in reduced ]
+    return reduced
 
 def encode(x, s1, y, s2, rel, d):
     if x <= y:
@@ -319,7 +345,7 @@ def nebel_buerckert_encode_variables(instance, CSP, max_node, cgraph, boolvars):
         for c in cnf:
             if len([l for l in c if l.is_positive()] ) > 1:
                 __print_nf([c])
-#                raise SystemExit("[ERROR]: ... is not a horn clause :(")
+                raise SystemExit("[ERROR]: ... is not a horn clause :(")
                 fails += 1
                 print "[ERROR]: ... is not a horn clause :("
                 print fails, "errors so far ..."
@@ -375,3 +401,51 @@ def nebel_buerckert_encode_variables(instance, CSP, max_node, cgraph, boolvars):
 
             for clause in nebel_buerckert_ordhorn(i, j, r, boolvars):
                 instance.add_clause( clause )
+
+def __is_horn(cnf):
+    for c in cnf:
+        if len([l for l in c if l.is_positive()] ) > 1:
+            return False
+    return True
+
+if __name__ == '__main__':
+    print "[Nebel/Bürckert] Generate map \pi for all relations"
+
+    boolvars = None
+
+    # read ord-horn relations for verification purposes
+    ordhorn = set()
+
+    flines = open('allen/hornalg', 'r')
+    for line in flines:
+        t = line[2:-3].split(' ')
+        if t == ['']: # empty relation
+            continue
+
+        ordhorn.add( frozenset(t) )
+    flines.close()
+
+    ordhorn = frozenset(ordhorn)
+
+    ##### TODO the following ######
+
+    signature = [ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm', 'mi', 'o', 'oi' ]
+    prod = [ ]
+    for i in xrange(0,13):
+        prod.append(signature)
+
+
+    import itertools
+    import string
+    for relation in itertools.product(*prod):
+        relation_s = frozenset(relation)
+        cnf = nebel_buerckert_ordhorn(0,1, relation_s, boolvars)
+        __print_nf(cnf)
+        cnf.remove( frozenset([literal('p', 'x', '-', '<=', 'x', '+')]) )
+        cnf.remove( frozenset([literal('n', 'x', '-', '=', 'x', '+')]) )
+        cnf.remove( frozenset([literal('p', 'y', '-', '<=', 'y', '+')]) )
+        cnf.remove( frozenset([literal('n', 'y', '-', '=', 'y', '+')]) )
+        print "x ( "+string.join(list(relation_s))+" ) y ::",
+        __print_nf(cnf)
+        print "Is ordhorn:", __is_horn(cnf), "Is in known ordhorn relations:", relation_s in ordhorn
+        assert (__is_horn(cnf) and relation_s in ordhorn) or (not __is_horn(cnf) and not relation_s in ordhorn)
