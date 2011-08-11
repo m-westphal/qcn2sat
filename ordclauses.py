@@ -293,17 +293,17 @@ def __smart_pool(f, l, debug=False):
 def dnf_to_cnf(dnf):
     import itertools
 
-    print "#d Generate CNF"
+#    print "#d Generate CNF"
 
     cnf = set()
 
     for element in itertools.product(*dnf):
         cnf.add( frozenset(element) )
 
-    print "#d Finished CNF"
+#    print "#d Finished CNF"
     return cnf
 
-def simple_subsumption_testing(cnf, th):
+def simple_subsumption_testing(cnf, th): # QUITE SLOW TODO
     todo = [ cl for cl in cnf ]
     todo.sort(key=lambda x: len(x))
 
@@ -400,7 +400,7 @@ def redundant_literal(rel, cnf, th, cl):
     return None
 
 def minimize_cnf(rel, cnf, th):
-    print "#d minimize cnf", len(cnf)
+#    print "#d minimize cnf", len(cnf)
 
 #    print "\t", rel, models(cnf, th), models(cnf, set())
     assert models(cnf, set()) >= models(cnf, th)
@@ -431,7 +431,7 @@ def minimize_cnf(rel, cnf, th):
         if ncnf:
             return minimize_cnf(rel, ncnf, th)
 
-    print "#d minimized cnf", len(cnf)
+#    print "#d minimized cnf", len(cnf)
     return cnf
 
 def encode_test(relation_s):
@@ -443,15 +443,16 @@ def encode_test(relation_s):
             dnf.add( frozenset(base_relation_to_start_end_points('x', 'y', br)) )
 
         cnf = dnf_to_cnf(dnf) 
+	print "#d DNF->CNF with", len(cnf), "clauses"
         cnf = simple_subsumption_testing(cnf, ord_theory)
         cnf = minimize_cnf(relation_s, cnf, ord_theory)
 
         print "Relation", list(relation_s), "encoded as", len(cnf), "clauses",
         __print_nf(cnf)
         for br in allen_signature:
-            print "\t... test '", br, "' |= ^CNF^ ?",
+#            print "\t... test '", br, "' |= ^CNF^ ?",
             res = evaluate_cnf(frozenset( set(cnf)|set(ord_theory)), br)
-            print res
+#            print res
             if br in relation_s:
                 assert res
             else:
@@ -509,18 +510,20 @@ if __name__ == '__main__':
             if bm[i]:
                 relation.add(signature[i])
 
+#        if relation and len(relation) > 5: # DEBUG
         if relation:
             relations.append(frozenset(relation))
     relations.sort(key=lambda x: len(x))
     global allen_relations
     allen_relations = relations
 
-    print "Compute CNFs"
+    print "Compute CNFs for all relations"
     cnf_definitions = [ ]
     result = __smart_pool(encode_test, relations, debug=False)
 
     import string
     print "Done computing"
+    print
     for relation_s, res in zip(relations, result):
         print "x ( "+string.join(list(relation_s))+" ) y ::",
         __print_nf(res)
