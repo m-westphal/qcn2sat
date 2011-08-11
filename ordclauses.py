@@ -21,7 +21,6 @@
 
 import string
 
-
 allen_signature = [ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm', 'mi', 'o', 'oi' ]
 allen_relations = [ ]
 ord_theory = None
@@ -165,38 +164,38 @@ def base_relation_to_start_end_points(x,y,b):
         conj.add( literal('p',x,'-','=',y,'-') )
         conj.add( literal('p',x,'+','=',y,'+') )
         ###### complete ...
-        conj.add( literal('p',x,'-','<=',y,'-') )
-        conj.add( literal('p',x,'-','>=',y,'-') )
-        conj.add( literal('p',x,'+','<=',y, '+') )
-        conj.add( literal('p',x,'+','>=',y, '+') )
-        conj.add( literal('p',x,'-','<=',y,'+') )
-        conj.add( literal('p',x,'+','>=',y,'-') )
+#        conj.add( literal('p',x,'-','<=',y,'-') )
+#        conj.add( literal('p',x,'-','>=',y,'-') )
+#        conj.add( literal('p',x,'+','<=',y, '+') )
+#        conj.add( literal('p',x,'+','>=',y, '+') )
+#        conj.add( literal('p',x,'-','<=',y,'+') )
+#        conj.add( literal('p',x,'+','>=',y,'-') )
 
-        conj.add( literal('n',x,'-','=',y,'+') )
-        conj.add( literal('n',x,'+','=',y,'-') )
+#        conj.add( literal('n',x,'-','=',y,'+') )
+#        conj.add( literal('n',x,'+','=',y,'-') )
     elif b == '<':
         conj.add( literal('p',x,'+','<=',y,'-') )
         conj.add( literal('n',x,'+','=',y,'-') )
         ###### complete ...
-        conj.add( literal('p',x,'+','<=',y,'+') )
-        conj.add( literal('n',x,'+','=',y,'+') )
-        conj.add( literal('p',x,'-','<=',y,'-') )
-        conj.add( literal('n',x,'-','=',y,'-') )
-        conj.add( literal('p',x,'-','<=',y,'+') )
-        conj.add( literal('n',x,'-','=',y,'+') )
+#        conj.add( literal('p',x,'+','<=',y,'+') )
+#        conj.add( literal('n',x,'+','=',y,'+') )
+#        conj.add( literal('p',x,'-','<=',y,'-') )
+#        conj.add( literal('n',x,'-','=',y,'-') )
+#        conj.add( literal('p',x,'-','<=',y,'+') )
+#        conj.add( literal('n',x,'-','=',y,'+') )
     elif b == '>':
         return base_relation_to_start_end_points(y,x,'<')
     elif b == 'm':
         conj.add( literal('p',x,'+','=',y,'-') )
-        conj.add( literal('p',x,'+','<=',y,'-') )
-        conj.add( literal('p',x,'+','>=',y,'-') )
+#        conj.add( literal('p',x,'+','<=',y,'-') )
+#        conj.add( literal('p',x,'+','>=',y,'-') )
 
-        conj.add( literal('p',x,'+','<=',y,'+') )
-        conj.add( literal('p',x,'-','<=',y,'-') )
-        conj.add( literal('p',x,'-','<=',y,'+') )
-        conj.add( literal('n',x,'+','=',y,'+') )
-        conj.add( literal('n',x,'-','=',y,'-') )
-        conj.add( literal('n',x,'-','=',y,'+') )
+#        conj.add( literal('p',x,'+','<=',y,'+') )
+#        conj.add( literal('p',x,'-','<=',y,'-') )
+#        conj.add( literal('p',x,'-','<=',y,'+') )
+#        conj.add( literal('n',x,'+','=',y,'+') )
+#        conj.add( literal('n',x,'-','=',y,'-') )
+#        conj.add( literal('n',x,'-','=',y,'+') )
     elif b == 'mi':
         return base_relation_to_start_end_points(y,x,'m')
     elif b == 'd':
@@ -205,38 +204,38 @@ def base_relation_to_start_end_points(x,y,b):
         conj.add( literal('p',x,'+','<=',y,'+') )
         conj.add( literal('n',x,'+','=',y,'+') )
         ###### complete ...
-        conj.add( literal('p',y,'-','<=',x,'+') )
-        conj.add( literal('n',y,'-','=',x,'+') )
-        conj.add( literal('p',x,'-','<=',y,'+') )
-        conj.add( literal('n',x,'-','=',y,'+') )
+#        conj.add( literal('p',y,'-','<=',x,'+') )
+#        conj.add( literal('n',y,'-','=',x,'+') )
+#        conj.add( literal('p',x,'-','<=',y,'+') )
+#        conj.add( literal('n',x,'-','=',y,'+') )
     elif b == 'di':
         return base_relation_to_start_end_points(y,x,'d')
     elif b == 's':
         conj.add( literal('p',x,'-','=',y,'-') )
-        conj.add( literal('p',x,'-','>=',y,'-') )
-        conj.add( literal('p',x,'-','<=',y,'-') )
+#        conj.add( literal('p',x,'-','>=',y,'-') )
+#        conj.add( literal('p',x,'-','<=',y,'-') )
 
         conj.add( literal('p',x,'+','<=',y,'+') )
         conj.add( literal('n',x,'+','=',y,'+') )
 
-        conj.add( literal('p',x,'-','<=',y,'+') )
-        conj.add( literal('p',x,'+','>=',y,'-') )
-        conj.add( literal('n',x,'+','=',y,'-') )
-        conj.add( literal('n',x,'-','=',y,'+') )
+#        conj.add( literal('p',x,'-','<=',y,'+') )
+#        conj.add( literal('p',x,'+','>=',y,'-') )
+#        conj.add( literal('n',x,'+','=',y,'-') )
+#        conj.add( literal('n',x,'-','=',y,'+') )
     elif b == 'si':
         return base_relation_to_start_end_points(y,x,'s')
     elif b == 'f':
-        conj.add( literal('p',x, '-','<=',y, '+') )
+#        conj.add( literal('p',x, '-','<=',y, '+') )
         conj.add( literal('p',x, '+','=', y, '+') )
-        conj.add( literal('p',x, '+','>=', y, '+') )
-        conj.add( literal('p',x, '+','<=', y, '+') )
+#        conj.add( literal('p',x, '+','>=', y, '+') )
+#        conj.add( literal('p',x, '+','<=', y, '+') )
 
         conj.add( literal('p',x, '-','>=',y, '-') )
         conj.add( literal('n',x, '-','=',y, '-') )
 
-        conj.add( literal('p',x, '+','>=', y, '-') )
+#        conj.add( literal('p',x, '+','>=', y, '-') )
 
-        conj.add( literal('n',x, '-','=', y, '+') )
+#        conj.add( literal('n',x, '-','=', y, '+') )
     elif b == 'fi':
         return base_relation_to_start_end_points(y,x,'f')
     elif b == 'o':
@@ -248,19 +247,13 @@ def base_relation_to_start_end_points(x,y,b):
         conj.add( literal('p',x,'-','<=',y,'-') )
         conj.add( literal('n',x,'-','=',y,'-') )
 
-        conj.add( literal('p',x,'-','<=',y,'+') )
-        conj.add( literal('n',x,'-','=',y,'+') )
-        conj.add( literal('n',x,'+','=',y,'-') )
+#        conj.add( literal('p',x,'-','<=',y,'+') )
+#        conj.add( literal('n',x,'-','=',y,'+') )
+#        conj.add( literal('n',x,'+','=',y,'-') )
     elif b == 'oi':
         return base_relation_to_start_end_points(y,x,'o')
     else: # unknown base relation
         assert False
-
-    # well-formed intervals
-    conj.add( literal('p',x,'-','<=',x,'+') )
-    conj.add( literal('n',x,'-','=',x,'+') )
-    conj.add( literal('p',y,'-','<=',y,'+') )
-    conj.add( literal('n',y,'-','=',y,'+') )
 
     assert conj
 
@@ -307,7 +300,7 @@ def simple_subsumption_testing(cnf, th): # QUITE SLOW TODO
     todo = [ cl for cl in cnf ]
     todo.sort(key=lambda x: len(x))
 
-    print "#d subsumption testing"
+#    print "#d subsumption testing"
     fixpoint = False
     while not fixpoint:
         fixpoint = True
@@ -329,7 +322,7 @@ def simple_subsumption_testing(cnf, th): # QUITE SLOW TODO
             if not fixpoint:
                 break
 
-    print "#d subsumption testing done"
+#    print "#d subsumption testing done"
 
     return set(todo)
 
@@ -365,6 +358,7 @@ def models(cnf, th):
     for br in allen_signature:
         if evaluate_cnf(fcnf, br):
             res.add(br)
+
     return res
 
 def redundant_clause(rel, cnf, th, cl):
@@ -410,13 +404,13 @@ def minimize_cnf(rel, cnf, th):
     for cl in cnf:
         if not __is_horn([cl]):
             ncnf = redundant_clause(rel, cnf, th, cl)
-            if ncnf:
+            if not ncnf is None:
                 return minimize_cnf(rel, ncnf, th)
     # try to minimize non-horn clauses
     for cl in cnf:
         if not __is_horn([cl]) and len(cl) > 1:
             ncnf = redundant_literal(rel, cnf, th, cl)
-            if ncnf:
+            if not ncnf is None:
                 return minimize_cnf(rel, ncnf, th)
     # any other minimization ...
 #    __print_nf(cnf)
@@ -424,11 +418,11 @@ def minimize_cnf(rel, cnf, th):
     for cl in cnf:
         if len(cl) > 1:
             ncnf = redundant_literal(rel, cnf, th, cl)
-            if ncnf:
+            if not ncnf is None:
                 return minimize_cnf(rel, ncnf, th)
     for cl in cnf:
         ncnf = redundant_clause(rel, cnf, th, cl)
-        if ncnf:
+        if not ncnf is None:
             return minimize_cnf(rel, ncnf, th)
 
 #    print "#d minimized cnf", len(cnf)
@@ -510,7 +504,7 @@ if __name__ == '__main__':
             if bm[i]:
                 relation.add(signature[i])
 
-#        if relation and len(relation) > 5: # DEBUG
+#        if relation and len(relation) > 9: # DEBUG
         if relation:
             relations.append(frozenset(relation))
     relations.sort(key=lambda x: len(x))
