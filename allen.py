@@ -209,7 +209,7 @@ class literal:
         return literal('p',self.x,self.s1,self.r,self.y,self.s2)
 
 def simplify_cnf(cnf): # subsumption testing, unit_propagation
-    print "\tSimplify CNF:", len(cnf)
+#    print "\tSimplify CNF:", len(cnf)
 
     subsumptions = 0
     simplifications = 0
@@ -231,19 +231,28 @@ def simplify_cnf(cnf): # subsumption testing, unit_propagation
                 if not done:
                     break
                 for l2 in clause_a:
-                    if l != l2:
+                    if l == l2:
                         continue
-                    if l.get_atom() == l2.get_atom() and l.is_positive() ^ l2.is_positive():
-                        assert False # done by background theory
-                        cnf.remove(clause_a)
-                        simplifications += 1
-                        done = False
-                        break
                     l1 = l
                     if (l1.x,l1.s1,l1.y,l1.s2) == (l2.x,l2.s1,l2.y,l2.s2) and \
                         l1.r == '=' and l2.n == 'p' and l2.r in ['<=', '>='] and False:
                         done = False
-                        cl.remove(l1)
+                        cnf.remove(clause_a)
+                        cnf.add( frozenset( [ t for t in clause_a if not t == l1 ] ) )
+                        simplifications += 1
+                        break
+                    if (l1.x,l1.s1) == (l2.x,l2.s1) and l1.y == l2.y and l1.s2 == '-' and l2.s2 == '+' and \
+                        l1.r == '=' and l1.n == 'n' and l2.r == '=' and l2.n == 'p':
+                        done = False
+                        cnf.remove(clause_a)
+                        cnf.add( frozenset( [ t for t in clause_a if not t == l2 ] ) )
+                        simplifications += 1
+                        break
+                    if (l1.y,l1.s2) == (l2.y,l2.s2) and l1.x == l2.x and l1.s1 == '-' and l2.s1 == '+' and \
+                        l1.r == '=' and l1.n == 'n' and l2.r == '=' and l2.n == 'p':
+                        done = False
+                        cnf.remove(clause_a)
+                        cnf.add( frozenset( [ t for t in clause_a if not t == l2 ] ) )
                         simplifications += 1
                         break
 
@@ -257,12 +266,22 @@ def simplify_cnf(cnf): # subsumption testing, unit_propagation
                         r = '>='
 
                     nl = literal('p', l.x, l.s1, r, l.y, l.s2)  # NOTE: not really the negative l
+                    l_eq = literal('p', l.x, l.s1, '=', l.y, l.s2)  # NOTE: not really the negative l
 
                     for clause_b in clauses:
                         if not clause_a == clause_b and nl in clause_b:
                             ups += 1
                             cnf.remove(clause_b)
-                            new = frozenset([t for t in clause_b if not t == nl] + [ literal('p', l.x, l.s1, '=', l.y, l.s2) ])
+                            new = frozenset([t for t in clause_b if not t == nl]+[ literal('p', l.x, l.s1, '=', l.y, l.s2) ])
+                            assert new
+                            cnf.add(new)
+                            done = False
+                            break
+                        elif not clause_a == clause_b and l_eq in clause_b and False:
+                            ups += 1
+                            cnf.remove(clause_b)
+                            new = frozenset([t for t in clause_b if not t == l_eq])
+                            assert new
                             cnf.add(new)
                             done = False
                             break
@@ -285,7 +304,7 @@ def simplify_cnf(cnf): # subsumption testing, unit_propagation
                         break
 
         if done:
-            print "\t", " -> ", len(cnf), "(subs.: %d, simpl: %d, up: %d)" % (subsumptions, simplifications, ups)
+#            print "\t", " -> ", len(cnf), "(subs.: %d, simpl: %d, up: %d)" % (subsumptions, simplifications, ups)
             return cnf
 
 def __print_nf(formula):
@@ -345,15 +364,15 @@ def remove_tautologies(clause):
 
 def nebel_buerckert_ordhorn(x, y, relation, d): # build CNF
     clauses = set()
-    print "Encode", relation, "..."
+#    print "Encode", relation, "..."
 
     disj = set()
     for b in relation:
         conj = base_relation_to_start_end_points('x','y',b)
         disj.add(frozenset(conj))
 
-    print "\tDNF:\t",
-    __print_nf(disj)
+#    print "\tDNF:\t",
+#    __print_nf(disj)
 
     import itertools
     for element in itertools.product(*disj):
@@ -368,8 +387,8 @@ def nebel_buerckert_ordhorn(x, y, relation, d): # build CNF
     for e in reduced:
         assert e
 
-    print "\tCNF:\t",
-    __print_nf(reduced)
+#    print "\tCNF:\t",
+#    __print_nf(reduced)
 
     return reduced
 
@@ -477,20 +496,21 @@ def __smart_pool(f, l, debug=False):
 
 def encode_test(relation_s):
         cnf = nebel_buerckert_ordhorn(0,1, relation_s, boolvars)
-        __print_nf(cnf)
+#        __print_nf(cnf)
         cnf.remove( frozenset([literal('p', 'x', '-', '<=', 'x', '+')]) )
         cnf.remove( frozenset([literal('n', 'x', '-', '=', 'x', '+')]) )
         cnf.remove( frozenset([literal('p', 'y', '-', '<=', 'y', '+')]) )
         cnf.remove( frozenset([literal('n', 'y', '-', '=', 'y', '+')]) )
-        print "x ( "+string.join(list(relation_s))+" ) y ::",
-        __print_nf(cnf)
-        print "#d is ordhorn:", __is_horn(cnf), "Is in known ordhorn relations:", relation_s in ordhorn
-        if not __is_horn(cnf):
+        return cnf
+        if not (__is_horn(cnf) and relation_s in ordhorn) or (not __is_horn(cnf) and not relation_s in ordhorn):
             print relation_s,
+            print "non horn clauses:"
             for c in cnf:
                 if len([t for t in c if t.is_positive()]) > 1:
                     __print_nf([c])
             print
+#        print "#d is ordhorn:", __is_horn(cnf), "Is in known ordhorn relations:", relation_s in ordhorn
+#        if not __is_horn(cnf):
         assert (__is_horn(cnf) and relation_s in ordhorn) or (not __is_horn(cnf) and not relation_s in ordhorn)
         return None
 
@@ -533,11 +553,16 @@ if __name__ == '__main__':
             relations.append(frozenset(relation))
     relations.sort(key=lambda x: len(x))
 
-    dbg=False
+    dbg=True
     #DBG
-    relations = [ frozenset(['m', 'd', 'o', 'f']) ]
-    dbg = True
+#    relations = [ frozenset(['fi', 'mi', 'oi', 'di']) ]
+#    dbg = True
 
     print "Compute CNFs"
     cnf_definitions = [ ]
-    __smart_pool(encode_test, relations, debug=dbg)
+    result = __smart_pool(encode_test, relations, debug=dbg)
+
+    print "Done computing"
+    for relation_s, res in zip(relations, result):
+        print "x ( "+string.join(list(relation_s))+" ) y ::",
+        __print_nf(res)
