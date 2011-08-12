@@ -27,6 +27,14 @@ ord_theory = None
 
 class literal:
     def __init__(self, n, a, s1, r, b, s2):
+
+        if r == '==':
+            r = '='
+        if n == '+':
+            n = 'p'
+        elif n == '-':
+            n = 'n'
+
 #        assert n != 'n' or r == "="
         assert r in ['<=', '=', '>=']
         assert n in ['p','n']
@@ -437,7 +445,7 @@ def encode_test(relation_s):
             dnf.add( frozenset(base_relation_to_start_end_points('x', 'y', br)) )
 
         cnf = dnf_to_cnf(dnf) 
-	print "#d DNF->CNF with", len(cnf), "clauses"
+        print "#d DNF->CNF with", len(cnf), "clauses"
         cnf = simple_subsumption_testing(cnf, ord_theory)
         cnf = minimize_cnf(relation_s, cnf, ord_theory)
 
