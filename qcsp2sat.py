@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# -*- coding: UTF-8 -*-
 
 # ex: set tabstop=4 expandtab softtabstop=4:
 
@@ -167,11 +168,7 @@ def writeSATsup(constraints, signature, comptable, out, cgraph):
 
     boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
 
-    import allen
-
-    allen.nebel_buerckert_encode_variables(out, CSP, max_node, cgraph, boolvars)
-    return
-#    directDomEncoding(out, CSP, max_node, boolvars)
+    directDomEncoding(out, CSP, max_node, boolvars)
 
 #    print "Construct support clauses (cubic time/space):",
     for i in xrange(max_node+1):
@@ -296,7 +293,7 @@ def parse_cmdline(argv):
             if a == "--only-estimate":
                 only_estimate_size = True
                 continue
-            C = [ "support", "gac" ]
+            C = [ "support", "gac", "ord-clauses" ]
             G = [ "complete", "partition-lexbfs" ]
             for m in C:
                 if a[2:] == m:
@@ -321,7 +318,21 @@ def parse_cmdline(argv):
     return only_estimate_size, clause_type, graph_type, arguments
 
 def check_options(arguments, clause_type, graph_type):
-    if len(arguments) != 2 or clause_type is None or graph_type is None:
+    correct = True
+
+    if len(arguments) != 2:
+        correct = False
+    if clause_type is None:
+        print "clause type not specified"
+        correct = False
+    if graph_type is None and clause_type != 'ord-clauses':
+        print "graph type not specified"
+        correct = False
+    if clause_type == 'ord-clauses' and not graph_type is None:
+        print "ord-clauses do not require any graph type"
+        correct = False
+
+    if not correct:
         print "qcsp2sat.py: convert qualitative CSPs to CNF formulae (version %s)" % __VERSION
         print "Copyright (C) 2009-2011  Matthias Westphal"
         print "This program comes with ABSOLUTELY NO WARRANTY."
@@ -342,6 +353,10 @@ def check_options(arguments, clause_type, graph_type):
         print "                         (see \"GAC via Unit Propagation\", Bacchus;"
         print "                         NOTE: the script does not compute prime"
         print "                         implicates!)"
+        print "    --ord-clauses        rewrite Allen's Interval Algebra relations to"
+        print "                         ORD clauses (see \"Reasoning about Temporal"
+        print "                         Relations: A Maximal Tractable Subclass\" by Nebel"
+        print "                         and Bürckert)"
         print
         print "WARNING: the script is completely untested and potentially unsound!"
         print
@@ -375,4 +390,8 @@ if __name__ == '__main__':
         writeSATsup(qcsp, signature, comptable, instance, cgraph)
     if clause_type == 'gac':
         writeSATgac(qcsp, signature, comptable, instance, cgraph)
+    if clause_type == 'ord-clauses':
+        max_node, CSP = completeConstraintGraph(qcsp, signature)
+        import allen
+        allen.nebel_buerckert_encode_variables(instance, CSP, max_node, dict())
     instance.flush() # note, invalidates content as well

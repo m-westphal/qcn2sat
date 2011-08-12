@@ -128,18 +128,14 @@ def instantiate(l, x, y, d): # encode instantiated literal l on x,y
             assert rel == '>='
         return m * encodeDict(b, s2, a, s1, srel, d)
 
-def nebel_buerckert_encode_variables(instance, CSP, max_node, cgraph, boolvars):
+def nebel_buerckert_encode_variables(instance, CSP, max_node, boolvars):
     import os.path
     import itertools
-#    syntactic_interpretation = read_map(os.path.join('allen', 'ordclauses_dnf2cnf.map'))
     syntactic_interpretation = read_map(os.path.join('allen', 'ordclauses.map'))
 
     used_points = set()
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
-            if not (i, j) in cgraph:
-                continue
-
             r = CSP[i][j]
 
             for clause in syntactic_interpretation[frozenset(r)]:
