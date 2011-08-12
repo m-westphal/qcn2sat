@@ -72,10 +72,10 @@ class cnf_output:
                 self.fd.write(decomp.decompress(chunk))
             del decomp
 
-def readGQRCSP(csp):
+def readGQRCSPstdin():
     constraints = [ ]
 
-    lines = open(csp, 'r')
+    lines = sys.stdin.readlines()
     for l in lines:
         res = re.search('^[ ]*([0-9]*)[ ]*([0-9]*) \((.*)\)', l)
         if res:
@@ -85,7 +85,6 @@ def readGQRCSP(csp):
             rel = res.group(3).strip().split(" ")
             assert rel
             constraints.append( (x, y, rel) )
-    lines.close()
 
     return constraints
 
@@ -320,7 +319,7 @@ def parse_cmdline(argv):
 def check_options(arguments, clause_type, graph_type):
     correct = True
 
-    if len(arguments) != 2:
+    if len(arguments) != 1:
         correct = False
     if clause_type is None:
         print "clause type not specified"
@@ -339,7 +338,8 @@ def check_options(arguments, clause_type, graph_type):
         print "This is free software, and you are welcome to redistribute it"
         print "under certain conditions; see `GPL-3' for details."
         print
-        print "Usage: qcsp2sat.py OPTIONS GQR_COMPOSITION_TABLE_FILE GQR_QCSP"
+        print "Usage: qcsp2sat.py OPTIONS GQR_COMPOSITION_TABLE_FILE"
+        print "A qualitative CSP in GQR format is read from stdin."
         print "    --only-estimate      calculate size of CNF, but do not store clauses"
         print "    --complete           write complete constrain graph on vars 1 .. n"
         print "    --partition-lexbfs   triangulate graph with lexbfs ordering"
@@ -368,7 +368,14 @@ if __name__ == '__main__':
 
     comptable, signature = readCompTable(arguments[0])
 #    print "Loaded calculus with", len(signature), "qualitative binary relations"
-    qcsp = readGQRCSP(arguments[1])
+    qcsp = readGQRCSPstdin()
+
+    if not qcsp: # no constraints read; assume problem was unsatisfiable
+        print "p cnf 1 1"
+        print "1 0"
+        print "-1 0"
+        raise SystemExit()
+
 #    print "Loaded QCSP with", max([ t for (_, t, _) in qcsp])+1, "qualitative variables"
 
     cgraph = None
