@@ -162,6 +162,110 @@ def directDomEncoding(instance, CSP, max_node, boolvars):  # build (var,val) as 
                     else:
                         assert br == br2 or br2 < br
 
+nogoods = [ ]
+representation = dict()
+atoms = set()
+def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,val) as bool variables with ALO/AMO clauses
+    # read syntactic interpretation
+    lines = open('rcc5.solution','r')
+
+    global nogoods
+    global representation
+    global atoms
+
+    for l in lines:
+        if 'inf' in l:
+            for inf in l.split('inf'):
+                if inf == '':
+                    continue
+                inf = inf.strip()
+                content = re.match(r'\(([\d]+),([\d]+),([\d]+),([\d]+),([\d]+),([\d]+)\)', inf)
+                xz = (content.group(1), content.group(2))
+                if xz[0] == '0':
+                    xz = (1, content.group(2)) # NEGATION
+                else:
+                    xz = (-1, content.group(2)) # NEGATION
+                xy = (content.group(3), content.group(4))
+                if xy[0] == '0':
+                    xy = (-1, content.group(2))
+                else:
+                    xy = (1, content.group(2))
+                yz = (content.group(5), content.group(6))
+                if yz[0] == '0':
+                    yz = (-1, content.group(2))
+                else:
+                    yz = (1, content.group(2))
+                nogoods.append( (xz,xy,yz) ) # TODO
+        if 'dec' in l:
+            for dec in l.split('dec'):
+                if dec == '':
+                    continue
+                dec = dec.strip()
+                content = re.match(r'\(([\d]+),([\D]+),([\d]+)\)', dec)
+                negation, br, atom = (content.group(1), content.group(2)[1:], content.group(3))
+                if negation == '0':
+                    negation = -1
+                elif negation == '1':
+                    negation = 1
+                else:
+                    assert False
+
+                atoms.add(atom)
+                try:
+                    representation[br].append( (negation, atom) )
+                except KeyError:
+                    representation[br] = [ (negation, atom) ]
+
+    for i in xrange(max_node+1):
+        for j in xrange(i+1, max_node+1):
+            if not i in CSP or not j in CSP[i]:  # (i,j) in CSP?
+                continue
+            r = CSP[i][j]
+
+            # ALO
+            clause = [ encodeDict(i, j, br, boolvars) for br in r ]
+            instance.add_clause(clause)
+
+            # exclude other relations
+            for br in signature:
+                if not br in r:
+                    clause = [ -1 * encodeDict(i, j, br, boolvars) ]
+                    instance.add_clause(clause)
+
+            for br in signature:
+                # br <- decomposition
+                clause = [ encodeDict(i, j, br, boolvars) ] + [ -1 * d[0] * encodeDict(i, j, 'atom'+d[1], boolvars) for d in representation[br] ]
+                instance.add_clause(clause)
+
+            # AMO
+            for br in r:
+                for br2 in r:
+                    if br < br2:
+                        clause = [ -1 * encodeDict(i, j, br, boolvars), -1 * encodeDict(i, j, br2, boolvars) ]
+                        instance.add_clause(clause)
+                    else:
+                        assert br == br2 or br2 < br
+
+def writeSATint(constraints, signature, comptable, out, cgraph):
+    max_node, CSP = completeConstraintGraph(constraints, signature)
+
+    boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
+
+    intDomEncoding(out, signature, CSP, max_node, boolvars)
+
+#    print "Construct support clauses (cubic time/space):",
+    for i in xrange(max_node+1):
+        for j in xrange(i+1, max_node+1):
+            if not (i,j) in cgraph:
+                continue
+            for k in xrange(j+1, max_node+1):
+
+                for xz, xy, yz in nogoods:
+                    clause = [ -1 * xy[0] * encodeDict(i, j, 'atom'+xy[1], boolvars) ]
+                    clause +=[ -1 * yz[0] * encodeDict(j, k, 'atom'+yz[1], boolvars) ]
+                    clause +=[ -1 * xz[0] * encodeDict(i, k, 'atom'+xz[1], boolvars) ]
+                    out.add_clause(clause)
+
 def writeSATsup(constraints, signature, comptable, out, cgraph):
     max_node, CSP = completeConstraintGraph(constraints, signature)
 
@@ -292,7 +396,7 @@ def parse_cmdline(argv):
             if a == "--only-estimate":
                 only_estimate_size = True
                 continue
-            C = [ "support", "gac" ]
+            C = [ "support", "gac", "syntactic-int" ]
             G = [ "complete", "partition-lexbfs" ]
             for m in C:
                 if a[2:] == m:
@@ -338,10 +442,13 @@ def check_options(arguments, clause_type, graph_type):
         print "                         (see \"GAC via Unit Propagation\", Bacchus;"
         print "                         NOTE: the script does not compute prime"
         print "                         implicates!)"
+        print "    --syntactic-int      syntactic interpretation of relations [WIP]"
         print
         print "WARNING: the script is completely untested and potentially unsound!"
         print
         raise SystemExit("Error in commandline arguments")
+    if clause_type == "syntactic-int" and graph_type != "complete":
+        raise SystemExit("Error: --syntactic-int requires --complete!")
 
 if __name__ == '__main__':
     only_estimate_size, clause_type, graph_type, arguments = parse_cmdline(sys.argv[1:])
@@ -371,4 +478,6 @@ if __name__ == '__main__':
         writeSATsup(qcsp, signature, comptable, instance, cgraph)
     if clause_type == 'gac':
         writeSATgac(qcsp, signature, comptable, instance, cgraph)
+    if clause_type == 'syntactic-int':
+        writeSATint(qcsp, signature, comptable, instance, cgraph)
     instance.flush() # note, invalidates content as well
