@@ -219,7 +219,7 @@ def readASPSolution(filename, signature):
     representation = dict()
     nogoods = [ ]
 
-    return None
+    return False
 
 def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,val) as bool variables with ALO/AMO clauses
     import itertools
