@@ -164,15 +164,11 @@ def directDomEncoding(instance, CSP, max_node, boolvars):  # build (var,val) as 
 
 nogoods = [ ]
 representation = dict()
-atoms = set()
-def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,val) as bool variables with ALO/AMO clauses
-    # read syntactic interpretation
-    lines = open('rcc5.solution','r')
-
+def readASPSolution(filename, signature):
     global nogoods
     global representation
-    global atoms
 
+    lines = open(filename,'r')
     for l in lines:
         if 'inf' in l:
             for inf in l.split('inf'):
@@ -187,14 +183,14 @@ def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,
                     xz = (-1, content.group(2)) # NEGATION
                 xy = (content.group(3), content.group(4))
                 if xy[0] == '0':
-                    xy = (-1, content.group(2))
+                    xy = (-1, content.group(4))
                 else:
-                    xy = (1, content.group(2))
+                    xy = (1, content.group(4))
                 yz = (content.group(5), content.group(6))
                 if yz[0] == '0':
-                    yz = (-1, content.group(2))
+                    yz = (-1, content.group(6))
                 else:
-                    yz = (1, content.group(2))
+                    yz = (1, content.group(6))
                 nogoods.append( (xz,xy,yz) ) # TODO
         if 'dec' in l:
             for dec in l.split('dec'):
@@ -210,11 +206,36 @@ def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,
                 else:
                     assert False
 
-                atoms.add(atom)
                 try:
                     representation[br].append( (negation, atom) )
                 except KeyError:
                     representation[br] = [ (negation, atom) ]
+
+    lines.close()
+    if set(representation.keys()) == set(signature):
+        return True
+
+    # clear globals
+    representation = dict()
+    nogoods = [ ]
+
+    return None
+
+def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,val) as bool variables with ALO/AMO clauses
+    import itertools
+
+    for f in [ 'rcc5.solution', 'rcc8.solution']:
+        if readASPSolution(f, signature):
+            break
+    if not representation:
+        raise SystemExit('No syntactic interpretation found!')
+
+    nr_atoms = None  # number of propositional atoms in the decomposition
+    for br in signature:
+        t = len(representation[br])
+        if nr_atoms is None:
+            nr_atoms = t
+        assert t == nr_atoms
 
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
@@ -222,44 +243,33 @@ def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,
                 continue
             r = CSP[i][j]
 
-            # ALO
-            clause = [ encodeDict(i, j, br, boolvars) for br in r ]
-            instance.add_clause(clause)
-
-            # exclude other relations
-            for br in signature:
-                if not br in r:
-                    clause = [ -1 * encodeDict(i, j, br, boolvars) ]
+            # forbidden clauses
+            for m in itertools.product([-1,1],repeat=nr_atoms):  # all models
+                is_allowed = False
+                for br in signature:
+                    v = representation[br]
+                    v.sort(key=lambda x: x[1])
+                    t = tuple( [ n for (n, _) in v ] )
+                    if t == m and br in r:
+                        is_allowed = True
+                        break
+                if not is_allowed:
+                    clause = [ -1 * n * encodeDict(i, j, 'atom'+str(a), boolvars) for (a,n) in enumerate(m) ]
                     instance.add_clause(clause)
-
-            for br in signature:
-                # br <- decomposition
-                clause = [ encodeDict(i, j, br, boolvars) ] + [ -1 * d[0] * encodeDict(i, j, 'atom'+d[1], boolvars) for d in representation[br] ]
-                instance.add_clause(clause)
-
-            # AMO
-            for br in r:
-                for br2 in r:
-                    if br < br2:
-                        clause = [ -1 * encodeDict(i, j, br, boolvars), -1 * encodeDict(i, j, br2, boolvars) ]
-                        instance.add_clause(clause)
-                    else:
-                        assert br == br2 or br2 < br
 
 def writeSATint(constraints, signature, comptable, out, cgraph):
     max_node, CSP = completeConstraintGraph(constraints, signature)
 
-    boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
+    boolvars = { } # maps propositional atoms to numbers (DIMACS format...)
 
     intDomEncoding(out, signature, CSP, max_node, boolvars)
 
-#    print "Construct support clauses (cubic time/space):",
+#    print "Construct nogood clauses (cubic time/space):",
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
             if not (i,j) in cgraph:
                 continue
             for k in xrange(j+1, max_node+1):
-
                 for xz, xy, yz in nogoods:
                     clause = [ -1 * xy[0] * encodeDict(i, j, 'atom'+xy[1], boolvars) ]
                     clause +=[ -1 * yz[0] * encodeDict(j, k, 'atom'+yz[1], boolvars) ]
