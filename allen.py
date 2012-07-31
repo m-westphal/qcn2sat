@@ -133,8 +133,6 @@ def nebel_buerckert_encode_variables(qcsp, instance, cgraph):
     import itertools
     syntactic_interpretation = read_map(os.path.join('allen', 'ordclauses.map'))
 
-#    print cgraph
-
     boolvars = dict()
     used_points = set()
     for i, j, r in qcsp:
@@ -168,7 +166,7 @@ def nebel_buerckert_encode_variables(qcsp, instance, cgraph):
             if (p1,s1) == (p2,s2):
                 continue
 
-            if (p1, p2) not in cgraph:
+            if (not p1 == p2) and (p1, p2) not in cgraph:
                 continue
 
             if p1 <= p2:
@@ -183,7 +181,7 @@ def nebel_buerckert_encode_variables(qcsp, instance, cgraph):
     for p1, s1 in used_points:
         for p2, s2 in used_points:
 
-            if (p1, p2) not in cgraph:
+            if (not p1 == p2) and (p1, p2) not in cgraph:
                 continue
 
             if (p1,s1) == (p2,s2):
@@ -191,10 +189,10 @@ def nebel_buerckert_encode_variables(qcsp, instance, cgraph):
 
             for p3, s3 in used_points:
 
-                if (p1, p3) not in cgraph:
+                if (not p1 == p3) and (p1, p3) not in cgraph:
                     continue
 
-                if (p2, p3) not in cgraph:
+                if (not p2 == p3) and (p2, p3) not in cgraph:
                     continue
 
                 if (p1,s1) == (p3,s3) or (p2,s2) == (p3,s3):
