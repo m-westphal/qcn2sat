@@ -324,11 +324,8 @@ def check_options(arguments, clause_type, graph_type):
     if clause_type is None:
         print "clause type not specified"
         correct = False
-    if graph_type is None and clause_type != 'ord-clauses':
+    if graph_type is None:
         print "graph type not specified"
-        correct = False
-    if clause_type == 'ord-clauses' and not graph_type is None:
-        print "ord-clauses do not require any graph type"
         correct = False
 
     if not correct:
@@ -371,7 +368,7 @@ if __name__ == '__main__':
     qcsp = readGQRCSPstdin()
 
     if not qcsp: # no constraints read; assume problem was unsatisfiable
-        print "p cnf 1 1"
+        print "p cnf 1 2"
         print "1 0"
         print "-1 0"
         raise SystemExit()
@@ -398,7 +395,6 @@ if __name__ == '__main__':
     if clause_type == 'gac':
         writeSATgac(qcsp, signature, comptable, instance, cgraph)
     if clause_type == 'ord-clauses':
-        max_node, CSP = completeConstraintGraph(qcsp, signature)
         import allen
-        allen.nebel_buerckert_encode_variables(instance, CSP, max_node, dict())
+        allen.nebel_buerckert_encode_variables(qcsp, instance, cgraph)
     instance.flush() # note, invalidates content as well

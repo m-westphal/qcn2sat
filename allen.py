@@ -128,29 +128,29 @@ def instantiate(l, x, y, d): # encode instantiated literal l on x,y
             assert rel == '>='
         return m * encodeDict(b, s2, a, s1, srel, d)
 
-def nebel_buerckert_encode_variables(instance, CSP, max_node, boolvars):
+def nebel_buerckert_encode_variables(qcsp, instance, cgraph):
     import os.path
     import itertools
     syntactic_interpretation = read_map(os.path.join('allen', 'ordclauses.map'))
 
-    used_points = set()
-    for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
-            r = CSP[i][j]
+#    print cgraph
 
-            for clause in syntactic_interpretation[frozenset(r)]:
-                cl = [ ]
-                for l in clause:
-                    cl.append( instantiate(l, i, j, boolvars) )
-                    if l.x == 'x':
-                        used_points.add( (i,l.s1) )
-                    else:
-                        used_points.add( (j,l.s1) )
-                    if l.y == 'x':
-                        used_points.add( (i,l.s2) )
-                    else:
-                        used_points.add( (j,l.s2) )
-                instance.add_clause( cl )
+    boolvars = dict()
+    used_points = set()
+    for i, j, r in qcsp:
+        for clause in syntactic_interpretation[frozenset(r)]:
+            cl = [ ]
+            for l in clause:
+                cl.append( instantiate(l, i, j, boolvars) )
+                if l.x == 'x':
+                    used_points.add( (i,l.s1) )
+                else:
+                    used_points.add( (j,l.s1) )
+                if l.y == 'x':
+                    used_points.add( (i,l.s2) )
+                else:
+                    used_points.add( (j,l.s2) )
+            instance.add_clause( cl )
 
     # encode ORD theory
     for i, s in used_points:
@@ -167,6 +167,10 @@ def nebel_buerckert_encode_variables(instance, CSP, max_node, boolvars):
         for p2, s2 in used_points:
             if (p1,s1) == (p2,s2):
                 continue
+
+            if (p1, p2) not in cgraph:
+                continue
+
             if p1 <= p2:
                 # (3.) x <= y ^ y <= x -> x = y
                 instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, boolvars),
@@ -178,8 +182,22 @@ def nebel_buerckert_encode_variables(instance, CSP, max_node, boolvars):
                 instantiate( literal('p', 'x', s1, '<=', 'y', s2), p1, p2, boolvars) ])
     for p1, s1 in used_points:
         for p2, s2 in used_points:
+
+            if (p1, p2) not in cgraph:
+                continue
+
+            if (p1,s1) == (p2,s2):
+                continue
+
             for p3, s3 in used_points:
-                if (p1,s1) == (p2,s2) or (p1,s1) == (p3,s3) or (p2,s2) == (p3,s3):
+
+                if (p1, p3) not in cgraph:
+                    continue
+
+                if (p2, p3) not in cgraph:
+                    continue
+
+                if (p1,s1) == (p3,s3) or (p2,s2) == (p3,s3):
                     continue
 
                 # (1.) x <= y ^ y <= z -> x <= z
