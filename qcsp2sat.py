@@ -189,6 +189,35 @@ def writeSATsup(constraints, signature, comptable, out, cgraph):
                         cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
                         out.add_clause(cl)
 
+def writeSATdirect(constraints, signature, comptable, out, cgraph):
+    max_node, CSP = completeConstraintGraph(constraints, signature)
+
+    boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
+
+    directDomEncoding(out, CSP, max_node, boolvars)
+
+#    print "Construct direct clauses (cubic time/space):",
+    for i in xrange(max_node+1):
+        for j in xrange(i+1, max_node+1):
+            if not (i,j) in cgraph:
+                continue
+            r_ij = CSP[i][j]
+            for k in xrange(j+1, max_node+1):
+                if not ((i,k) in cgraph and (j,k) in cgraph):
+                    continue
+                r_ik = CSP[i][k]
+                r_jk = CSP[j][k]
+                for br1 in r_ij:
+                    not_b_ij = -1 * encodeDict(i, j, br1, boolvars)
+                    for br2 in r_jk:
+                        intersection = frozenset(r_ik) & comptable[br1 + " " + br2]
+
+                        cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
+                        for br in signature:
+                            if not br in intersection and br in r_ik:
+                                cl2 = cl + [ -1 * encodeDict(i, k, br, boolvars) ]
+                                out.add_clause(cl2)
+
 def writeSATgac(constraints, signature, comptable, out, cgraph):
     max_node, CSP = completeConstraintGraph(constraints, signature)
 
@@ -292,7 +321,7 @@ def parse_cmdline(argv):
             if a == "--only-estimate":
                 only_estimate_size = True
                 continue
-            C = [ "support", "gac", "ord-clauses" ]
+            C = [ "support", "direct", "gac", "ord-clauses" ]
             G = [ "complete", "partition-lexbfs" ]
             for m in C:
                 if a[2:] == m:
@@ -349,6 +378,9 @@ def check_options(arguments, clause_type, graph_type):
         print "                         (see \"SAT 1-D support encoding\" in \"Towards"
         print "                         An Efficient SAT Encoding for Temporal"
         print "                         Reasoning\", Pham et al.)"
+        print "    --direct             direct encoding with simple direct clauses"
+        print "                         (see \"Towards  An Efficient SAT Encoding for"
+        print "                         Temporal Reasoning\", Pham et al.)"
         print "    --gac                direct encoding with clauses that establish GAC"
         print "                         (see \"GAC via Unit Propagation\", Bacchus;"
         print "                         NOTE: the script does not compute prime"
@@ -395,6 +427,8 @@ if __name__ == '__main__':
     instance = cnf_output(only_estimate_size)
     if clause_type == 'support':
         writeSATsup(qcsp, signature, comptable, instance, cgraph)
+    if clause_type == 'direct':
+        writeSATdirect(qcsp, signature, comptable, instance, cgraph)
     if clause_type == 'gac':
         writeSATgac(qcsp, signature, comptable, instance, cgraph)
     if clause_type == 'ord-clauses':
