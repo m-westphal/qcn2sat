@@ -403,7 +403,7 @@ if __name__ == '__main__':
     qcsp = readGQRCSPstdin()
 
     if not qcsp: # no constraints read; assume problem was unsatisfiable
-        print "p cnf 1 1"
+        print "p cnf 1 2"
         print "1 0"
         print "-1 0"
         raise SystemExit()
