@@ -37,7 +37,7 @@ class cnf_output:
 
     def add_clause(self, clause):
         self.number_of_clauses += 1
-        self.variables = max( max([abs(l) for l in clause]), self.variables )
+        self.variables = max( max([abs(l) for l in clause]), self.variables)
         cl = self.encode_clause(clause)
         if only_estimate_size:
             self.bytes += len(cl)
@@ -52,11 +52,13 @@ class cnf_output:
         header = "p cnf %d %d\n" % (self.variables, self.number_of_clauses)
         return header
 
-    def encode_clause(self, c): # turn clause into string
-        clause = [`v` for v in c] # turn into strings
+    def encode_clause(self, c):
+        """turn clause into string"""
+        clause = [`v` for v in c]  # turn into strings
         return string.join(clause+['0\n'])
 
-    def flush(self):    # invalidates class content
+    def flush(self):
+        """output CNF; invalidates class content"""
         if self.only_estimate_size:
             size = len(self.generate_header())+self.bytes
             print "Constructed %d variables and %d clauses" % (self.variables, self.number_of_clauses)
@@ -72,7 +74,8 @@ class cnf_output:
                 self.fd.write(decomp.decompress(chunk))
             del decomp
 
-def encodeDict(i, j, baserel, d):   # assign a boolean variable id to baserel in R_ij
+def encodeDict(i, j, baserel, d):
+    """assign a boolean variable (id number) to baserel in R_ij"""
     try:
         return d[i][j][baserel]
     except KeyError:
@@ -111,8 +114,6 @@ def readCompTable(calculus):
 
     return table, frozenset(ALL_RELATIONS)
 
-
-
 def readGQRCSPstdin():
     constraints = [ ]
 
@@ -129,7 +130,8 @@ def readGQRCSPstdin():
 
     return constraints
 
-def completeConstraintGraph(constraints, ALL_RELATIONS):  # turn the CSP into a complete constraint network
+def completeConstraintGraph(constraints, ALL_RELATIONS):
+    """turn the CSP into a complete constraint network"""
     max_node = max( [ t for (_, t, _) in constraints ] )
     CSP = dict()
     for i in xrange(0, max_node+1):
@@ -144,8 +146,8 @@ def completeConstraintGraph(constraints, ALL_RELATIONS):  # turn the CSP into a 
 
     return max_node, CSP
 
-def directDomEncoding(instance, CSP, max_node, boolvars):  # build (var,val) as bool variables with ALO/AMO clauses
-    #    print "Construct ALO, AMO clauses:",
+def directDomEncoding(instance, CSP, max_node, boolvars):
+    """build (var,val) as bool variables with ALO/AMO clauses"""
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
             if not i in CSP or not j in CSP[i]:
@@ -357,16 +359,13 @@ if __name__ == '__main__':
     only_estimate_size, clause_type, graph_type, ct_filename = check_options()
 
     comptable, signature = readCompTable(ct_filename)
-#    print "Loaded calculus with", len(signature), "qualitative binary relations"
     qcsp = readGQRCSPstdin()
 
-    if not qcsp: # no constraints read; assume problem was unsatisfiable
+    if not qcsp:  # no constraints read; assume problem was unsatisfiable
         print "p cnf 1 2"
         print "1 0"
         print "-1 0"
         raise SystemExit()
-
-#    print "Loaded QCSP with", max([ t for (_, t, _) in qcsp])+1, "qualitative variables"
 
     cgraph = None
     if graph_type == 'complete':
@@ -393,4 +392,4 @@ if __name__ == '__main__':
         max_node, CSP = completeConstraintGraph(qcsp, signature)
         import allen
         allen.nebel_buerckert_encode_variables(instance, CSP, max_node, dict())
-    instance.flush() # note, invalidates content as well
+    instance.flush()  # note, invalidates content as well
