@@ -72,22 +72,6 @@ class cnf_output:
                 self.fd.write(decomp.decompress(chunk))
             del decomp
 
-def readGQRCSPstdin():
-    constraints = [ ]
-
-    lines = sys.stdin.readlines()
-    for l in lines:
-        res = re.search('^[ ]*([0-9]*)[ ]*([0-9]*) \((.*)\)', l)
-        if res:
-            x = int(res.group(1))
-            y = int(res.group(2))
-            assert 0 <= x < y
-            rel = res.group(3).strip().split(" ")
-            assert rel
-            constraints.append( (x, y, rel) )
-
-    return constraints
-
 def encodeDict(i, j, baserel, d):   # assign a boolean variable id to baserel in R_ij
     try:
         return d[i][j][baserel]
@@ -126,6 +110,24 @@ def readCompTable(calculus):
     lines.close()
 
     return table, frozenset(ALL_RELATIONS)
+
+
+
+def readGQRCSPstdin():
+    constraints = [ ]
+
+    lines = sys.stdin.readlines()
+    for l in lines:
+        res = re.search('^[ ]*([0-9]*)[ ]*([0-9]*) \((.*)\)', l)
+        if res:
+            x = int(res.group(1))
+            y = int(res.group(2))
+            assert 0 <= x < y
+            rel = res.group(3).strip().split(" ")
+            assert rel
+            constraints.append( (x, y, rel) )
+
+    return constraints
 
 def completeConstraintGraph(constraints, ALL_RELATIONS):  # turn the CSP into a complete constraint network
     max_node = max( [ t for (_, t, _) in constraints ] )
