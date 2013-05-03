@@ -136,6 +136,30 @@ def readGQRCSPstdin(signature):
 
     return constraints
 
+def iterate_qcn_strict_triangle(signature, constraints, cgraph):
+    max_node, lookup = completeConstraintGraph(constraints, signature)
+    for i in xrange(0, max_node+1):
+        for j in xrange(i+1, max_node+1):
+            if not (i,j) in cgraph:
+                continue
+            try:
+                rel = lookup[i][j]
+            except KeyError:
+                rel = signature
+            yield i, j, rel
+    del lookup
+
+def iterate_qcn_strict_triple(signature, constraints, cgraph):
+    max_node, _ = completeConstraintGraph(constraints, signature)
+    for i in xrange(0, max_node+1):
+        for j in xrange(i+1, max_node+1):
+            if not (i,j) in cgraph:
+                continue
+            for k in xrange(j+1, max_node+1):
+                if not (i,k) in cgraph or not (j,k) in cgraph:
+                    continue
+                yield i, j, k
+
 def completeConstraintGraph(constraints, ALL_RELATIONS):
     """turn the CSP into a complete constraint network"""
     max_node = max( [ t for (_, t, _) in constraints ] )
@@ -231,7 +255,8 @@ def readASPSolution(filename, signature):
 
     return False
 
-def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,val) as bool variables with ALO/AMO clauses
+def intDomEncoding(instance, signature, constraints, cgraph, boolvars):
+    """build (var,val) as bool variables with ALO/AMO/FOR clauses"""
     import itertools
     from os import path, listdir
 
@@ -249,44 +274,32 @@ def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,
             nr_atoms = t
         assert t == nr_atoms
 
-    for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
-            if not i in CSP or not j in CSP[i]:  # (i,j) in CSP?
-                continue
-            r = CSP[i][j]
-
-            # forbidden clauses
-            for m in itertools.product([-1,1],repeat=nr_atoms):  # all models
-                is_allowed = False
-                for br in signature:
-                    v = representation[br]
-                    v.sort(key=lambda x: x[1])
-                    t = tuple( [ n for (n, _) in v ] )
-                    if t == m and br in r:
-                        is_allowed = True
-                        break
-                if not is_allowed:
-                    clause = [ -1 * n * encodeDict(i, j, 'atom'+str(a), boolvars) for (a,n) in enumerate(m) ]
-                    instance.add_clause(clause)
+    for i,j,r in iterate_qcn_strict_triangle(signature, constraints, cgraph):
+        # forbidden clauses
+        for m in itertools.product([-1,1],repeat=nr_atoms):  # all models
+            is_allowed = False
+            for br in signature:
+                v = representation[br]
+                v.sort(key=lambda x: x[1])
+                t = tuple( [ n for (n, _) in v ] )
+                if t == m and br in r:
+                    is_allowed = True
+                    break
+            if not is_allowed:
+                clause = [ -1 * n * encodeDict(i, j, 'atom'+str(a), boolvars) for (a,n) in enumerate(m) ]
+                instance.add_clause(clause)
 
 def writeSATint(constraints, signature, comptable, out, cgraph):
-    max_node, CSP = completeConstraintGraph(constraints, signature)
+    boolvars = { }
 
-    boolvars = { } # maps propositional atoms to numbers (DIMACS format...)
+    intDomEncoding(out, signature, constraints, cgraph, boolvars)
 
-    intDomEncoding(out, signature, CSP, max_node, boolvars)
-
-#    print "Construct nogood clauses (cubic time/space):",
-    for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
-            if not (i,j) in cgraph:
-                continue
-            for k in xrange(j+1, max_node+1):
-                for xz, xy, yz in nogoods:
-                    clause = [ -1 * xy[0] * encodeDict(i, j, 'atom'+xy[1], boolvars) ]
-                    clause +=[ -1 * yz[0] * encodeDict(j, k, 'atom'+yz[1], boolvars) ]
-                    clause +=[ -1 * xz[0] * encodeDict(i, k, 'atom'+xz[1], boolvars) ]
-                    out.add_clause(clause)
+    for i, j, k in iterate_qcn_strict_triple(signature, constraints, cgraph):
+        for xz, xy, yz in nogoods:
+            clause = [ -1 * xy[0] * encodeDict(i, j, 'atom'+xy[1], boolvars) ]
+            clause +=[ -1 * yz[0] * encodeDict(j, k, 'atom'+yz[1], boolvars) ]
+            clause +=[ -1 * xz[0] * encodeDict(i, k, 'atom'+xz[1], boolvars) ]
+            out.add_clause(clause)
 
 def writeSATsup(constraints, signature, comptable, out, cgraph):
     max_node, CSP = completeConstraintGraph(constraints, signature)
