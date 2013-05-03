@@ -131,7 +131,7 @@ def instantiate(l, x, y, d): # encode instantiated literal l on x,y
 def nebel_buerckert_encode_variables(instance, CSP, max_node, boolvars):
     import os.path
     import itertools
-    syntactic_interpretation = read_map(os.path.join('allen', 'ordclauses.map'))
+    syntactic_interpretation = read_map(os.path.join('data', 'ordclauses.map'))
 
     used_points = set()
     for i in xrange(max_node+1):
