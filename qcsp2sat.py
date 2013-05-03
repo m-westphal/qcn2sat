@@ -176,25 +176,21 @@ def completeConstraintGraph(constraints, ALL_RELATIONS):
 
     return max_node, CSP
 
-def directDomEncoding(instance, CSP, max_node, boolvars):
+def directDomEncoding(instance, constraints, max_node, boolvars, signature, cgraph):
     """build (var,val) as bool variables with ALO/AMO clauses"""
-    for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
-            if not i in CSP or not j in CSP[i]:
-                continue
-            r = CSP[i][j]
-            # ALO
-            clause = [ encodeDict(i, j, br, boolvars) for br in r ]
-            instance.add_clause(clause)
 
-            # AMO
-            for br in r:
-                for br2 in r:
-                    if br < br2:
-                        clause = [ -1 * encodeDict(i, j, br, boolvars), -1 * encodeDict(i, j, br2, boolvars) ]
-                        instance.add_clause(clause)
-                    else:
-                        assert br == br2 or br2 < br
+    for i, j, rel in iterate_qcn_strict_triangle(signature, constraints, cgraph):
+        relation = list(rel)
+        relation.sort()
+        alo = [ encodeDict(i, j, br, boolvars) for br in relation ]
+        instance.add_clause(alo)
+
+        for i in xrange(len(relation)):
+            br1 = relation[i]
+            for j in xrange(i+1,len(relation)):
+                br2 = relation[j]
+                amo = [ -1 * encodeDict(i, j, br1, boolvars), -1 * encodeDict(i, j, br2, boolvars) ]
+                instance.add_clause(amo)
 
 nogoods = [ ]
 representation = dict()
@@ -306,7 +302,7 @@ def writeSATsup(constraints, signature, comptable, out, cgraph):
 
     boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
 
-    directDomEncoding(out, CSP, max_node, boolvars)
+    directDomEncoding(out, constraints, max_node, boolvars, signature, cgraph)
 
 #    print "Construct support clauses (cubic time/space):",
     for i in xrange(max_node+1):
@@ -333,7 +329,7 @@ def writeSATdirect(constraints, signature, comptable, out, cgraph):
 
     boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
 
-    directDomEncoding(out, CSP, max_node, boolvars)
+    directDomEncoding(out, constraints, max_node, boolvars, signature, cgraph)
 
 #    print "Construct direct clauses (cubic time/space):",
     for i in xrange(max_node+1):
@@ -362,7 +358,7 @@ def writeSATgac(constraints, signature, comptable, out, cgraph):
 
     boolvars = dict()
 
-    directDomEncoding(out, CSP, max_node, boolvars)
+    directDomEncoding(out, constraints, max_node, boolvars, signature, cgraph)
 
     # SUPPORT
 #    print "Construct GAC clauses:",
