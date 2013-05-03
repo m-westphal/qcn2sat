@@ -227,11 +227,12 @@ def readASPSolution(filename, signature):
 
 def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,val) as bool variables with ALO/AMO clauses
     import itertools
-    from os import path
+    from os import path, listdir
 
-    for f in [ 'allen.das', 'rcc5.das', 'rcc8.das']:
-        if readASPSolution(path.join('data',f), signature):
-            break
+    for f in listdir('data'):
+        if f.endswith('.das'):
+            if readASPSolution(path.join('data',f), signature):
+                break
     if not representation:
         raise SystemExit('No syntactic interpretation found!')
 
