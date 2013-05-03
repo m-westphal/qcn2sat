@@ -114,7 +114,7 @@ def readCompTable(calculus):
 
     return table, frozenset(ALL_RELATIONS)
 
-def readGQRCSPstdin():
+def readGQRCSPstdin(signature):
     constraints = [ ]
 
     lines = sys.stdin.readlines()
@@ -125,8 +125,14 @@ def readGQRCSPstdin():
             y = int(res.group(2))
             assert 0 <= x < y
             rel = res.group(3).strip().split(" ")
-            assert rel
-            constraints.append( (x, y, rel) )
+            if not rel:
+                return None
+            for b in rel:
+                if not b in signature:
+                    raise SystemExit("Calculus signature does not match csp")
+
+            if frozenset(rel) != signature:  # ignore universal statements
+                constraints.append( (x, y, rel) )
 
     return constraints
 
@@ -478,7 +484,7 @@ if __name__ == '__main__':
     only_estimate_size, clause_type, graph_type, ct_filename = check_options()
 
     comptable, signature = readCompTable(ct_filename)
-    qcsp = readGQRCSPstdin()
+    qcsp = readGQRCSPstdin(signature)
 
     if not qcsp:  # no constraints read; assume problem was unsatisfiable
         print "p cnf 1 2"
