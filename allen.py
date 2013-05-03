@@ -205,40 +205,44 @@ def point_algebra_comptable():
 
     return pa
 
-def get_pa_excl_clause(i, j, br, d):
+def get_pa_excl_clause(x, y, br, d):
     if br == '<':
-        return [ -1 * encodeDict(i,'+', j,'-', '<', d) ]
+        return [ -1 * encodeDict(x,'+', y,'-', '<', d) ]
     elif br == '>':
-        return [ -1 * encodeDict(i,'-', j,'+', '>', d) ]
+        return [ -1 * encodeDict(x,'-', y,'+', '>', d) ]
     elif br == '=':
-        return [ -1 * encodeDict(i,'-', j,'-', '=', d),
-                 -1 * encodeDict(i,'+', j,'+', '=', d) ]
+        return [ -1 * encodeDict(x,'-', y,'-', '=', d),
+                 -1 * encodeDict(x,'+', y,'+', '=', d) ]
     elif br == 'd':
-        return [ -1 * encodeDict(i,'-', j,'-', '>', d),
-                 -1 * encodeDict(i,'+', j,'+', '<', d) ]
+        return [ -1 * encodeDict(x,'-', y,'-', '>', d),
+                 -1 * encodeDict(x,'+', y,'+', '<', d) ]
     elif br == 'di':
-        return [ -1 * encodeDict(i,'+', j,'+', '>', d),
-                 -1 * encodeDict(i,'-', j,'-', '<', d) ]
+        return [ -1 * encodeDict(x,'-', y,'-', '<', d),
+                 -1 * encodeDict(x,'+', y,'+', '>', d) ]
     elif br == 'o':
-        return [ -1 * encodeDict(i,'+', j,'-', '<', d) ]
+        return [ -1 * encodeDict(x,'-', y,'-', '<', d),
+                 -1 * encodeDict(x,'+', y,'+', '<', d),
+                 -1 * encodeDict(x,'+', y,'-', '>', d) ]
     elif br == 'oi':
-        return [ -1 * encodeDict(i,'-', j,'+', '>', d) ]
+        return [ -1 * encodeDict(x,'-', y,'-', '>', d),
+                 -1 * encodeDict(x,'+', y,'+', '>', d),
+                 -1 * encodeDict(x,'-', y,'+', '<', d) ]
     elif br == 'm':
-        return [ -1 * encodeDict(i,'+', j,'-', '=', d) ]
+        return [ -1 * encodeDict(x,'+', y,'-', '=', d) ]
     elif br == 'mi':
-        return [ -1 * encodeDict(i,'-', j,'+', '=', d) ]
+        return [ -1 * encodeDict(x,'-', y,'+', '=', d) ]
     elif br == 's':
-        return [ -1 * encodeDict(i,'-', j,'-', '=', d),
-                 -1 * encodeDict(i,'+', j,'+', '<', d) ]
+        return [ -1 * encodeDict(x,'-', y,'-', '=', d),
+                 -1 * encodeDict(x,'+', y,'+', '<', d) ]
     elif br == 'si':
-        return [ -1 * encodeDict(i,'+', j,'+', '=', d),
-                 -1 * encodeDict(i,'-', j,'-', '>', d) ]
+        return [ -1 * encodeDict(x,'-', y,'-', '=', d),
+                 -1 * encodeDict(x,'+', y,'+', '>', d) ]
     elif br == 'f':
-        return [ -1 * encodeDict(i,'-', j,'-', '>', d),
-                 -1 * encodeDict(i,'+', j,'+', '=', d) ]
+        return [ -1 * encodeDict(x,'-', y,'-', '>', d),
+                 -1 * encodeDict(x,'+', y,'+', '=', d) ]
     elif br == 'fi':
-        return [ -1 * encodeDict(i,'-', j,'-', '<', d),
-                 -1 * encodeDict(i,'+', j,'+', '=', d) ]
+        return [ -1 * encodeDict(x,'-', y,'-', '<', d),
+                 -1 * encodeDict(x,'+', y,'+', '=', d) ]
     assert False
 
 def pham_support_pt_encode(signature, instance, CSP, max_node, cgraph):
@@ -251,29 +255,34 @@ def pham_support_pt_encode(signature, instance, CSP, max_node, cgraph):
 
     # encode domains
     for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
+        for j in xrange(i, max_node+1):
             if not (i,j) in cgraph:
                 continue
             for s1 in ['-', '+']:
                 for s2 in ['-', '+']:
+                    if (i,s1) == (j,s2):
+                        continue
                     alo = [ encodeDict(i, s1, j, s2, '<', d),
                             encodeDict(i, s1, j, s2, '=', d),
                             encodeDict(i, s1, j, s2, '>', d) ]
-
                     instance.add_clause(alo)
 
-                    amo = [ encodeDict(i, s1, j, s2, '<', d),
-                            encodeDict(i, s1, j, s2, '=', d) ]
+                    amo = [ -1 * encodeDict(i, s1, j, s2, '<', d),
+                            -1 * encodeDict(i, s1, j, s2, '=', d) ]
                     instance.add_clause(amo)
-                    amo = [ encodeDict(i, s1, j, s2, '<', d),
-                            encodeDict(i, s1, j, s2, '>', d) ]
+                    amo = [ -1 * encodeDict(i, s1, j, s2, '<', d),
+                            -1 * encodeDict(i, s1, j, s2, '>', d) ]
                     instance.add_clause(amo)
-                    amo = [ encodeDict(i, s1, j, s2, '>', d),
-                            encodeDict(i, s1, j, s2, '=', d) ]
+                    amo = [ -1 * encodeDict(i, s1, j, s2, '=', d),
+                            -1 * encodeDict(i, s1, j, s2, '>', d) ]
                     instance.add_clause(amo)
 
     # encode input
     for i in xrange(max_node+1):
+        # well formed intervals
+        wf = [ encodeDict(i, '-', i, '+', '<', d) ]
+        instance.add_clause(wf)
+
         for j in xrange(i+1, max_node+1):
             if not (i,j) in cgraph:
                 continue
@@ -283,17 +292,23 @@ def pham_support_pt_encode(signature, instance, CSP, max_node, cgraph):
                 instance.add_clause(clause)
     # encode PA theory
     for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
+        for j in xrange(i, max_node+1):
             if not (i,j) in cgraph:
                 continue
-            for k in xrange(j+1, max_node+1):
+            for k in xrange(j, max_node+1):
                 if not (i,k) in cgraph:
                     continue
                 if not (j,k) in cgraph:
                     continue
                 for s1 in ['-', '+']:
                     for s2 in ['-', '+']:
+                        if (i,s1) == (j,s2):
+                            continue
                         for s3 in ['-', '+']:
+                            if (i,s1) == (k,s3):
+                                continue
+                            if (j,s2) == (k,s3):
+                                continue
                             for br1 in ['<', '=', '>']:
                                 b_ij = encodeDict(i,s1,j,s2, br1, d)
                                 for br2 in ['<', '=', '>']:
