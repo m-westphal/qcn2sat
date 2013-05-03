@@ -518,7 +518,7 @@ if __name__ == '__main__':
         import allen
         allen.pham_support_pt_encode(signature, instance, CSP, max_node, cgraph)
     elif clause_type == 'direct-pa':
+        max_node, CSP = completeConstraintGraph(qcsp, signature)
         import allen
-#        allen.pham_direct_pt_encode(qcsp, signature, comptable, instance, cgraph)
-        raise SystemExit("Not yet implemented :(")
+        allen.pham_direct_pt_encode(signature, instance, CSP, max_node, cgraph)
     instance.flush()  # note, invalidates content as well
