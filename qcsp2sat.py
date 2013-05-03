@@ -508,7 +508,7 @@ if __name__ == '__main__':
     elif clause_type == 'ord-clauses':
         max_node, CSP = completeConstraintGraph(qcsp, signature)
         import allen
-        allen.nebel_buerckert_encode_variables(instance, CSP, max_node, dict())
+        allen.nebel_buerckert_encode_variables(signature, instance, CSP, max_node, dict())
     elif clause_type == 'syn-int':
         writeSATint(qcsp, signature, comptable, instance, cgraph)
     instance.flush()  # note, invalidates content as well

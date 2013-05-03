@@ -71,7 +71,7 @@ def parse_cnf_string(s):
 
     return cnf
 
-def read_map(filename):
+def read_map(signature, filename):
     import re
 
     m = dict()
@@ -86,6 +86,9 @@ def read_map(filename):
             s = match.group(1)
             relation = frozenset(s.strip().split(' '))
             assert not relation in m
+            for b in relation:
+                if not b in signature:
+                    raise SystemExit("ORD-horn map does not match given signature of calculus")
 
             s = match.group(2).strip()
 
@@ -128,10 +131,10 @@ def instantiate(l, x, y, d): # encode instantiated literal l on x,y
             assert rel == '>='
         return m * encodeDict(b, s2, a, s1, srel, d)
 
-def nebel_buerckert_encode_variables(instance, CSP, max_node, boolvars):
+def nebel_buerckert_encode_variables(signature, instance, CSP, max_node, boolvars):
     import os.path
     import itertools
-    syntactic_interpretation = read_map(os.path.join('data', 'ordclauses.map'))
+    syntactic_interpretation = read_map(signature, os.path.join('data', 'ordclauses.map'))
 
     used_points = set()
     for i in xrange(max_node+1):
