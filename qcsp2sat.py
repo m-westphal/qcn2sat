@@ -488,7 +488,7 @@ if __name__ == '__main__':
     if graph_type == 'complete':
         vararray = range(0, max([ t for (_, t, _) in qcsp])+1)
         cgraph = frozenset([ (x,y) for x in vararray for y in vararray if x != y ])
-    elif graph_type == 'partition-lexbfs':
+    elif graph_type == 'lexbfs':
             vertices = set( [ t for _, t, _ in qcsp ] + [ t for t, _, _ in qcsp] )
             edges = dict( [ (v, set()) for v in vertices ] )
             for i, j, _ in qcsp:
