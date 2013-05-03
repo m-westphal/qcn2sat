@@ -313,94 +313,50 @@ def eliminationGame(vertices, edges, order):
         ret |= set( [ (v, x) for x in final[v] ] )
     return frozenset(ret)
 
-def parse_cmdline(argv):
-    only_estimate_size = False
-    arguments = [ ]
-    graph_type = None
-    clause_type = None
-    for a in argv:
-        if a[0:2] == "--":
-            if a == "--only-estimate":
-                only_estimate_size = True
-                continue
-            C = [ "support", "direct", "gac", "ord-clauses" ]
-            G = [ "complete", "partition-lexbfs" ]
-            for m in C:
-                if a[2:] == m:
-                    if clause_type is None:
-                        clause_type = m
-                    else:
-                        raise SystemExit("Two conflicting clause encodings selected")
-                    break
-            else:
-                for m in G:
-                    if a[2:] == m:
-                        if graph_type is None:
-                            graph_type = m
-                        else:
-                            raise SystemExit("Two conflicting graph encodings selected")
-                        break
-                else:
-                    raise SystemExit("Unknown option '%s'" % a)
-        else:
-            arguments.append(a)
+def check_options():
+    from argparse import ArgumentParser
 
-    return only_estimate_size, clause_type, graph_type, arguments
+    add_inf = 'Notes: (1) the script does stream processing: a qualitative' \
+              ' CSP in GQR format is read from stdin, clauses written' \
+              ' to stdout. ' \
+              '(2) \"gac\" does not compute prime implicates. ' \
+              '(3) Syntactical processing only, chosen options may result' \
+              ' in unsound output.'
+    copyright = 'Copyright (C) 2009-2013 Matthias Westphal.' \
+                ' This program comes with ABSOLUTELY NO WARRANTY.' \
+                ' This is free software, and you are welcome to redistribute it' \
+                ' under certain conditions; see `GPL-3\' for details'
 
-def check_options(arguments, clause_type, graph_type):
-    correct = True
+    parser = ArgumentParser(
+        description='qcsp2sat.py: convert QCNs to CNF formulae (version %s)' % __VERSION,
+        epilog=add_inf+" "+copyright)
 
-    if len(arguments) != 1:
-        correct = False
-    if clause_type is None:
-        print "clause type not specified"
-        correct = False
-    if graph_type is None and clause_type != 'ord-clauses':
-        print "graph type not specified"
-        correct = False
-    if clause_type == 'ord-clauses' and not graph_type is None:
-        print "ord-clauses do not require any graph type"
-        correct = False
+    parser.add_argument('--only-estimate', action='store_true',
+        help='only calculate size of CNF; do not store/return clauses')
 
-    if not correct:
-        print "qcsp2sat.py: convert qualitative CSPs to CNF formulae (version %s)" % __VERSION
-        print "Copyright (C) 2009-2011  Matthias Westphal"
-        print "This program comes with ABSOLUTELY NO WARRANTY."
-        print "This is free software, and you are welcome to redistribute it"
-        print "under certain conditions; see `GPL-3' for details."
-        print
-        print "Usage: qcsp2sat.py OPTIONS GQR_COMPOSITION_TABLE_FILE"
-        print "A qualitative CSP in GQR format is read from stdin."
-        print "    --only-estimate      calculate size of CNF, but do not store clauses"
-        print "    --complete           write complete constrain graph on vars 1 .. n"
-        print "    --partition-lexbfs   triangulate graph with lexbfs ordering"
-        print "                         (see ?) [EXPERIMENTAL!] (potentially unsound for"
-        print "                         several calculi)"
-        print "    --support            direct encoding with simple support clauses"
-        print "                         (see \"SAT 1-D support encoding\" in \"Towards"
-        print "                         An Efficient SAT Encoding for Temporal"
-        print "                         Reasoning\", Pham et al.)"
-        print "    --direct             direct encoding with simple direct clauses"
-        print "                         (see \"Towards  An Efficient SAT Encoding for"
-        print "                         Temporal Reasoning\", Pham et al.)"
-        print "    --gac                direct encoding with clauses that establish GAC"
-        print "                         (see \"GAC via Unit Propagation\", Bacchus;"
-        print "                         NOTE: the script does not compute prime"
-        print "                         implicates!)"
-        print "    --ord-clauses        rewrite Allen's Interval Algebra relations to"
-        print "                         ORD clauses (see \"Reasoning about Temporal"
-        print "                         Relations: A Maximal Tractable Subclass\" by Nebel"
-        print "                         and Bürckert)"
-        print
-        print "WARNING: the script is completely untested and potentially unsound!"
-        print
-        raise SystemExit("Error in commandline arguments")
+    graph_type_inf = '; partitioning may be unsound for several calculi.'
+    parser.add_argument('--graph-type', metavar='STR', nargs=1, default=False,
+        required = True, type=str, choices=['complete', 'lexbfs'],
+        help='constraint graph type [%(choices)s]'+graph_type_inf)
+    encoding_inf = '; see \"Towards An Efficient SAT Encoding for' \
+                   ' Temporal Reasoning\", Pham et al.,' \
+                   ' \"GAC via Unit Propagation\", Bacchus,' \
+                   ' \"Reasoning about Temporal Relations: A Maximal' \
+                   ' Tractable Subclass\", Nebel and Bürckert.'
+    parser.add_argument('--encoding', metavar='STR', nargs=1, default=False,
+        required=True,
+        type=str, choices=['support', 'direct', 'gac', 'ord-clauses'],
+        help='encoding [%(choices)s]'+encoding_inf)
+    parser.add_argument('GQR_COMPOSITION_TABLE_FILE')
+
+    result = parser.parse_args()
+
+    return result.only_estimate, result.encoding, result.graph_type, result.GQR_COMPOSITION_TABLE_FILE
 
 if __name__ == '__main__':
-    only_estimate_size, clause_type, graph_type, arguments = parse_cmdline(sys.argv[1:])
-    check_options(arguments, clause_type, graph_type)
+    only_estimate_size, clause_type, graph_type, ct_filename = check_options()
 
-    comptable, signature = readCompTable(arguments[0])
+    comptable, signature = readCompTable(ct_filename)
 #    print "Loaded calculus with", len(signature), "qualitative binary relations"
     qcsp = readGQRCSPstdin()
 
