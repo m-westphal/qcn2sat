@@ -166,6 +166,120 @@ def directDomEncoding(instance, CSP, max_node, boolvars):
                     else:
                         assert br == br2 or br2 < br
 
+nogoods = [ ]
+representation = dict()
+def readASPSolution(filename, signature):
+    global nogoods
+    global representation
+
+    lines = open(filename,'r')
+    for l in lines:
+        if 'inf' in l:
+            for inf in l.split('inf'):
+                if inf == '':
+                    continue
+                inf = inf.strip()
+                content = re.match(r'\(([\d]+),([\d]+),([\d]+),([\d]+),([\d]+),([\d]+)\)', inf)
+                xz = (content.group(1), content.group(2))
+                if xz[0] == '0':
+                    xz = (1, content.group(2)) # NEGATION
+                else:
+                    xz = (-1, content.group(2)) # NEGATION
+                xy = (content.group(3), content.group(4))
+                if xy[0] == '0':
+                    xy = (-1, content.group(4))
+                else:
+                    xy = (1, content.group(4))
+                yz = (content.group(5), content.group(6))
+                if yz[0] == '0':
+                    yz = (-1, content.group(6))
+                else:
+                    yz = (1, content.group(6))
+                nogoods.append( (xz,xy,yz) ) # TODO
+        if 'dec' in l:
+            for dec in l.split('dec'):
+                if dec == '':
+                    continue
+                dec = dec.strip()
+                content = re.match(r'\(([\d]+),([\D]+),([\d]+)\)', dec)
+                negation, br, atom = (content.group(1), content.group(2)[1:], content.group(3))
+                if negation == '0':
+                    negation = -1
+                elif negation == '1':
+                    negation = 1
+                else:
+                    assert False
+
+                try:
+                    representation[br].append( (negation, atom) )
+                except KeyError:
+                    representation[br] = [ (negation, atom) ]
+
+    lines.close()
+    if set(representation.keys()) == set(signature):
+        return True
+
+    # clear globals
+    representation = dict()
+    nogoods = [ ]
+
+    return False
+
+def intDomEncoding(instance, signature, CSP, max_node, boolvars):  # build (var,val) as bool variables with ALO/AMO clauses
+    import itertools
+
+    for f in [ 'rcc5.solution', 'rcc8.solution']:
+        if readASPSolution(f, signature):
+            break
+    if not representation:
+        raise SystemExit('No syntactic interpretation found!')
+
+    nr_atoms = None  # number of propositional atoms in the decomposition
+    for br in signature:
+        t = len(representation[br])
+        if nr_atoms is None:
+            nr_atoms = t
+        assert t == nr_atoms
+
+    for i in xrange(max_node+1):
+        for j in xrange(i+1, max_node+1):
+            if not i in CSP or not j in CSP[i]:  # (i,j) in CSP?
+                continue
+            r = CSP[i][j]
+
+            # forbidden clauses
+            for m in itertools.product([-1,1],repeat=nr_atoms):  # all models
+                is_allowed = False
+                for br in signature:
+                    v = representation[br]
+                    v.sort(key=lambda x: x[1])
+                    t = tuple( [ n for (n, _) in v ] )
+                    if t == m and br in r:
+                        is_allowed = True
+                        break
+                if not is_allowed:
+                    clause = [ -1 * n * encodeDict(i, j, 'atom'+str(a), boolvars) for (a,n) in enumerate(m) ]
+                    instance.add_clause(clause)
+
+def writeSATint(constraints, signature, comptable, out, cgraph):
+    max_node, CSP = completeConstraintGraph(constraints, signature)
+
+    boolvars = { } # maps propositional atoms to numbers (DIMACS format...)
+
+    intDomEncoding(out, signature, CSP, max_node, boolvars)
+
+#    print "Construct nogood clauses (cubic time/space):",
+    for i in xrange(max_node+1):
+        for j in xrange(i+1, max_node+1):
+            if not (i,j) in cgraph:
+                continue
+            for k in xrange(j+1, max_node+1):
+                for xz, xy, yz in nogoods:
+                    clause = [ -1 * xy[0] * encodeDict(i, j, 'atom'+xy[1], boolvars) ]
+                    clause +=[ -1 * yz[0] * encodeDict(j, k, 'atom'+yz[1], boolvars) ]
+                    clause +=[ -1 * xz[0] * encodeDict(i, k, 'atom'+xz[1], boolvars) ]
+                    out.add_clause(clause)
+
 def writeSATsup(constraints, signature, comptable, out, cgraph):
     max_node, CSP = completeConstraintGraph(constraints, signature)
 
@@ -344,10 +458,12 @@ def check_options():
                    ' Temporal Reasoning\", Pham et al.,' \
                    ' \"GAC via Unit Propagation\", Bacchus,' \
                    ' \"Reasoning about Temporal Relations: A Maximal' \
-                   ' Tractable Subclass\", Nebel and Bürckert.'
+                   ' Tractable Subclass\", Nebel and Bürckert.' \
+                   ' \"An Automatic Decomposition Method for Qualitative' \
+                   ' Spatial and Temporal Reasoning\" Hué et al.'
     parser.add_argument('--encoding', metavar='STR', nargs=1, default=False,
         required=True,
-        type=str, choices=['support', 'direct', 'gac', 'ord-clauses'],
+        type=str, choices=['support', 'direct', 'gac', 'syn-int', 'ord-clauses'],
         help='encoding [%(choices)s]'+encoding_inf)
     parser.add_argument('GQR_COMPOSITION_TABLE_FILE')
 
@@ -392,4 +508,6 @@ if __name__ == '__main__':
         max_node, CSP = completeConstraintGraph(qcsp, signature)
         import allen
         allen.nebel_buerckert_encode_variables(instance, CSP, max_node, dict())
+    elif clause_type == 'syn-int':
+        writeSATint(qcsp, signature, comptable, instance, cgraph)
     instance.flush()  # note, invalidates content as well
