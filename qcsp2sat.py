@@ -351,7 +351,7 @@ def check_options():
 
     result = parser.parse_args()
 
-    return result.only_estimate, result.encoding, result.graph_type, result.GQR_COMPOSITION_TABLE_FILE
+    return result.only_estimate, result.encoding[0], result.graph_type[0], result.GQR_COMPOSITION_TABLE_FILE
 
 if __name__ == '__main__':
     only_estimate_size, clause_type, graph_type, ct_filename = check_options()
@@ -385,11 +385,11 @@ if __name__ == '__main__':
     instance = cnf_output(only_estimate_size)
     if clause_type == 'support':
         writeSATsup(qcsp, signature, comptable, instance, cgraph)
-    if clause_type == 'direct':
+    elif clause_type == 'direct':
         writeSATdirect(qcsp, signature, comptable, instance, cgraph)
-    if clause_type == 'gac':
+    elif clause_type == 'gac':
         writeSATgac(qcsp, signature, comptable, instance, cgraph)
-    if clause_type == 'ord-clauses':
+    elif clause_type == 'ord-clauses':
         max_node, CSP = completeConstraintGraph(qcsp, signature)
         import allen
         allen.nebel_buerckert_encode_variables(instance, CSP, max_node, dict())
