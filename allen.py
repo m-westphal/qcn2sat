@@ -189,3 +189,115 @@ def nebel_buerckert_encode_variables(signature, instance, CSP, max_node, boolvar
                 instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, boolvars),
                     instantiate( literal('n', 'x', s2, '<=', 'y', s3), p2, p3, boolvars),
                     instantiate( literal('p', 'x', s1, '<=', 'y', s3), p1, p3, boolvars) ])
+
+
+def point_algebra_comptable():
+    pa = dict()
+    pa["< <"] = frozenset( [ '<' ] )
+    pa["< ="] = frozenset( [ '<' ] )
+    pa["< >"] = frozenset( [ '<', '=', '>' ] )
+    pa["= <"] = frozenset( [ '<' ] )
+    pa["= ="] = frozenset( [ '=' ] )
+    pa["= >"] = frozenset( [ '>' ] )
+    pa["> <"] = frozenset( [ '<', '=', '>' ] )
+    pa["> ="] = frozenset( [ '>' ] )
+    pa["> >"] = frozenset( [ '>' ] )
+
+    return pa
+
+def get_pa_excl_clause(i, j, br, d):
+    if br == '<':
+        return [ -1 * encodeDict(i,'+', j,'-', '<', d) ]
+    elif br == '>':
+        return [ -1 * encodeDict(i,'-', j,'+', '>', d) ]
+    elif br == '=':
+        return [ -1 * encodeDict(i,'-', j,'-', '=', d),
+                 -1 * encodeDict(i,'+', j,'+', '=', d) ]
+    elif br == 'd':
+        return [ -1 * encodeDict(i,'-', j,'-', '>', d),
+                 -1 * encodeDict(i,'+', j,'+', '<', d) ]
+    elif br == 'di':
+        return [ -1 * encodeDict(i,'+', j,'+', '>', d),
+                 -1 * encodeDict(i,'-', j,'-', '<', d) ]
+    elif br == 'o':
+        return [ -1 * encodeDict(i,'+', j,'-', '<', d) ]
+    elif br == 'oi':
+        return [ -1 * encodeDict(i,'-', j,'+', '>', d) ]
+    elif br == 'm':
+        return [ -1 * encodeDict(i,'+', j,'-', '=', d) ]
+    elif br == 'mi':
+        return [ -1 * encodeDict(i,'-', j,'+', '=', d) ]
+    elif br == 's':
+        return [ -1 * encodeDict(i,'-', j,'-', '=', d),
+                 -1 * encodeDict(i,'+', j,'+', '<', d) ]
+    elif br == 'si':
+        return [ -1 * encodeDict(i,'+', j,'+', '=', d),
+                 -1 * encodeDict(i,'-', j,'-', '>', d) ]
+    elif br == 'f':
+        return [ -1 * encodeDict(i,'-', j,'-', '>', d),
+                 -1 * encodeDict(i,'+', j,'+', '=', d) ]
+    elif br == 'fi':
+        return [ -1 * encodeDict(i,'-', j,'-', '<', d),
+                 -1 * encodeDict(i,'+', j,'+', '=', d) ]
+    assert False
+
+def pham_support_pt_encode(signature, instance, CSP, max_node, cgraph):
+#    if frozenset(signature) != frozenset([ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm', 'mi', 'o', 'oi' ]):
+#        raise SystemExit('Given signature does not match allen signature')
+
+    d = dict()
+    pa_comp = point_algebra_comptable()
+    import os.path
+
+    # encode domains
+    for i in xrange(max_node+1):
+        for j in xrange(i+1, max_node+1):
+            if not (i,j) in cgraph:
+                continue
+            for s1 in ['-', '+']:
+                for s2 in ['-', '+']:
+                    alo = [ encodeDict(i, s1, j, s2, '<', d),
+                            encodeDict(i, s1, j, s2, '=', d),
+                            encodeDict(i, s1, j, s2, '>', d) ]
+
+                    instance.add_clause(alo)
+
+                    amo = [ encodeDict(i, s1, j, s2, '<', d),
+                            encodeDict(i, s1, j, s2, '=', d) ]
+                    instance.add_clause(amo)
+                    amo = [ encodeDict(i, s1, j, s2, '<', d),
+                            encodeDict(i, s1, j, s2, '>', d) ]
+                    instance.add_clause(amo)
+                    amo = [ encodeDict(i, s1, j, s2, '>', d),
+                            encodeDict(i, s1, j, s2, '=', d) ]
+                    instance.add_clause(amo)
+
+    # encode input
+    for i in xrange(max_node+1):
+        for j in xrange(i+1, max_node+1):
+            if not (i,j) in cgraph:
+                continue
+            exclude = signature - frozenset(CSP[i][j])
+            for br in exclude:
+                clause = get_pa_excl_clause(i, j, br, d)
+                instance.add_clause(clause)
+    # encode PA theory
+    for i in xrange(max_node+1):
+        for j in xrange(i+1, max_node+1):
+            if not (i,j) in cgraph:
+                continue
+            for k in xrange(j+1, max_node+1):
+                if not (i,k) in cgraph:
+                    continue
+                if not (j,k) in cgraph:
+                    continue
+                for s1 in ['-', '+']:
+                    for s2 in ['-', '+']:
+                        for s3 in ['-', '+']:
+                            for br1 in ['<', '=', '>']:
+                                b_ij = encodeDict(i,s1,j,s2, br1, d)
+                                for br2 in ['<', '=', '>']:
+                                    b_jk= encodeDict(j,s2,k,s3, br2, d)
+                                    cl = [ -1 * b_ij, -1 * b_jk ] \
+                                        + [ encodeDict(i,s1,k,s3, br, d) for br in pa_comp[br1+" "+br2] ]
+                                    instance.add_clause(cl)

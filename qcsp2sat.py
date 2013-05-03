@@ -464,8 +464,9 @@ def check_options():
                    ' \"An Automatic Decomposition Method for Qualitative' \
                    ' Spatial and Temporal Reasoning\" Hué et al.'
     parser.add_argument('--encoding', metavar='STR', nargs=1, default=False,
-        required=True,
-        type=str, choices=['support', 'direct', 'gac', 'syn-int', 'ord-clauses'],
+        required=True, type=str,
+        choices=['support', 'direct', 'gac', 'syn-int', 'ord-clauses',
+                'support-pa', 'direct-pa'],
         help='encoding [%(choices)s]'+encoding_inf)
     parser.add_argument('GQR_COMPOSITION_TABLE_FILE')
 
@@ -512,4 +513,12 @@ if __name__ == '__main__':
         allen.nebel_buerckert_encode_variables(signature, instance, CSP, max_node, dict())
     elif clause_type == 'syn-int':
         writeSATint(qcsp, signature, comptable, instance, cgraph)
+    elif clause_type == 'support-pa':
+        max_node, CSP = completeConstraintGraph(qcsp, signature)
+        import allen
+        allen.pham_support_pt_encode(signature, instance, CSP, max_node, cgraph)
+    elif clause_type == 'direct-pa':
+        import allen
+#        allen.pham_direct_pt_encode(qcsp, signature, comptable, instance, cgraph)
+        raise SystemExit("Not yet implemented :(")
     instance.flush()  # note, invalidates content as well
