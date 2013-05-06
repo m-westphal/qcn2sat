@@ -23,28 +23,6 @@ from ordclauses import literal
 
 from qcsp2sat import PropositionalAtoms
 
-# TODO REMOVE
-def encodeDict(x, s1, y, s2, baserel, d):   # assign a boolean variable id to baserel in R_ij
-    i = str(x)+s1
-    j = str(y)+s2
-    try:
-        return d[i][j][baserel]
-    except KeyError:
-        assert x <= y
-        try:
-            d["max"] += 1
-        except KeyError:
-            d["max"] = 1
-
-        ret = d["max"]
-        if not i in d:
-            d[i] = dict()
-        if not j in d[i]:
-            d[i][j] = dict()
-        assert not baserel in d[i][j]
-        d[i][j][baserel] = ret
-        return ret
-
 def check_allen_signature(signature):
     if signature != frozenset([ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm', 'mi', 'o', 'oi' ]):
         raise SystemExit('Given signature does not match allen signature')
@@ -110,7 +88,7 @@ def read_map(signature, filename):
 
     return m
 
-def instantiate(l, x, y, d): # encode instantiated literal l on x,y
+def instantiate(l, x, y, atoms): # encode instantiated literal l on x,y
     assert l.x == 'x' or (l.x == l.y == 'y')
     assert l.y in ['x', 'y']
     (s1,s2,rel) = (l.s1, l.s2, l.r)
@@ -127,7 +105,7 @@ def instantiate(l, x, y, d): # encode instantiated literal l on x,y
         b = x
 
     if a <= b:
-        return m * encodeDict(a, s1, b,s2, rel, d)
+        return m * atoms.encode(a, b, rel+s1+s2)
     else: # swap
         srel = '<='
         if rel == '<=':
@@ -136,41 +114,44 @@ def instantiate(l, x, y, d): # encode instantiated literal l on x,y
             srel = '='
         else:
             assert rel == '>='
-        return m * encodeDict(b, s2, a, s1, srel, d)
+        return m * atoms.encode(b,a,srel+s2+s1)
 
-def nebel_buerckert_encode_variables(signature, instance, CSP, max_node, boolvars):
+def nebel_buerckert_encode_variables(qcn, instance):
+    check_allen_signature(qcn.signature)
+
     import os.path
     import itertools
-    syntactic_interpretation = read_map(signature, os.path.join('data', 'ordclauses.map'))
+    syntactic_interpretation = read_map(qcn.signature, os.path.join('data', 'ordclauses.map'))
+
+    atoms = PropositionalAtoms()
 
     used_points = set()
-    for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
-            r = CSP[i][j]
+    for i, j in qcn.iterate_strict_triangle():
+        r = qcn.get(i, j)
 
-            for clause in syntactic_interpretation[frozenset(r)]:
-                cl = [ ]
-                for l in clause:
-                    cl.append( instantiate(l, i, j, boolvars) )
-                    if l.x == 'x':
-                        used_points.add( (i,l.s1) )
-                    else:
-                        used_points.add( (j,l.s1) )
-                    if l.y == 'x':
-                        used_points.add( (i,l.s2) )
-                    else:
-                        used_points.add( (j,l.s2) )
-                instance.add_clause( cl )
+        for clause in syntactic_interpretation[frozenset(r)]:
+            cl = [ ]
+            for l in clause:
+                cl.append( instantiate(l, i, j, atoms) )
+                if l.x == 'x':
+                    used_points.add( (i,l.s1) )
+                else:
+                    used_points.add( (j,l.s1) )
+                if l.y == 'x':
+                    used_points.add( (i,l.s2) )
+                else:
+                    used_points.add( (j,l.s2) )
+            instance.add_clause( cl )
 
     # encode ORD theory
     for i, s in used_points:
         # (2.) x <= x
-        instance.add_clause([ instantiate( literal('p', 'x', s, '<=', 'x', s), i, i, boolvars) ])
+        instance.add_clause([ instantiate( literal('p', 'x', s, '<=', 'x', s), i, i, atoms) ])
 
         if s == '-' and (i, '+') in used_points:
             # well-formed intervals
-            instance.add_clause([ instantiate( literal('p', 'x', '-', '<=', 'x', '+'), i, i, boolvars) ])
-            instance.add_clause([ instantiate( literal('n', 'x', '-', '=', 'x', '+'), i, i, boolvars) ])
+            instance.add_clause([ instantiate( literal('p', 'x', '-', '<=', 'x', '+'), i, i, atoms) ])
+            instance.add_clause([ instantiate( literal('n', 'x', '-', '=', 'x', '+'), i, i, atoms) ])
         continue
 
     for p1, s1 in used_points:
@@ -179,13 +160,13 @@ def nebel_buerckert_encode_variables(signature, instance, CSP, max_node, boolvar
                 continue
             if p1 <= p2:
                 # (3.) x <= y ^ y <= x -> x = y
-                instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, boolvars),
-                    instantiate( literal('n', 'x', s2, '<=', 'y', s1), p2, p1, boolvars),
-                    instantiate( literal('p', 'x', s1, '=', 'y', s2), p1, p2, boolvars) ])
+                instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, atoms),
+                    instantiate( literal('n', 'x', s2, '<=', 'y', s1), p2, p1, atoms),
+                    instantiate( literal('p', 'x', s1, '=', 'y', s2), p1, p2, atoms) ])
 
             # (4.) (5.) x = y -> x <= y
-            instance.add_clause([ instantiate( literal('n', 'x', s1, '=', 'y', s2), p1, p2, boolvars),
-                instantiate( literal('p', 'x', s1, '<=', 'y', s2), p1, p2, boolvars) ])
+            instance.add_clause([ instantiate( literal('n', 'x', s1, '=', 'y', s2), p1, p2, atoms),
+                instantiate( literal('p', 'x', s1, '<=', 'y', s2), p1, p2, atoms) ])
     for p1, s1 in used_points:
         for p2, s2 in used_points:
             for p3, s3 in used_points:
@@ -193,9 +174,9 @@ def nebel_buerckert_encode_variables(signature, instance, CSP, max_node, boolvar
                     continue
 
                 # (1.) x <= y ^ y <= z -> x <= z
-                instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, boolvars),
-                    instantiate( literal('n', 'x', s2, '<=', 'y', s3), p2, p3, boolvars),
-                    instantiate( literal('p', 'x', s1, '<=', 'y', s3), p1, p3, boolvars) ])
+                instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, atoms),
+                    instantiate( literal('n', 'x', s2, '<=', 'y', s3), p2, p3, atoms),
+                    instantiate( literal('p', 'x', s1, '<=', 'y', s3), p1, p3, atoms) ])
 
 
 def point_algebra_comptable():

@@ -424,7 +424,7 @@ if __name__ == '__main__':
         syntactic_interpretation.binra_synint(qcn, comptable, instance)
     elif clause_type == 'ord-clauses':
         import allen # TODO
-        allen.nebel_buerckert_encode_variables(signature, instance, CSP, max_node, dict())
+        allen.nebel_buerckert_encode_variables(qcn, instance)
     elif clause_type == 'support-pa':
         import allen
         allen.pham_support_pt_encode(qcn, instance)
