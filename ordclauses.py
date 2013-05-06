@@ -480,7 +480,6 @@ def encode_test(relation_s):
 if __name__ == '__main__':
     print "[Nebel/Bürckert] Generate map \pi for all relations"
 
-    global ord_theory
     ord_theory = ordtheory()
 
     # read ord-horn relations for verification purposes
@@ -516,7 +515,6 @@ if __name__ == '__main__':
         if relation:
             relations.append(frozenset(relation))
     relations.sort(key=lambda x: len(x))
-    global allen_relations
     allen_relations = relations
 
     print "Compute CNFs for all relations"

@@ -125,6 +125,7 @@ def nebel_buerckert_encode_variables(qcn, instance):
 
     atoms = PropositionalAtoms()
 
+    boolvars = dict()
     used_points = set()
     for i, j in qcn.iterate_strict_triangle():
         r = qcn.get(i, j)
@@ -158,6 +159,10 @@ def nebel_buerckert_encode_variables(qcn, instance):
         for p2, s2 in used_points:
             if (p1,s1) == (p2,s2):
                 continue
+
+            if (not p1 == p2) and (p1, p2) not in qcn.graph:
+                continue
+
             if p1 <= p2:
                 # (3.) x <= y ^ y <= x -> x = y
                 instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, atoms),
@@ -169,8 +174,22 @@ def nebel_buerckert_encode_variables(qcn, instance):
                 instantiate( literal('p', 'x', s1, '<=', 'y', s2), p1, p2, atoms) ])
     for p1, s1 in used_points:
         for p2, s2 in used_points:
+
+            if (not p1 == p2) and (p1, p2) not in qcn.graph:
+                continue
+
+            if (p1,s1) == (p2,s2):
+                continue
+
             for p3, s3 in used_points:
-                if (p1,s1) == (p2,s2) or (p1,s1) == (p3,s3) or (p2,s2) == (p3,s3):
+
+                if (not p1 == p3) and (p1, p3) not in qcn.graph:
+                    continue
+
+                if (not p2 == p3) and (p2, p3) not in qcn.graph:
+                    continue
+
+                if (p1,s1) == (p3,s3) or (p2,s2) == (p3,s3):
                     continue
 
                 # (1.) x <= y ^ y <= z -> x <= z
