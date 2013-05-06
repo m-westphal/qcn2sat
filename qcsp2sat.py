@@ -286,8 +286,8 @@ def binra_gac(qcn, comptable, out):
                     for br3 in not_supported:
                         cl = [ -1 * a_br1, -1 * a_br2, -1 * atoms.encode(i, k, br3) ]
                         c_clauses.append(cl)
-                for cl in c_clauses:
-                    out.add_clause(cl)
+        for cl in c_clauses:
+            out.add_clause(cl)
 
 def lexBFS(vertices, edges):
     assert vertices
