@@ -118,6 +118,7 @@ class QCN:
             for (i, j) in iterate:
                 yield i, j
     def iterate_strict_triples(self):
+        """iterate i < j < k triples"""
         if not self.graph:
             for i in xrange(0, self.size):
                 for j in xrange(i+1, self.size):
@@ -138,25 +139,26 @@ class QCN:
                 for k in nb[i] & nb[j]:
                     yield i, j, k
 
-def encodeDict(i, j, baserel, d):
-    """assign a boolean variable (id number) to baserel in R_ij"""
-    try:
-        return d[i][j][baserel]
-    except KeyError:
-        assert i < j
-        try:
-            d["max"] += 1
-        except KeyError:
-            d["max"] = 1
+class PropositionalAtoms:
+    def __init__(self):
+        self.names = dict()
+        self.last_used = 0
+    
+    def encode(self, i, j, baserel):
+        """assign a boolean atom (id number) to baserel in R_ij"""
 
-        ret = d["max"]
-        if not i in d:
-            d[i] = dict()
-        if not j in d[i]:
-            d[i][j] = dict()
-        assert not baserel in d[i][j]
-        d[i][j][baserel] = ret
-        return ret
+        try:
+            return self.names[i][j][baserel]
+        except KeyError:
+            assert i <= j
+            self.last_used += 1
+
+            if not i in self.names:
+                self.names[i] = dict()
+            if not j in self.names[i]:
+                self.names[i][j] = dict()
+            self.names[i][j][baserel] = self.last_used
+            return self.last_used
 
 def readCompTable(calculus):
     table = { }
@@ -200,43 +202,45 @@ def readGQRCSPstdin(signature):
 
     return data
 
-def directDomEncoding(instance, qcn, boolvars):
+
+def directDomEncoding(instance, qcn, atoms):
     """build (var,val) as bool variables with ALO/AMO clauses"""
 
     for i, j in qcn.iterate_strict_triangle():
         rel = qcn.get(i, j)
-        alo = [ encodeDict(i, j, br, boolvars) for br in rel ]
+        alo = [ atoms.encode(i, j, br) for br in rel ]
         instance.add_clause(alo)
 
         for x in xrange(len(rel)):
             br1 = rel[x]
             for y in xrange(x+1,len(rel)):
                 br2 = rel[y]
-                amo = [ -1 * encodeDict(x, y, br1, boolvars), -1 * encodeDict(x, y, br2, boolvars) ]
+                amo = [ -1 * atoms.encode(x, y, br1), -1 * atoms.encode(x, y, br2) ]
                 instance.add_clause(amo)
 
-def writeSATsup(qcn, comptable, out):
-    boolvars = dict()
+def binra_support(qcn, comptable, out):
+    atoms = PropositionalAtoms()
 
-    directDomEncoding(out, qcn, boolvars)
+    directDomEncoding(out, qcn, atoms)
 
     for i, j, k in qcn.iterate_strict_triples():
         r_ij = qcn.get(i, j)
         r_ik = qcn.get(i, k)
         r_jk = qcn.get(j, k)
         for br1 in r_ij:
-            not_b_ij = -1 * encodeDict(i, j, br1, boolvars)
+            not_b_ij = -1 * atoms.encode(i, j, br1)
             for br2 in r_jk:
-                intersection = frozenset(r_ik) & comptable[br1 + " " + br2]
+                intersection = list(frozenset(r_ik) & comptable[br1 + " " + br2])
+                intersection.sort()
 
-                cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
-                cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
+                cl = [ not_b_ij, -1 * atoms.encode(j, k, br2) ]
+                cl += [ atoms.encode(i, k, br) for br in intersection ]
                 out.add_clause(cl)
 
-def writeSATdirect(qcn, comptable, out):
-    boolvars = dict()
+def binra_direct(qcn, comptable, out):
+    atoms = PropositionalAtoms()
 
-    directDomEncoding(out, qcn, boolvars)
+    directDomEncoding(out, qcn, atoms)
 
     for i, j, k in qcn.iterate_strict_triples():
         r_ij = qcn.get(i, j)
@@ -244,48 +248,44 @@ def writeSATdirect(qcn, comptable, out):
         r_jk = qcn.get(j, k)
 
         for br1 in r_ij:
-            not_b_ij = -1 * encodeDict(i, j, br1, boolvars)
+            not_b_ij = -1 * atoms.encode(i, j, br1)
             for br2 in r_jk:
-                intersection = frozenset(r_ik) & comptable[br1 + " " + br2]
+                intersection = list(frozenset(r_ik) & comptable[br1 + " " + br2])
+                intersection.sort()
 
-                cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
+                cl = [ not_b_ij, -1 * atoms.encode(j, k, br2) ]
                 for br in signature:
                     if not br in intersection and br in r_ik:
-                        cl2 = cl + [ -1 * encodeDict(i, k, br, boolvars) ]
+                        cl2 = cl + [ -1 * atoms.encode(i, k, br) ]
                         out.add_clause(cl2)
 
-def writeSATgac(qcn, comptable, out):
-    max_node, CSP = completeConstraintGraph(constraints, signature)
+def binra_gac(qcn, comptable, out):
+    atoms = PropositionalAtoms()
 
-    boolvars = dict()
+    directDomEncoding(out, qcn, atoms)
 
-    directDomEncoding(out, qcn, boolvars)
+    for i, j, k in qcn.iterate_strict_triples():
+        r_ij = qcn.get(i, j)
+        r_ik = qcn.get(i, k)
+        r_jk = qcn.get(j, k)
+        # for each falsifying triple of labels
+        #    add \not triple_1, ..., \not triple_n  (BLOCKS this assignment)
+        c_clauses = [ ]
+        for br1 in r_ij:
+            a_br1 = atoms.encode(i, j, br1)
+            for br2 in r_jk:
+                a_br2 = atoms.encode(j, k, br2)
 
-    # TODO: STRICT triples?
-    for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
-            if not (i,j) in cgraph:
-                continue
-            r_ij = CSP[i][j]
-            for k in xrange(j+1, max_node+1): # 3 for loops iterate over constraints
-                if not ((i,k) in cgraph and (j,k) in cgraph):
-                    continue
-                r_ik = CSP[i][k]
-                r_jk = CSP[j][k]
-                # for each falsifying triple of labels
-                #    add \not triple_1, ..., \not triple_n  (BLOCKS this assignment)
-                c_clauses = [ ]
-                for br1 in r_ij:
-                    for br2 in r_jk:
-                        supported = comptable[br1 + " " + br2] & frozenset(r_ik)
-                        if not supported:
-                            cl = [ -1 * encodeDict(i, j, br1, boolvars), -1 * encodeDict(j, k, br2, boolvars) ]
-                            c_clauses.append(cl)
-                        else:
-                            not_supported = frozenset(r_ik) - supported
-                            for br3 in not_supported:
-                                cl = [ -1 * encodeDict(i, j, br1, boolvars), -1 * encodeDict(j, k, br2, boolvars), -1 * encodeDict(i, k, br3, boolvars) ]
-                                c_clauses.append(cl)
+                supported = comptable[br1 + " " + br2] & frozenset(r_ik)
+                if not supported:  # TODO: annoying case
+                    cl = [ -1 * a_br1, -1 * a_br2 ]
+                    c_clauses.append(cl)
+                else:
+                    not_supported = list(frozenset(r_ik) - supported)
+                    not_supported.sort()
+                    for br3 in not_supported:
+                        cl = [ -1 * a_br1, -1 * a_br2, -1 * atoms.encode(i, k, br3) ]
+                        c_clauses.append(cl)
                 for cl in c_clauses:
                     out.add_clause(cl)
 
@@ -401,7 +401,6 @@ if __name__ == '__main__':
         print "-1 0"
         raise SystemExit()
 
-    cgraph = None
     if graph_type == 'lexbfs':
             vertices = set( [ t for (t, _) in qcn.constraints.keys() ] +
                             [ t for (_, t) in qcn.constraints.keys() ] )
@@ -415,24 +414,21 @@ if __name__ == '__main__':
 
     instance = cnf_output(only_estimate_size)
     if clause_type == 'support':
-        writeSATsup(qcn, comptable, instance)
+        binra_support(qcn, comptable, instance)
     elif clause_type == 'direct':
-        writeSATdirect(qcn, comptable, instance)
+        binra_direct(qcn, comptable, instance)
     elif clause_type == 'gac':
-        writeSATgac(qcn, comptable, instance)
+        binra_gac(qcn, comptable, instance)
     elif clause_type == 'syn-int':
         import syntactic_interpretation
-        syntactic_interpretation.writeSATint(qcn, comptable, instance)
+        syntactic_interpretation.binra_synint(qcn, comptable, instance)
     elif clause_type == 'ord-clauses':
-        max_node, CSP = completeConstraintGraph(qcsp, signature)
-        import allen
+        import allen # TODO
         allen.nebel_buerckert_encode_variables(signature, instance, CSP, max_node, dict())
     elif clause_type == 'support-pa':
-        max_node, CSP = completeConstraintGraph(qcsp, signature)
         import allen
-        allen.pham_support_pt_encode(signature, instance, CSP, max_node, cgraph)
+        allen.pham_support_pt_encode(qcn, instance)
     elif clause_type == 'direct-pa':
-        max_node, CSP = completeConstraintGraph(qcsp, signature)
         import allen
-        allen.pham_direct_pt_encode(signature, instance, CSP, max_node, cgraph)
+        allen.pham_direct_pt_encode(qcn, instance)
     instance.flush()  # note, invalidates content as well

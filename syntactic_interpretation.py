@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from qcsp2sat import encodeDict
+from qcsp2sat import PropositionalAtoms
 
 def readASPSolution(filename, signature):
     import re
@@ -78,7 +78,7 @@ def readASPSolution(filename, signature):
 
     return None, None
 
-def intDomEncoding(instance, qcn, boolvars, nogoods, representation):
+def intDomEncoding(instance, qcn, atoms, nogoods, representation):
     """build (var,val) as bool variables with ALO/AMO/FOR clauses"""
     import itertools
 
@@ -102,11 +102,11 @@ def intDomEncoding(instance, qcn, boolvars, nogoods, representation):
                     is_allowed = True
                     break
             if not is_allowed:
-                clause = [ -1 * n * encodeDict(i, j, 'atom'+str(a), boolvars) for (a,n) in enumerate(m) ]
+                clause = [ -1 * n * atoms.encode(i, j, 'atom'+str(a)) for (a,n) in enumerate(m) ]
                 instance.add_clause(clause)
 
-def writeSATint(qcn, comptable, out):
-    boolvars = dict()
+def binra_synint(qcn, comptable, out):
+    atoms = PropositionalAtoms()
 
     nogoods = [ ]
     representation = dict()
@@ -121,12 +121,12 @@ def writeSATint(qcn, comptable, out):
     if not representation:
         raise SystemExit('No syntactic interpretation found!')
 
-    intDomEncoding(out, qcn, boolvars, nogoods, representation)
+    intDomEncoding(out, qcn, atoms, nogoods, representation)
 
     for i, j, k in qcn.iterate_strict_triples():
         for xz, xy, yz in nogoods:
-            clause = [ -1 * xy[0] * encodeDict(i, j, 'atom'+xy[1], boolvars) ]
-            clause +=[ -1 * yz[0] * encodeDict(j, k, 'atom'+yz[1], boolvars) ]
-            clause +=[ -1 * xz[0] * encodeDict(i, k, 'atom'+xz[1], boolvars) ]
+            clause = [ -1 * xy[0] * atoms.encode(i, j, 'atom'+xy[1]) ]
+            clause +=[ -1 * yz[0] * atoms.encode(j, k, 'atom'+yz[1]) ]
+            clause +=[ -1 * xz[0] * atoms.encode(i, k, 'atom'+xz[1]) ]
             out.add_clause(clause)
 
