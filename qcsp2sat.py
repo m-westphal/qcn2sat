@@ -185,11 +185,11 @@ def directDomEncoding(instance, constraints, max_node, boolvars, signature, cgra
         alo = [ encodeDict(i, j, br, boolvars) for br in relation ]
         instance.add_clause(alo)
 
-        for i in xrange(len(relation)):
-            br1 = relation[i]
-            for j in xrange(i+1,len(relation)):
-                br2 = relation[j]
-                amo = [ -1 * encodeDict(i, j, br1, boolvars), -1 * encodeDict(i, j, br2, boolvars) ]
+        for x in xrange(len(relation)):
+            br1 = relation[x]
+            for y in xrange(x+1,len(relation)):
+                br2 = relation[y]
+                amo = [ -1 * encodeDict(x, y, br1, boolvars), -1 * encodeDict(x, y, br2, boolvars) ]
                 instance.add_clause(amo)
 
 nogoods = [ ]
