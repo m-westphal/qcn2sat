@@ -74,6 +74,70 @@ class cnf_output:
                 self.fd.write(decomp.decompress(chunk))
             del decomp
 
+class QCN:
+    def __init__(self, signature):
+        self.size = 0
+        self.signature = frozenset(signature)
+        s_sign = list(signature)
+        s_sign.sort()
+        self.universal = s_sign
+        self.constraints = dict()
+
+        self.graph = None
+
+    def add(self, i, j, relation):
+        self.size = max(self.size, max(i,j)+1)
+        assert i < j
+        for b in relation:
+            if not b in self.signature:
+                raise SystemExit("Base relation not in given signature\n")
+
+        idx = (i,j)
+        old = self.signature
+        if idx in self.constraints:
+            old = frozenset(self.constraints[idx])
+        relation_sort = list(frozenset(relation) & old)
+        relation_sort.sort()
+
+        self.constraints[idx] = relation_sort
+
+    def get(self, i, j):
+        try:
+            return self.constraints[(i,j)]
+        except KeyError:
+            return self.universal
+
+    def iterate_strict_triangle(self):
+        if not self.graph:
+            for i in xrange(0, self.size):
+                for j in xrange(i+1, self.size):
+                    yield i, j
+        else:
+            iterate = [ (i, j) for (i, j) in self.graph if i < j ]
+            iterate.sort()
+            for (i, j) in iterate:
+                yield i, j
+    def iterate_strict_triples(self):
+        if not self.graph:
+            for i in xrange(0, self.size):
+                for j in xrange(i+1, self.size):
+                    for k in xrange(j+1, self.size):
+                        yield i, j, k
+        else:
+            iterate = [ (i, j) for (i, j) in self.graph if i < j ]
+            iterate.sort()
+
+            nb = dict()
+            for i in xrange(self.size):
+                nb[i] = set()
+
+            for (i, j) in iterate:
+                nb[i].add(j)
+
+            for (i, j) in iterate:
+                for k in nb[i] & nb[j]:
+                    yield i, j, k
+
 def encodeDict(i, j, baserel, d):
     """assign a boolean variable (id number) to baserel in R_ij"""
     try:
@@ -115,7 +179,7 @@ def readCompTable(calculus):
     return table, frozenset(ALL_RELATIONS)
 
 def readGQRCSPstdin(signature):
-    constraints = [ ]
+    data = QCN(signature)
 
     lines = sys.stdin.readlines()
     for l in lines:
@@ -129,239 +193,75 @@ def readGQRCSPstdin(signature):
                 return None
             for b in rel:
                 if not b in signature:
-                    raise SystemExit("Calculus signature does not match csp")
+                    raise SystemExit("Calculus signature does not match CSP")
 
             if frozenset(rel) != signature:  # ignore universal statements
-                constraints.append( (x, y, rel) )
+                data.add(x, y, rel)
 
-    return constraints
+    return data
 
-def iterate_qcn_strict_triangle(signature, constraints, cgraph):
-    max_node, lookup = completeConstraintGraph(constraints, signature)
-    for i in xrange(0, max_node+1):
-        for j in xrange(i+1, max_node+1):
-            if not (i,j) in cgraph:
-                continue
-            try:
-                rel = lookup[i][j]
-            except KeyError:
-                rel = signature
-            yield i, j, rel
-    del lookup
-
-def iterate_qcn_strict_triple(signature, constraints, cgraph):
-    max_node, _ = completeConstraintGraph(constraints, signature)
-    for i in xrange(0, max_node+1):
-        for j in xrange(i+1, max_node+1):
-            if not (i,j) in cgraph:
-                continue
-            for k in xrange(j+1, max_node+1):
-                if not (i,k) in cgraph or not (j,k) in cgraph:
-                    continue
-                yield i, j, k
-
-def completeConstraintGraph(constraints, ALL_RELATIONS):
-    """turn the CSP into a complete constraint network"""
-    max_node = max( [ t for (_, t, _) in constraints ] )
-    CSP = dict()
-    for i in xrange(0, max_node+1):
-        CSP[i] = dict()
-        for j in range(i+1, max_node+1):
-            CSP[i][j] = ALL_RELATIONS
-
-    for i, j, r in constraints:
-        assert i < j
-        assert j <= max_node
-        CSP[i][j] = r
-
-    return max_node, CSP
-
-def directDomEncoding(instance, constraints, max_node, boolvars, signature, cgraph):
+def directDomEncoding(instance, qcn, boolvars):
     """build (var,val) as bool variables with ALO/AMO clauses"""
 
-    for i, j, rel in iterate_qcn_strict_triangle(signature, constraints, cgraph):
-        relation = list(rel)
-        relation.sort()
-        alo = [ encodeDict(i, j, br, boolvars) for br in relation ]
+    for i, j in qcn.iterate_strict_triangle():
+        rel = qcn.get(i, j)
+        alo = [ encodeDict(i, j, br, boolvars) for br in rel ]
         instance.add_clause(alo)
 
-        for x in xrange(len(relation)):
-            br1 = relation[x]
-            for y in xrange(x+1,len(relation)):
-                br2 = relation[y]
+        for x in xrange(len(rel)):
+            br1 = rel[x]
+            for y in xrange(x+1,len(rel)):
+                br2 = rel[y]
                 amo = [ -1 * encodeDict(x, y, br1, boolvars), -1 * encodeDict(x, y, br2, boolvars) ]
                 instance.add_clause(amo)
 
-nogoods = [ ]
-representation = dict()
-def readASPSolution(filename, signature):
-    global nogoods
-    global representation
+def writeSATsup(qcn, comptable, out):
+    boolvars = dict()
 
-    lines = open(filename,'r')
-    for l in lines:
-        if 'inf' in l:
-            for inf in l.split('inf'):
-                if inf == '':
-                    continue
-                inf = inf.strip()
-                content = re.match(r'\(([\d]+),([\d]+),([\d]+),([\d]+),([\d]+),([\d]+)\)', inf)
-                xz = (content.group(1), content.group(2))
-                if xz[0] == '0':
-                    xz = (1, content.group(2)) # NEGATION
-                else:
-                    xz = (-1, content.group(2)) # NEGATION
-                xy = (content.group(3), content.group(4))
-                if xy[0] == '0':
-                    xy = (-1, content.group(4))
-                else:
-                    xy = (1, content.group(4))
-                yz = (content.group(5), content.group(6))
-                if yz[0] == '0':
-                    yz = (-1, content.group(6))
-                else:
-                    yz = (1, content.group(6))
-                nogoods.append( (xz,xy,yz) ) # TODO
-        if 'dec' in l:
-            for dec in l.split('dec'):
-                if dec == '':
-                    continue
-                dec = dec.strip()
-                content = re.match(r'\(([\d]+),([\D]+),([\d]+)\)', dec)
-                negation, br, atom = (content.group(1), content.group(2)[1:], content.group(3))
-                if negation == '0':
-                    negation = -1
-                elif negation == '1':
-                    negation = 1
-                else:
-                    assert False
+    directDomEncoding(out, qcn, boolvars)
 
-                try:
-                    representation[br].append( (negation, atom) )
-                except KeyError:
-                    representation[br] = [ (negation, atom) ]
+    for i, j, k in qcn.iterate_strict_triples():
+        r_ij = qcn.get(i, j)
+        r_ik = qcn.get(i, k)
+        r_jk = qcn.get(j, k)
+        for br1 in r_ij:
+            not_b_ij = -1 * encodeDict(i, j, br1, boolvars)
+            for br2 in r_jk:
+                intersection = frozenset(r_ik) & comptable[br1 + " " + br2]
 
-    lines.close()
-    if set(representation.keys()) == set(signature):
-        return True
+                cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
+                cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
+                out.add_clause(cl)
 
-    # clear globals
-    representation = dict()
-    nogoods = [ ]
+def writeSATdirect(qcn, comptable, out):
+    boolvars = dict()
 
-    return False
+    directDomEncoding(out, qcn, boolvars)
 
-def intDomEncoding(instance, signature, constraints, cgraph, boolvars):
-    """build (var,val) as bool variables with ALO/AMO/FOR clauses"""
-    import itertools
-    from os import path, listdir
+    for i, j, k in qcn.iterate_strict_triples():
+        r_ij = qcn.get(i, j)
+        r_ik = qcn.get(i, k)
+        r_jk = qcn.get(j, k)
 
-    for f in listdir('data'):
-        if f.endswith('.das'):
-            if readASPSolution(path.join('data',f), signature):
-                break
-    if not representation:
-        raise SystemExit('No syntactic interpretation found!')
+        for br1 in r_ij:
+            not_b_ij = -1 * encodeDict(i, j, br1, boolvars)
+            for br2 in r_jk:
+                intersection = frozenset(r_ik) & comptable[br1 + " " + br2]
 
-    nr_atoms = None  # number of propositional atoms in the decomposition
-    for br in signature:
-        t = len(representation[br])
-        if nr_atoms is None:
-            nr_atoms = t
-        assert t == nr_atoms
+                cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
+                for br in signature:
+                    if not br in intersection and br in r_ik:
+                        cl2 = cl + [ -1 * encodeDict(i, k, br, boolvars) ]
+                        out.add_clause(cl2)
 
-    for i,j,r in iterate_qcn_strict_triangle(signature, constraints, cgraph):
-        # forbidden clauses
-        for m in itertools.product([-1,1],repeat=nr_atoms):  # all models
-            is_allowed = False
-            for br in signature:
-                v = representation[br]
-                v.sort(key=lambda x: x[1])
-                t = tuple( [ n for (n, _) in v ] )
-                if t == m and br in r:
-                    is_allowed = True
-                    break
-            if not is_allowed:
-                clause = [ -1 * n * encodeDict(i, j, 'atom'+str(a), boolvars) for (a,n) in enumerate(m) ]
-                instance.add_clause(clause)
-
-def writeSATint(constraints, signature, comptable, out, cgraph):
-    boolvars = { }
-
-    intDomEncoding(out, signature, constraints, cgraph, boolvars)
-
-    for i, j, k in iterate_qcn_strict_triple(signature, constraints, cgraph):
-        for xz, xy, yz in nogoods:
-            clause = [ -1 * xy[0] * encodeDict(i, j, 'atom'+xy[1], boolvars) ]
-            clause +=[ -1 * yz[0] * encodeDict(j, k, 'atom'+yz[1], boolvars) ]
-            clause +=[ -1 * xz[0] * encodeDict(i, k, 'atom'+xz[1], boolvars) ]
-            out.add_clause(clause)
-
-def writeSATsup(constraints, signature, comptable, out, cgraph):
-    max_node, CSP = completeConstraintGraph(constraints, signature)
-
-    boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
-
-    directDomEncoding(out, constraints, max_node, boolvars, signature, cgraph)
-
-#    print "Construct support clauses (cubic time/space):",
-    for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
-            if not (i,j) in cgraph:
-                continue
-            r_ij = CSP[i][j]
-            for k in xrange(j+1, max_node+1):
-                if not ((i,k) in cgraph and (j,k) in cgraph):
-                    continue
-                r_ik = CSP[i][k]
-                r_jk = CSP[j][k]
-                for br1 in r_ij:
-                    not_b_ij = -1 * encodeDict(i, j, br1, boolvars)
-                    for br2 in r_jk:
-                        intersection = frozenset(r_ik) & comptable[br1 + " " + br2]
-
-                        cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
-                        cl += [ encodeDict(i, k, br, boolvars) for br in intersection ]
-                        out.add_clause(cl)
-
-def writeSATdirect(constraints, signature, comptable, out, cgraph):
-    max_node, CSP = completeConstraintGraph(constraints, signature)
-
-    boolvars = { } # maps b in R_ij to boolean variable (direct encoding)
-
-    directDomEncoding(out, constraints, max_node, boolvars, signature, cgraph)
-
-#    print "Construct direct clauses (cubic time/space):",
-    for i in xrange(max_node+1):
-        for j in xrange(i+1, max_node+1):
-            if not (i,j) in cgraph:
-                continue
-            r_ij = CSP[i][j]
-            for k in xrange(j+1, max_node+1):
-                if not ((i,k) in cgraph and (j,k) in cgraph):
-                    continue
-                r_ik = CSP[i][k]
-                r_jk = CSP[j][k]
-                for br1 in r_ij:
-                    not_b_ij = -1 * encodeDict(i, j, br1, boolvars)
-                    for br2 in r_jk:
-                        intersection = frozenset(r_ik) & comptable[br1 + " " + br2]
-
-                        cl = [ not_b_ij, -1 * encodeDict(j, k, br2, boolvars) ]
-                        for br in signature:
-                            if not br in intersection and br in r_ik:
-                                cl2 = cl + [ -1 * encodeDict(i, k, br, boolvars) ]
-                                out.add_clause(cl2)
-
-def writeSATgac(constraints, signature, comptable, out, cgraph):
+def writeSATgac(qcn, comptable, out):
     max_node, CSP = completeConstraintGraph(constraints, signature)
 
     boolvars = dict()
 
-    directDomEncoding(out, constraints, max_node, boolvars, signature, cgraph)
+    directDomEncoding(out, qcn, boolvars)
 
-    # SUPPORT
-#    print "Construct GAC clauses:",
+    # TODO: STRICT triples?
     for i in xrange(max_node+1):
         for j in xrange(i+1, max_node+1):
             if not (i,j) in cgraph:
@@ -493,41 +393,40 @@ if __name__ == '__main__':
     only_estimate_size, clause_type, graph_type, ct_filename = check_options()
 
     comptable, signature = readCompTable(ct_filename)
-    qcsp = readGQRCSPstdin(signature)
+    qcn = readGQRCSPstdin(signature)
 
-    if not qcsp:  # no constraints read; assume problem was unsatisfiable
+    if qcn.size == 0:  # no constraints read; assume problem was unsatisfiable
         print "p cnf 1 2"
         print "1 0"
         print "-1 0"
         raise SystemExit()
 
     cgraph = None
-    if graph_type == 'complete':
-        vararray = range(0, max([ t for (_, t, _) in qcsp])+1)
-        cgraph = frozenset([ (x,y) for x in vararray for y in vararray if x != y ])
-    elif graph_type == 'lexbfs':
-            vertices = set( [ t for _, t, _ in qcsp ] + [ t for t, _, _ in qcsp] )
+    if graph_type == 'lexbfs':
+            vertices = set( [ t for (t, _) in qcn.constraints.keys() ] +
+                            [ t for (_, t) in qcn.constraints.keys() ] )
             edges = dict( [ (v, set()) for v in vertices ] )
-            for i, j, _ in qcsp:
+            for (i, j) in qcn.constraints.keys():
                 edges[i].add(j)
                 edges[j].add(i)
 
             order = lexBFS(vertices, edges)
-            cgraph = eliminationGame(vertices, edges, order)
+            qcn.graph = eliminationGame(vertices, edges, order)
 
     instance = cnf_output(only_estimate_size)
     if clause_type == 'support':
-        writeSATsup(qcsp, signature, comptable, instance, cgraph)
+        writeSATsup(qcn, comptable, instance)
     elif clause_type == 'direct':
-        writeSATdirect(qcsp, signature, comptable, instance, cgraph)
+        writeSATdirect(qcn, comptable, instance)
     elif clause_type == 'gac':
-        writeSATgac(qcsp, signature, comptable, instance, cgraph)
+        writeSATgac(qcn, comptable, instance)
+    elif clause_type == 'syn-int':
+        import syntactic_interpretation
+        syntactic_interpretation.writeSATint(qcn, comptable, instance)
     elif clause_type == 'ord-clauses':
         max_node, CSP = completeConstraintGraph(qcsp, signature)
         import allen
         allen.nebel_buerckert_encode_variables(signature, instance, CSP, max_node, dict())
-    elif clause_type == 'syn-int':
-        writeSATint(qcsp, signature, comptable, instance, cgraph)
     elif clause_type == 'support-pa':
         max_node, CSP = completeConstraintGraph(qcsp, signature)
         import allen
