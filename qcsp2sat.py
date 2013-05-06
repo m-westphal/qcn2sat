@@ -215,7 +215,7 @@ def directDomEncoding(instance, qcn, atoms):
             br1 = rel[x]
             for y in xrange(x+1,len(rel)):
                 br2 = rel[y]
-                amo = [ -1 * atoms.encode(x, y, br1), -1 * atoms.encode(x, y, br2) ]
+                amo = [ -1 * atoms.encode(i, j, br1), -1 * atoms.encode(i, j, br2) ]
                 instance.add_clause(amo)
 
 def binra_support(qcn, comptable, out):
