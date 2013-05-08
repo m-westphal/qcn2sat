@@ -160,7 +160,7 @@ def nebel_buerckert_encode_variables(qcn, instance):
             if (p1,s1) == (p2,s2):
                 continue
 
-            if (not p1 == p2) and (p1, p2) not in qcn.graph:
+            if (not p1 == p2) and qcn.graph and (p1, p2) not in qcn.graph:
                 continue
 
             if p1 <= p2:
@@ -175,7 +175,7 @@ def nebel_buerckert_encode_variables(qcn, instance):
     for p1, s1 in used_points:
         for p2, s2 in used_points:
 
-            if (not p1 == p2) and (p1, p2) not in qcn.graph:
+            if (not p1 == p2) and qcn.graph and (p1, p2) not in qcn.graph:
                 continue
 
             if (p1,s1) == (p2,s2):
@@ -183,10 +183,10 @@ def nebel_buerckert_encode_variables(qcn, instance):
 
             for p3, s3 in used_points:
 
-                if (not p1 == p3) and (p1, p3) not in qcn.graph:
+                if (not p1 == p3) and qcn.graph and (p1, p3) not in qcn.graph:
                     continue
 
-                if (not p2 == p3) and (p2, p3) not in qcn.graph:
+                if (not p2 == p3) and qcn.graph and (p2, p3) not in qcn.graph:
                     continue
 
                 if (p1,s1) == (p3,s3) or (p2,s2) == (p3,s3):
