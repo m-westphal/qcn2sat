@@ -170,7 +170,7 @@ def nebel_buerckert_encode_variables(qcn, instance):
                 continue
 
             # (3.) x <= y ^ y <= x -> x = y
-            if p1 <= p2 and s1 <= s2:
+            if p1 < p2 or (p1 == p2 and s1 < s2):
                 instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, atoms),
                     instantiate( literal('n', 'x', s2, '<=', 'y', s1), p2, p1, atoms),
                     instantiate( literal('p', 'x', s1, '=', 'y', s2), p1, p2, atoms) ])
