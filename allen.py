@@ -93,6 +93,8 @@ def instantiate(l, x, y, atoms): # encode instantiated literal l on x,y
     assert l.y in ['x', 'y']
     (s1,s2,rel) = (l.s1, l.s2, l.r)
 
+    assert rel in [ '<=', '=', '>=' ]
+
     m = 1
     if not l.is_positive():
         m = -1
@@ -104,16 +106,20 @@ def instantiate(l, x, y, atoms): # encode instantiated literal l on x,y
     if l.y == 'x':
         b = x
 
+    # PropositionalAtoms::encode() assume a <= b: which is not true in our
+    # case, so we secretly wrap the *identification string*
+    # For "=" we assume symmetry
     if a <= b:
         return m * atoms.encode(a, b, rel+s1+s2)
     else: # swap
-        srel = '<='
+        srel = None
         if rel == '<=':
             srel = '>='
         elif rel == '=':
             srel = '='
-        else:
-            assert rel == '>='
+        elif rel == '>=':
+            srel = '<='
+        assert srel
         return m * atoms.encode(b,a,srel+s2+s1)
 
 def nebel_buerckert_encode_variables(qcn, instance):
@@ -147,10 +153,10 @@ def nebel_buerckert_encode_variables(qcn, instance):
     # encode ORD theory
     for i, s in used_points:
         # (2.) x <= x
-        instance.add_clause([ instantiate( literal('p', 'x', s, '<=', 'x', s), i, i, atoms) ])
+#        instance.add_clause([ instantiate( literal('p', 'x', s, '<=', 'x', s), i, i, atoms) ])
 
+        # well-formed intervals
         if s == '-' and (i, '+') in used_points:
-            # well-formed intervals
             instance.add_clause([ instantiate( literal('p', 'x', '-', '<=', 'x', '+'), i, i, atoms) ])
             instance.add_clause([ instantiate( literal('n', 'x', '-', '=', 'x', '+'), i, i, atoms) ])
         continue
@@ -163,8 +169,8 @@ def nebel_buerckert_encode_variables(qcn, instance):
             if (not p1 == p2) and qcn.graph and (p1, p2) not in qcn.graph:
                 continue
 
-            if p1 <= p2:
-                # (3.) x <= y ^ y <= x -> x = y
+            # (3.) x <= y ^ y <= x -> x = y
+            if p1 <= p2 and s1 <= s2:
                 instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, atoms),
                     instantiate( literal('n', 'x', s2, '<=', 'y', s1), p2, p1, atoms),
                     instantiate( literal('p', 'x', s1, '=', 'y', s2), p1, p2, atoms) ])
