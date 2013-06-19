@@ -106,10 +106,10 @@ def instantiate(l, x, y, atoms): # encode instantiated literal l on x,y
     if l.y == 'x':
         b = x
 
-    # PropositionalAtoms::encode() assume a <= b: which is not true in our
+    # PropositionalAtoms::encode() assumes a <= b: which is not true in our
     # case, so we secretly wrap the *identification string*
     # For "=" we assume symmetry
-    if a <= b:
+    if a < b or (a == b and s1 < s2):
         return m * atoms.encode(a, b, rel+s1+s2)
     else: # swap
         srel = None
