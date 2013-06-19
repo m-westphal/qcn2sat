@@ -215,13 +215,13 @@ def point_algebra_comptable():
 
     return pa
 
-def get_pham_pa_clause(br):
-    if br == '<':
+def pham_mu(br):
+    if br == '=':
+        return ('=--', '<-+', '>+-', '=++')
+    elif br == '<':
         return ('<--', '<-+', '<+-', '<++')
     elif br == '>':
         return ('>--', '>-+', '>+-', '>++')
-    elif br == '=':
-        return ('=--', '<-+', '>+-', '=++')
     elif br == 'd':
         return ('>--', '<-+', '>+-', '<++')
     elif br == 'di':
@@ -294,35 +294,39 @@ def pham_pt_directDomEncoding(qcn, out, atoms):
         rel_ij = qcn.get(i, j)
         pa_set = set()
         for br in rel_ij:
-            pa_set |= set(get_pham_pa_clause(br))
+            pa_set |= set(pham_mu(br))
         try:
-            pa_network[i][j] = pa_set
+            pa_network[i][j] = frozenset(pa_set)
         except KeyError:
             new = dict()
-            new[j] = pa_set
+            new[j] = frozenset(pa_set)
             pa_network[i] = new
 
         for s1 in ['-', '+']:
             for s2 in ['-', '+']:
-                if i == j and s1 >= s2:
+#                if i == j and s1 >= s2:
+                if i == j and s1 == s2:
                     continue
 
                 alo = [ ]
                 for p in [ '<'+s1+s2, '='+s1+s2, '>'+s1+s2 ]:
-                    if p in pa_set:
+#                    if p in pa_set:
                         alo.append(atoms.encode(i,j,p))
                 assert alo
                 out.add_clause(alo)
 
-                if '<'+s1+s2 in pa_set and '='+s1+s2 in pa_set:
+#                if '<'+s1+s2 in pa_set and '='+s1+s2 in pa_set:
+                if True:
                     amo = [ -1 * atoms.encode(i,j,'<'+s1+s2),
                             -1 * atoms.encode(i,j,'='+s1+s2) ]
                     out.add_clause(amo)
-                if '<'+s1+s2 in pa_set and '>'+s1+s2 in pa_set:
+                if True:
+#                if '<'+s1+s2 in pa_set and '>'+s1+s2 in pa_set:
                     amo = [ -1 * atoms.encode(i,j,'<'+s1+s2),
                             -1 * atoms.encode(i,j,'>'+s1+s2) ]
                     out.add_clause(amo)
-                if '='+s1+s2 in pa_set and '>'+s1+s2 in pa_set:
+#                if '='+s1+s2 in pa_set and '>'+s1+s2 in pa_set:
+                if True:
                     amo = [ -1 * atoms.encode(i,j,'='+s1+s2),
                             -1 * atoms.encode(i,j,'>'+s1+s2) ]
                     out.add_clause(amo)
@@ -342,13 +346,16 @@ def pham_pt_directDomEncoding(qcn, out, atoms):
         exclude.sort()
         pa_set = pa_network[i][j]
         for br in exclude:
-            clause = []
-            req = True
-            for mu_br in get_pham_pa_clause(br):
-                if mu_br not in pa_set:
-                    req = False
-                clause += [ -1 * atoms.encode(i,j,mu_br) ]
-            if req:
+#            req = True
+#            for mu_br in pham_mu(br):
+#                if not mu_br in pa_set: # CHANGED NOT
+#                    req = False
+#                    break
+#            if req or True:
+                clause = []
+                clause = get_pa_min_excl_clause(i,j, br, atoms)
+#                for mu_br in pham_mu(br):
+#                    clause += [ -1 * atoms.encode(i,j,mu_br) ]
                 out.add_clause(clause)
     return pa_network
 
@@ -363,24 +370,26 @@ def pham_support_pt_encode(qcn, instance):
     for i, j, k in qcn.iterate_strict_triples():
         for s1 in ['-', '+']:
             for s2 in ['-', '+']:
-                if i == j and s1 >= s2:
+#                if i == j and s1 >= s2:
+                if i == j and s1 == s2:
                     continue
                 for s3 in ['-', '+']:
-                    if (i == k and s1 >= s3) or (j == k and s2 >= s3):
+#                    if (i == k and s1 >= s3) or (j == k and s2 >= s3):
+                    if (i == k and s1 == s3) or (j == k and s2 == s3):
                         continue
                     for br1 in ['<', '=', '>']:
-                        if br1+s1+s2 not in pa_network[i][j]:
-                            continue
+#                        if br1+s1+s2 not in pa_network[i][j]:
+#                            continue
                         b_ij = atoms.encode(i,j,br1+s1+s2)
                         for br2 in ['<', '=', '>']:
-                            if br2+s2+s3 not in pa_network[j][k]:
-                                continue
+#                            if br2+s2+s3 not in pa_network[j][k]:
+#                                continue
                             support = list(pa_comp[br1+" "+br2])
                             support.sort()
                             b_jk= atoms.encode(j,k,br2+s2+s3)
                             cl = [ -1 * b_ij, -1 * b_jk ]
                             for br in support:
-                                if br+s1+s3 in pa_network[i][k]:
+#                                if br+s1+s3 in pa_network[i][k]:
                                     cl += [ atoms.encode(i,k,br+s1+s3) ]
                             instance.add_clause(cl)
 
