@@ -152,9 +152,6 @@ def nebel_buerckert_encode_variables(qcn, instance):
 
     # encode ORD theory
     for i, s in used_points:
-        # (2.) x <= x
-#        instance.add_clause([ instantiate( literal('p', 'x', s, '<=', 'x', s), i, i, atoms) ])
-
         # well-formed intervals
         if s == '-' and (i, '+') in used_points:
             instance.add_clause([ instantiate( literal('p', 'x', '-', '<=', 'x', '+'), i, i, atoms) ])
