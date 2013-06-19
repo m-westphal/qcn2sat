@@ -304,8 +304,8 @@ def pham_pt_directDomEncoding(qcn, out, atoms):
 
         for s1 in ['-', '+']:
             for s2 in ['-', '+']:
-#                if i == j and s1 >= s2:
-                if i == j and s1 == s2:
+                if i == j and s1 >= s2:
+#                if i == j and s1 == s2:
                     continue
 
                 alo = [ ]
@@ -370,12 +370,12 @@ def pham_support_pt_encode(qcn, instance):
     for i, j, k in qcn.iterate_strict_triples():
         for s1 in ['-', '+']:
             for s2 in ['-', '+']:
-#                if i == j and s1 >= s2:
-                if i == j and s1 == s2:
+                if i == j and s1 >= s2:
+#                if i == j and s1 == s2:
                     continue
                 for s3 in ['-', '+']:
-#                    if (i == k and s1 >= s3) or (j == k and s2 >= s3):
-                    if (i == k and s1 == s3) or (j == k and s2 == s3):
+                    if (i == k and s1 >= s3) or (j == k and s2 >= s3):
+#                    if (i == k and s1 == s3) or (j == k and s2 == s3):
                         continue
                     for br1 in ['<', '=', '>']:
 #                        if br1+s1+s2 not in pa_network[i][j]:
