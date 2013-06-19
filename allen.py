@@ -215,7 +215,38 @@ def point_algebra_comptable():
 
     return pa
 
-def get_pa_excl_clause(x, y, br, atoms):
+def get_pham_pa_clause(br):
+    if br == '<':
+        return ('<--', '<-+', '<+-', '<++')
+    elif br == '>':
+        return ('>--', '>-+', '>+-', '>++')
+    elif br == '=':
+        return ('=--', '<-+', '>+-', '=++')
+    elif br == 'd':
+        return ('>--', '<-+', '>+-', '<++')
+    elif br == 'di':
+        return ('<--', '<-+', '>+-', '>++')
+    elif br == 'o':
+        return ('<--', '<-+', '>+-', '<++')
+    elif br == 'oi':
+        return ('>--', '<-+', '>+-', '>++')
+    elif br == 'm':
+        return ('<--', '<-+', '=+-', '<++')
+    elif br == 'mi':
+        return ('>--', '=-+', '>+-', '>++')
+    elif br == 's':
+        return ('=--', '<-+', '>+-', '<++')
+    elif br == 'si':
+        return ('=--', '<-+', '>+-', '>++')
+    elif br == 'f':
+        return ('>--', '<-+', '>+-', '=++')
+    elif br == 'fi':
+        return ('<--', '<-+', '>+-', '=++')
+    assert False
+
+
+
+def get_pa_min_excl_clause(x, y, br, atoms):
     if br == '<':
         return [ -1 * atoms.encode(x,y,'<+-') ]
     elif br == '>':
