@@ -367,9 +367,6 @@ def pham_support_pt_encode(qcn, instance):
     pa_network = pham_pt_directDomEncoding(qcn, instance, atoms)
 
     # encode PA theory
-#    for i, j, k in qcn.iterate_strict_triples():
-#        assert i < j < k
-
     for i in xrange(0, qcn.size):
         for j in xrange(i, qcn.size):
             for k in xrange(j, qcn.size):
