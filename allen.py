@@ -408,28 +408,37 @@ def pham_direct_pt_encode(qcn, instance):
     pa_network = pham_pt_directDomEncoding(qcn, instance, atoms)
 
     # encode PA theory (direct)
-    for i, j, k in qcn.iterate_strict_triples():
-        for s1 in ['-', '+']:
-            for s2 in ['-', '+']:
-                if i == j and s1 >= s2:
-                    continue
-                for s3 in ['-', '+']:
-                    if (i == k and s1 >= s3) or (j == k and s2 >= s3):
-                        continue
-                    for br1 in ['<', '=', '>']:
-                        if br1+s1+s2 not in pa_network[i][j]:
+    for i in xrange(0, qcn.size):
+        for j in xrange(i, qcn.size):
+            for k in xrange(j, qcn.size):
+                for s1 in ['-', '+']:
+                    for s2 in ['-', '+']:
+                        if i == j and s1 >= s2:
                             continue
-                        b_ij = atoms.encode(i,j,br1+s1+s2)
-                        for br2 in ['<', '=', '>']:
-                            if br2+s2+s3 not in pa_network[j][k]:
+                        if i != j and qcn.graph and (i,j) not in qcn.graph:
+                            continue
+                        for s3 in ['-', '+']:
+                            if (i == k and s1 >= s3) or (j == k and s2 >= s3):
+                                continue
+                            if i != k and qcn.graph and (i,k) not in qcn.graph:
+                                continue
+                            if j != k and qcn.graph and (j,k) not in qcn.graph:
                                 continue
 
-                            b_jk= atoms.encode(j,k,br2+s2+s3)
+                            for br1 in ['<', '=', '>']:
+                                if br1+s1+s2 not in pa_network[i][j]:
+                                    continue
+                                b_ij = atoms.encode(i,j,br1+s1+s2)
+                                for br2 in ['<', '=', '>']:
+                                    if br2+s2+s3 not in pa_network[j][k]:
+                                        continue
 
-                            rule_out = list(qcn.signature - pa_comp[br1+" "+br2])
-                            rule_out.sort()
-                            for br in rule_out:
-                                if br+s1+s3 in pa_network[i][k]:
-                                    cl = [ -1 * b_ij, -1 * b_jk ] \
-                                        + [ -1 * atoms.encode(i,k,br+s1+s3) ]
-                                    instance.add_clause(cl)
+                                    b_jk= atoms.encode(j,k,br2+s2+s3)
+
+                                    rule_out = list(qcn.signature - pa_comp[br1+" "+br2])
+                                    rule_out.sort()
+                                    for br in rule_out:
+                                        if br+s1+s3 in pa_network[i][k]:
+                                            cl = [ -1 * b_ij, -1 * b_jk ] \
+                                                + [ -1 * atoms.encode(i,k,br+s1+s3) ]
+                                            instance.add_clause(cl)
