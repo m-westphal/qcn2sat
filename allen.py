@@ -337,7 +337,7 @@ def pham_pt_directDomEncoding(qcn, out, atoms):
         for t in [i, j]:
             if not t in done_intervals:
                 # well formed intervals
-                wf = [ atoms.encode(t,t,'<-+') ]
+                wf = [ atoms.encode(t,t,'>+-') ]
                 out.add_clause(wf)
                 done_intervals.add(t)
 
@@ -377,13 +377,13 @@ def pham_support_pt_encode(qcn, instance):
             for k in xrange(j, qcn.size):
                 for s1 in ['-', '+']:
                     for s2 in ['-', '+']:
-#                        if i == j and s1 >= s2:
-#                            continue
+                        if i == j and s1 >= s2:
+                            continue
                         if i != j and qcn.graph and (i,j) not in qcn.graph:
                             continue
                         for s3 in ['-', '+']:
- #                           if (i == k and s1 >= s3) or (j == k and s2 >= s3):
-#                                continue
+                            if (i == k and s1 >= s3) or (j == k and s2 >= s3):
+                                continue
                             if i != k and qcn.graph and (i,k) not in qcn.graph:
                                 continue
                             if j != k and qcn.graph and (j,k) not in qcn.graph:
