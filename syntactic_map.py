@@ -110,7 +110,7 @@ def write_map(syn_map):
             clause_str += " }"
             clauses_str += clause_str
          
-        print "x ( %s ) y :: { %s }" % (name, clauses_str)
+        print "x ( %s ) y :: {%s }" % (name, clauses_str)
 
 def is_horn_clause(clause):
     pos = False
