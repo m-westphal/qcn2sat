@@ -57,7 +57,7 @@ def evaluate_pos_atom(atom):
     predicate = match.group(2)
     sig_2 = match.group(3)
 
-    compate = [ predicate ]
+    compare = [ predicate ]
     if predicate == "<=":
         compare = [ '<', '=' ]
     elif predicate == "==":
