@@ -127,7 +127,8 @@ def is_horn_formula(formula):
             return False
     return True
 
-def is_qfpp_formula(formula):
+def is_primitive_formula(formula):
+    """Purely conjunctional formula"""
     for clause in formula:
         if len(clause) > 1:
             return False
@@ -145,15 +146,15 @@ def stat_map(syn_map):
     negative_atoms = 0
     unit_clauses = 0
     horn_clauses = 0
-    qfpp_relations = 0
+    primitive_relations = 0
     horn_relations = 0
     for relation in syn_map:
         defining_formula = syn_map[relation]
         clauses += len(defining_formula)
 
 
-        if is_qfpp_formula(defining_formula):
-            qfpp_relations += 1
+        if is_primitive_formula(defining_formula):
+            primitive_relations += 1
         if is_horn_formula(defining_formula):
             horn_relations += 1
 
@@ -179,7 +180,7 @@ def stat_map(syn_map):
     print "Unit clauses:\t\t%10u" % unit_clauses
     print "Horn clauses:\t\t%10u" % horn_clauses
     print
-    print "qfpp relations:\t\t%10u (%.3f)" % (qfpp_relations, float(qfpp_relations) / len(syn_map))
+    print "Primitive relations:\t%10u (%.3f)" % (primitive_relations, float(primitive_relations) / len(syn_map))
     print "Horn relations:\t\t%10u (%.3f)" % (horn_relations, float(horn_relations) / len(syn_map))
 
 if __name__ == '__main__':
