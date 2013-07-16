@@ -91,6 +91,7 @@ def evaluate_clause(clause):
     return relations
 
 def verify_is_fo_interpretation(syn_map):
+    is_valid = True
     for relation in syn_map:
         relations = set(allen_signature)
 
@@ -103,6 +104,8 @@ def verify_is_fo_interpretation(syn_map):
             print "yields"
             print relations
             print
+            is_valid = False
+    return is_valid
 
 if __name__ == '__main__':
     print "Script for verifying syntactic maps of Allen's Interval Calculus"
@@ -119,8 +122,5 @@ if __name__ == '__main__':
     is_allen_interpretation(syn_map)
 
     print "Verify map is a FO interpretation"
-    verify_is_fo_interpretation(syn_map)
-
-#    write_map(syn_map)
-
-#    stat_map(syn_map)
+    if verify_is_fo_interpretation(syn_map):
+        print "...is valid"
