@@ -112,13 +112,31 @@ def verify_is_fo_interpretation(syn_map):
     return is_valid
 
 def verify_minimality(syn_map):
+    """Non-redundant list of prime implicates"""
+    from copy import deepcopy
+
     for r in syn_map:
         def_formula = syn_map[r]
 
+        for clause in syn_map[r]:
+            if len(clause) == 1:
+                continue
+            for atom in clause:
+                mod_clause = set(clause)
+                mod_clause.remove(atom)
+                if r <= evaluate_clause(mod_clause):
+                    print "Defining formula for %s broken" % relation
+                    print "Formula is"
+                    print syn_map[r]
+                    print "Clause"
+                    print clause
+                    print "is however not a PRIME implicate."
+
+                    return False
+
         mod_formula = None
         for clause in syn_map[r]:
-            import copy
-            mod_formula = copy.deepcopy(def_formula)
+            mod_formula = deepcopy(def_formula)
             mod_formula.remove(clause)
 
             if r == evaluate_cnf(mod_formula):
@@ -130,25 +148,9 @@ def verify_minimality(syn_map):
                 print "Yet, removing"
                 print clause
                 print "does NOT invalidate formula."
+                print "Thus, a useless clause."
 
                 return False
-
-            for atom in clause:
-                mod_clause = set(copy.deepcopy(clause))
-                mod_clause.remove(atom)
-                mod_formula.add(frozenset(mod_clause))
-
-                if r == evaluate_cnf(mod_formula):
-                   print "Relation '%s' is not minimally defined:" % r
-                   print
-                   print "Original defintion"
-                   print def_formula
-                   print
-                   print "Yet, removing"
-                   print atom
-                   print "does NOT invalidate formula."
-
-                   return False
 
     return True
 
@@ -175,4 +177,4 @@ if __name__ == '__main__':
     print
     print "Verify minimality of defining formulas"
     if verify_minimality(syn_map):
-        print "... is minimal set of clauses which are minimal themselves."
+        print "... act as prime implicates."
