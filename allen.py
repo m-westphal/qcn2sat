@@ -127,7 +127,7 @@ def nebel_buerckert_encode_variables(qcn, instance):
 
     import os.path
     import itertools
-    syntactic_interpretation = read_map(qcn.signature, os.path.join('data', 'ordclauses.map'))
+    syntactic_interpretation = read_map(qcn.signature, os.path.join('data', 'ia_ordclauses.map'))
 
     atoms = PropositionalAtoms()
 
