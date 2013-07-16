@@ -104,9 +104,9 @@ def write_map(syn_map):
         clauses_str = ""
         from string import join
         for clause in sorted_map[name]:
-            clause_str = " { "
+            clause_str = " {"
             for atom in clause:
-                clause_str += "%s(%s)" % (atom)
+                clause_str += " %s(%s)" % (atom)
             clause_str += " }"
             clauses_str += clause_str
          
