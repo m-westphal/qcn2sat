@@ -112,6 +112,76 @@ def write_map(syn_map):
          
         print "x ( %s ) y :: { %s }" % (name, clauses_str)
 
+def is_horn_clause(clause):
+    pos = False
+    for atom in clause:
+        if atom[0] == '+':
+            if pos:
+                return False
+            pos = True
+    return True
+
+def is_horn_formula(formula):
+    for clause in formula:
+        if not is_horn_clause(clause):
+            return False
+    return True
+
+def is_qfpp_formula(formula):
+    for clause in formula:
+        if len(clause) > 1:
+            return False
+    return True
+
+def stat_map(syn_map):
+    print "Map statistics"
+    print
+    print "Defines %d relations" % len(syn_map)
+
+
+    clauses = 0
+    atoms = 0
+    positive_atoms = 0
+    negative_atoms = 0
+    unit_clauses = 0
+    horn_clauses = 0
+    qfpp_relations = 0
+    horn_relations = 0
+    for relation in syn_map:
+        defining_formula = syn_map[relation]
+        clauses += len(defining_formula)
+
+
+        if is_qfpp_formula(defining_formula):
+            qfpp_relations += 1
+        if is_horn_formula(defining_formula):
+            horn_relations += 1
+
+        for clause in defining_formula:
+            if len(clause) == 1:
+                unit_clauses += 1
+            if is_horn_clause(clause):
+                horn_clauses += 1
+            atoms += len(clause)
+            for atom in clause:
+                if atom[0] == '+':
+                    positive_atoms += 1
+                elif atom[0] == '-':
+                    negative_atoms += 1
+                else:
+                    assert False
+
+
+    print "Total clauses in map:\t%10u" % clauses
+    print "Total atoms in map:\t%10u" % atoms
+    print "Positive atoms:\t\t%10u" % positive_atoms
+    print "Negative atoms:\t\t%10u" % negative_atoms
+    print "Unit clauses:\t\t%10u" % unit_clauses
+    print "Horn clauses:\t\t%10u" % horn_clauses
+    print
+    print "qfpp relations:\t\t%10u (%.3f)" % (qfpp_relations, float(qfpp_relations) / len(syn_map))
+    print "Horn relations:\t\t%10u (%.3f)" % (horn_relations, float(horn_relations) / len(syn_map))
+
 if __name__ == '__main__':
     print "Utility script for syntactic maps"
     print
@@ -125,3 +195,5 @@ if __name__ == '__main__':
 
     print "Sorted map"
     write_map(syn_map)
+
+    stat_map(syn_map)
