@@ -90,13 +90,17 @@ def evaluate_clause(clause):
     
     return relations
 
+def evaluate_cnf(cnf):
+    relations = set(allen_signature)
+    for clause in cnf:
+        relations &= evaluate_clause(clause)
+
+    return relations
+
 def verify_is_fo_interpretation(syn_map):
     is_valid = True
     for relation in syn_map:
-        relations = set(allen_signature)
-
-        for clause in syn_map[relation]:
-            relations &= evaluate_clause(clause)
+        relations = evaluate_cnf(syn_map[relation])
 
         if relation != relations:
             print "Defining formula for %s broken" % relation
@@ -106,6 +110,47 @@ def verify_is_fo_interpretation(syn_map):
             print
             is_valid = False
     return is_valid
+
+def verify_minimality(syn_map):
+    for r in syn_map:
+        def_formula = syn_map[r]
+
+        mod_formula = None
+        for clause in syn_map[r]:
+            import copy
+            mod_formula = copy.deepcopy(def_formula)
+            mod_formula.remove(clause)
+
+            if r == evaluate_cnf(mod_formula):
+                print "Relation '%s' is not minimally defined:" % r
+                print
+                print "Original defintion"
+                print def_formula
+                print
+                print "Yet, removing"
+                print clause
+                print "does NOT invalidate formula."
+
+                return False
+
+            for atom in clause:
+                mod_clause = set(copy.deepcopy(clause))
+                mod_clause.remove(atom)
+                mod_formula.add(frozenset(mod_clause))
+
+                if r == evaluate_cnf(mod_formula):
+                   print "Relation '%s' is not minimally defined:" % r
+                   print
+                   print "Original defintion"
+                   print def_formula
+                   print
+                   print "Yet, removing"
+                   print atom
+                   print "does NOT invalidate formula."
+
+                   return False
+
+    return True
 
 if __name__ == '__main__':
     print "Script for verifying syntactic maps of Allen's Interval Calculus"
@@ -121,6 +166,13 @@ if __name__ == '__main__':
 
     is_allen_interpretation(syn_map)
 
+    print
     print "Verify map is a FO interpretation"
-    if verify_is_fo_interpretation(syn_map):
-        print "...is valid"
+    if not verify_is_fo_interpretation(syn_map):
+        raise SystemExit("Aborting script. Fix map first to run further tests.")
+    print "... is valid"
+
+    print
+    print "Verify minimality of defining formulas"
+    if verify_minimality(syn_map):
+        print "... is minimal set of clauses which are minimal themselves."
