@@ -21,6 +21,33 @@
 
 import string
 
+class predicate:
+    def __init__(self, string, var1=None, rel=None, var2=None):
+        if string is None:
+            self.var1 = var1
+            self.relation = rel
+            self.var2 = var2
+        else:
+            import re
+
+            match = re.match(r'^([xy][-+]) ([<=>]+) ([xy][-+])$', string)
+
+            rel = match.group(2)
+            assert rel in [ '<', '=', '>', '<=', '>=' ]
+
+            self.var1 = match.group(1)
+            self.relation = rel
+            self.var2 = match.group(3)
+
+        self.hashvalue = self.var1 + self.var2 + self.relation
+        self.hashvalue = self.hashvalue.__hash__()
+
+    def __eq__(self, other):
+        return self.var1 == other.var1 and self.var2 == other.var2 and self.relation == other.relation
+
+    def __hash__(self):
+        return self.hashvalue
+
 def read_map(filename):
     import re
 
@@ -75,7 +102,11 @@ def parse_cnf_string(string):
                 raise SystemExit("Failed to parse clause '%s'" % (clause))
             clause = match.group(3).strip()
 
-            clause_set.add( (match.group(1), match.group(2)) )
+            positive = True
+            if match.group(1) == '-':
+                positive = False
+
+            clause_set.add( (positive, predicate(match.group(2))) )
         cnf.add( frozenset(clause_set) )
 
     return cnf
@@ -115,7 +146,7 @@ def write_map(syn_map):
 def is_horn_clause(clause):
     pos = False
     for atom in clause:
-        if atom[0] == '+':
+        if atom[0]:
             if pos:
                 return False
             pos = True
@@ -165,13 +196,10 @@ def stat_map(syn_map):
                 horn_clauses += 1
             atoms += len(clause)
             for atom in clause:
-                if atom[0] == '+':
+                if atom[0]:
                     positive_atoms += 1
-                elif atom[0] == '-':
-                    negative_atoms += 1
                 else:
-                    assert False
-
+                    negative_atoms += 1
 
     print "Total clauses in map:\t%10u" % clauses
     print "Total atoms in map:\t%10u" % atoms

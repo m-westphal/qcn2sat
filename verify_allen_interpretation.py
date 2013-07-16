@@ -49,13 +49,10 @@ def is_allen_interpretation(syn_map):
     if symbols != frozenset(allen_signature):
         raise SystemExit('Given signature does not match Allen signature')
 
-def evaluate_pos_atom(atom):
-    import re
-    match = re.match(r'^x([+-]) (.*) y([+-])$', atom)
-
-    sig_1 = match.group(1)
-    predicate = match.group(2)
-    sig_2 = match.group(3)
+def evaluate_predicate(atom):
+    sig_1 = atom.var1[1]
+    predicate = atom.relation
+    sig_2 = atom.var2[1]
 
     compare = [ predicate ]
     if predicate == "<=":
@@ -76,8 +73,8 @@ def evaluate_pos_atom(atom):
     return relations
 
 def evaluate_atom(atom):
-    relations = evaluate_pos_atom(atom[1])
-    if atom[0] == '+':
+    relations = evaluate_predicate(atom[1])
+    if atom[0]:
         return relations
     return set(allen_signature) ^ relations
 
