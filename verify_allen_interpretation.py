@@ -60,8 +60,6 @@ def evaluate_pos_atom(atom):
     compare = [ predicate ]
     if predicate == "<=":
         compare = [ '<', '=' ]
-    elif predicate == "==":
-        compare = [ '=' ]
     elif predicate == ">=":
         compare = [ '>', '=' ]
 
