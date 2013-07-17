@@ -4,7 +4,7 @@
 # ex: set tabstop=4 expandtab softtabstop=4:
 
 # qcsp2sat.py: convert qualitative CSPs to CNF formulae
-# Copyright (C) 2009-2011  Matthias Westphal
+# Copyright (C) 2009-2013  Matthias Westphal
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__VERSION="0.2 alpha"
+__VERSION="1"
 
 import copy, re, sys, string
 import collections, bz2
