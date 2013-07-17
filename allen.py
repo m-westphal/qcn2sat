@@ -4,7 +4,7 @@
 # ex: set tabstop=4 expandtab softtabstop=4:
 
 # qcsp2sat.py: convert qualitative CSPs to CNF formulae
-# Copyright (C) 2009-2011  Matthias Westphal
+# Copyright (C) 2009-2013  Matthias Westphal
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,18 +25,18 @@ def check_allen_signature(signature):
     if signature != frozenset([ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm', 'mi', 'o', 'oi' ]):
         raise SystemExit('Given signature does not match allen signature')
 
-def instantiate(l, x, y, atoms): # encode instantiated literal l on x,y
+def instantiate(l, x, y, atoms):
+    """encode instantiated literal l on x,y"""
+
     mod = 1
     if not l[0]:  # negated predicate
         mod = -1
 
     if l[1].relation == '=':  # for "=" we enforce symmetry
         if y < x or (y == x and l[1].var1[1] == '+' and l[1].var2[1] == '-'):
-#            print "Wrap", l[1].string, "for", x, y, ":",
             rel_string = l[1].swap_variables_string()
             rel_string = rel_string.replace('x', str(x))
             rel_string = rel_string.replace('y', str(y))
-#            print rel_string
             return mod * atoms.encode(y,x, rel_string)
 
     rel_string = l[1].string.replace('x', str(x))
@@ -45,7 +45,7 @@ def instantiate(l, x, y, atoms): # encode instantiated literal l on x,y
     if x < y:
         return mod * atoms.encode(x, y, rel_string)
     # PropositionalAtoms::encode() assumes a <= b
-    # ugly not wrapped URG
+    # The string is NOT rewritten ... It just gets filed under (y,x)
     return mod * atoms.encode(y, x, rel_string)
 
 def nebel_buerckert_encode_variables(qcn, instance):
@@ -70,11 +70,11 @@ def nebel_buerckert_encode_variables(qcn, instance):
 
                 if 'x+' in l[1].string:
                     used_points.add( (i,'+') )
-                else:
+                if 'x-' in l[1].string:
                     used_points.add( (i,'-') )
                 if 'y+' in l[1].string:
                     used_points.add( (j,'+') )
-                else:
+                if 'y-' in l[1].string:
                     used_points.add( (j,'-') )
             instance.add_clause( cl )
 
@@ -95,18 +95,17 @@ def nebel_buerckert_encode_variables(qcn, instance):
             if (not p1 == p2) and qcn.graph and (p1, p2) not in qcn.graph:
                 continue
 
-            # (3.) x <= y ^ y <= x -> x = y
-            if p1 < p2 or (p1 == p2 and s1 < s2):
+            # x <= y ^ y <= x -> x = y
+            if p1 < p2 or (p1 == p2 and s1 < s2):  # avoid generating the same clauses twice
                 instance.add_clause([ instantiate( (False, predicate(None, 'x'+s1, '<=', 'y'+s2)), p1, p2, atoms),
                     instantiate( (False, predicate(None, 'x'+s2, '<=', 'y'+s1)), p2, p1, atoms),
                     instantiate( (True, predicate(None, 'x'+s1, '=', 'y'+s2)), p1, p2, atoms) ])
 
-            # (4.) (5.) x = y -> x <= y
+            # x = y -> x <= y
             instance.add_clause([ instantiate( (False, predicate(None, 'x'+s1, '=', 'y'+s2)), p1, p2, atoms),
                 instantiate( (True, predicate(None, 'x'+s1, '<=', 'y'+s2)), p1, p2, atoms) ])
     for p1, s1 in used_points:
         for p2, s2 in used_points:
-
             if (not p1 == p2) and qcn.graph and (p1, p2) not in qcn.graph:
                 continue
 
@@ -114,7 +113,6 @@ def nebel_buerckert_encode_variables(qcn, instance):
                 continue
 
             for p3, s3 in used_points:
-
                 if (not p1 == p3) and qcn.graph and (p1, p3) not in qcn.graph:
                     continue
 
@@ -124,7 +122,7 @@ def nebel_buerckert_encode_variables(qcn, instance):
                 if (p1,s1) == (p3,s3) or (p2,s2) == (p3,s3):
                     continue
 
-                # (1.) x <= y ^ y <= z -> x <= z
+                # x <= y ^ y <= z -> x <= z
                 instance.add_clause([ instantiate( (False, predicate(None, 'x'+s1, '<=', 'y'+s2)), p1, p2, atoms),
                     instantiate( (False, predicate(None, 'x'+s2, '<=', 'y'+s3)), p2, p3, atoms),
                     instantiate( (True, predicate(None, 'x'+s1, '<=', 'y'+s3)), p1, p3, atoms) ])
