@@ -24,6 +24,7 @@
 
 allen_signature = [ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm', 'mi', 'o', 'oi' ]
 
+# description of intervals (x,y) in terms of start (?,-) and endpoints (?,+)
 full_point_description = {
     '=': ['=--', '<-+', '>+-', '=++'],
     '<': ['<--', '<-+', '<+-', '<++'],
@@ -53,6 +54,17 @@ def evaluate_predicate(atom):
     sig_1 = atom.var1[1]
     predicate = atom.relation
     sig_2 = atom.var2[1]
+
+    if atom.var2[0] < atom.var1[0]:
+        if predicate == '<=':
+            predicate = '>='
+        elif predicate == '>=':
+            predicate = '<='
+        elif predicate == '<':
+            predicate = '>'
+        elif predicate == '>':
+            predicate = '<'
+        (sig_2, sig_1) = (sig_1, sig_2)
 
     compare = [ predicate ]
     if predicate == "<=":

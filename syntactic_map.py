@@ -27,6 +27,7 @@ class predicate:
             self.var1 = var1
             self.relation = rel
             self.var2 = var2
+            self.string = "%s %s %s" % (var1, rel, var2)
         else:
             import re
 
@@ -38,9 +39,13 @@ class predicate:
             self.var1 = match.group(1)
             self.relation = rel
             self.var2 = match.group(3)
+            self.string = string
 
         self.hashvalue = self.var1 + self.var2 + self.relation
         self.hashvalue = self.hashvalue.__hash__()
+
+    def swap_variables_string(self):
+        return "%s %s %s" % (self.var2, self.relation, self.var1)
 
     def __eq__(self, other):
         return self.var1 == other.var1 and self.var2 == other.var2 and self.relation == other.relation
@@ -137,7 +142,10 @@ def write_map(syn_map):
         for clause in sorted_map[name]:
             clause_str = " {"
             for atom in clause:
-                clause_str += " %s(%s)" % (atom)
+                mod = '+'
+                if not atom[0]:
+                    mod = '-'
+                clause_str += " %s(%s)" % (mod,atom[1].string)
             clause_str += " }"
             clauses_str += clause_str
          

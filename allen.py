@@ -19,115 +19,42 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ordclauses import literal
-
 from qcsp2sat import PropositionalAtoms
 
 def check_allen_signature(signature):
     if signature != frozenset([ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm', 'mi', 'o', 'oi' ]):
         raise SystemExit('Given signature does not match allen signature')
 
-def parse_cnf_string(s):
-    import re
-
-    clause_regexp = re.compile(r'^{ ([^}]+) }(.*)')
-
-    assert s == s.strip()
-
-    clauses = [ ]
-    while s:
-        cl = re.match(clause_regexp, s)
-        assert cl
-        clauses.append(cl.group(1).strip())
-        s = cl.group(2).strip()
-
-    lit_regexp = re.compile(r'^([+-])\(([xy])([+-]) ([<=>][<=>]) ([xy])([+-])\)(.*)')
-
-    cnf = set()
-    for c in clauses:
-        clause = set()
-        while c:
-            m = re.match(lit_regexp, c)
-            assert m
-            c = m.group(7).strip()
-
-            clause.add( literal(m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)) )
-        cnf.add( frozenset(clause) )
-
-    return cnf
-
-def read_map(signature, filename):
-    import re
-
-    m = dict()
-
-    f = open(filename, 'r')
-
-    regexp = re.compile(r'^x \((.*)\) y :: {(.*)}$')
-
-    for l in f:
-        match = re.match(regexp, l)
-        if match:
-            s = match.group(1)
-            relation = frozenset(s.strip().split(' '))
-            assert not relation in m
-            for b in relation:
-                if not b in signature:
-                    raise SystemExit("ORD-horn map does not match given signature of calculus")
-
-            s = match.group(2).strip()
-
-            cnf = parse_cnf_string(s)
-#            cnf = ?
-
-            m[relation] = cnf
-        else:
-            raise SystemExit("Failed to parse syntactic interpretations in '%s', line '%s'" % (filename, l))
-
-    assert len(m) >= 2^13-1
-
-    return m
-
 def instantiate(l, x, y, atoms): # encode instantiated literal l on x,y
-    assert l.x == 'x' or (l.x == l.y == 'y')
-    assert l.y in ['x', 'y']
-    (s1,s2,rel) = (l.s1, l.s2, l.r)
+    mod = 1
+    if not l[0]:  # negated predicate
+        mod = -1
 
-    assert rel in [ '<=', '=', '>=' ]
+    if l[1].relation == '=':  # for "=" we enforce symmetry
+        if y < x or (y == x and l[1].var1[1] == '+' and l[1].var2[1] == '-'):
+#            print "Wrap", l[1].string, "for", x, y, ":",
+            rel_string = l[1].swap_variables_string()
+            rel_string = rel_string.replace('x', str(x))
+            rel_string = rel_string.replace('y', str(y))
+#            print rel_string
+            return mod * atoms.encode(y,x, rel_string)
 
-    m = 1
-    if not l.is_positive():
-        m = -1
+    rel_string = l[1].string.replace('x', str(x))
+    rel_string = rel_string.replace('y', str(y))
 
-    a = x
-    if l.x == 'y':
-        a = y
-    b = y
-    if l.y == 'x':
-        b = x
-
-    # PropositionalAtoms::encode() assumes a <= b: which is not true in our
-    # case, so we secretly wrap the *identification string*
-    # For "=" we assume symmetry
-    if a < b or (a == b and s1 < s2):
-        return m * atoms.encode(a, b, rel+s1+s2)
-    else: # swap
-        srel = None
-        if rel == '<=':
-            srel = '>='
-        elif rel == '=':
-            srel = '='
-        elif rel == '>=':
-            srel = '<='
-        assert srel
-        return m * atoms.encode(b,a,srel+s2+s1)
+    if x < y:
+        return mod * atoms.encode(x, y, rel_string)
+    # PropositionalAtoms::encode() assumes a <= b
+    # ugly not wrapped URG
+    return mod * atoms.encode(y, x, rel_string)
 
 def nebel_buerckert_encode_variables(qcn, instance):
     check_allen_signature(qcn.signature)
 
     import os.path
     import itertools
-    syntactic_interpretation = read_map(qcn.signature, os.path.join('data', 'ia_ordclauses.map'))
+    from syntactic_map import read_map
+    syntactic_interpretation = read_map(os.path.join('data', 'ia_ordclauses.map'))
 
     atoms = PropositionalAtoms()
 
@@ -140,22 +67,24 @@ def nebel_buerckert_encode_variables(qcn, instance):
             cl = [ ]
             for l in clause:
                 cl.append( instantiate(l, i, j, atoms) )
-                if l.x == 'x':
-                    used_points.add( (i,l.s1) )
+
+                if 'x+' in l[1].string:
+                    used_points.add( (i,'+') )
                 else:
-                    used_points.add( (j,l.s1) )
-                if l.y == 'x':
-                    used_points.add( (i,l.s2) )
+                    used_points.add( (i,'-') )
+                if 'y+' in l[1].string:
+                    used_points.add( (j,'+') )
                 else:
-                    used_points.add( (j,l.s2) )
+                    used_points.add( (j,'-') )
             instance.add_clause( cl )
 
+    from syntactic_map import predicate
     # encode ORD theory
     for i, s in used_points:
-        # well-formed intervals
+        # domain formula
         if s == '-' and (i, '+') in used_points:
-            instance.add_clause([ instantiate( literal('p', 'x', '-', '<=', 'x', '+'), i, i, atoms) ])
-            instance.add_clause([ instantiate( literal('n', 'x', '-', '=', 'x', '+'), i, i, atoms) ])
+            instance.add_clause([ instantiate((True, predicate(None, 'x-', '<=', 'x+')), i, i, atoms) ])
+            instance.add_clause([ instantiate((False, predicate(None, 'x-', '=', 'x+')), i, i, atoms) ])
         continue
 
     for p1, s1 in used_points:
@@ -168,13 +97,13 @@ def nebel_buerckert_encode_variables(qcn, instance):
 
             # (3.) x <= y ^ y <= x -> x = y
             if p1 < p2 or (p1 == p2 and s1 < s2):
-                instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, atoms),
-                    instantiate( literal('n', 'x', s2, '<=', 'y', s1), p2, p1, atoms),
-                    instantiate( literal('p', 'x', s1, '=', 'y', s2), p1, p2, atoms) ])
+                instance.add_clause([ instantiate( (False, predicate(None, 'x'+s1, '<=', 'y'+s2)), p1, p2, atoms),
+                    instantiate( (False, predicate(None, 'x'+s2, '<=', 'y'+s1)), p2, p1, atoms),
+                    instantiate( (True, predicate(None, 'x'+s1, '=', 'y'+s2)), p1, p2, atoms) ])
 
             # (4.) (5.) x = y -> x <= y
-            instance.add_clause([ instantiate( literal('n', 'x', s1, '=', 'y', s2), p1, p2, atoms),
-                instantiate( literal('p', 'x', s1, '<=', 'y', s2), p1, p2, atoms) ])
+            instance.add_clause([ instantiate( (False, predicate(None, 'x'+s1, '=', 'y'+s2)), p1, p2, atoms),
+                instantiate( (True, predicate(None, 'x'+s1, '<=', 'y'+s2)), p1, p2, atoms) ])
     for p1, s1 in used_points:
         for p2, s2 in used_points:
 
@@ -196,9 +125,9 @@ def nebel_buerckert_encode_variables(qcn, instance):
                     continue
 
                 # (1.) x <= y ^ y <= z -> x <= z
-                instance.add_clause([ instantiate( literal('n', 'x', s1, '<=', 'y', s2), p1, p2, atoms),
-                    instantiate( literal('n', 'x', s2, '<=', 'y', s3), p2, p3, atoms),
-                    instantiate( literal('p', 'x', s1, '<=', 'y', s3), p1, p3, atoms) ])
+                instance.add_clause([ instantiate( (False, predicate(None, 'x'+s1, '<=', 'y'+s2)), p1, p2, atoms),
+                    instantiate( (False, predicate(None, 'x'+s2, '<=', 'y'+s3)), p2, p3, atoms),
+                    instantiate( (True, predicate(None, 'x'+s1, '<=', 'y'+s3)), p1, p3, atoms) ])
 
 
 def point_algebra_comptable():
@@ -242,47 +171,6 @@ def pham_mu(br):
         return ['>--', '<-+', '>+-', '=++']
     elif br == 'fi':
         return ['<--', '<-+', '>+-', '=++']
-    assert False
-
-
-def get_pa_min_excl_clause(x, y, br, atoms):
-    if br == '<':
-        return [ -1 * atoms.encode(x,y,'<+-') ]
-    elif br == '>':
-        return [ -1 * atoms.encode(x,y,'>-+') ]
-    elif br == '=':
-        return [ -1 * atoms.encode(x,y,'=--'),
-                 -1 * atoms.encode(x,y,'=++') ]
-    elif br == 'd':
-        return [ -1 * atoms.encode(x,y,'>--'),
-                 -1 * atoms.encode(x,y,'<++') ]
-    elif br == 'di':
-        return [ -1 * atoms.encode(x,y,'<--'),
-                 -1 * atoms.encode(x,y,'>++') ]
-    elif br == 'o':
-        return [ -1 * atoms.encode(x,y,'<--'),
-                 -1 * atoms.encode(x,y,'<++'),
-                 -1 * atoms.encode(x,y,'>+-') ]
-    elif br == 'oi':
-        return [ -1 * atoms.encode(x,y,'>--'),
-                 -1 * atoms.encode(x,y,'>++'),
-                 -1 * atoms.encode(x,y,'<-+') ]
-    elif br == 'm':
-        return [ -1 * atoms.encode(x,y,'=+-') ]
-    elif br == 'mi':
-        return [ -1 * atoms.encode(x,y,'=-+') ]
-    elif br == 's':
-        return [ -1 * atoms.encode(x,y,'=--'),
-                 -1 * atoms.encode(x,y,'<++') ]
-    elif br == 'si':
-        return [ -1 * atoms.encode(x,y,'=--'),
-                 -1 * atoms.encode(x,y,'>++') ]
-    elif br == 'f':
-        return [ -1 * atoms.encode(x,y,'>--'),
-                 -1 * atoms.encode(x,y,'=++') ]
-    elif br == 'fi':
-        return [ -1 * atoms.encode(x,y,'<--'),
-                 -1 * atoms.encode(x,y,'=++') ]
     assert False
 
 def pham_pt_directDomEncoding(qcn, out, atoms):
