@@ -19,9 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#from ordclauses import literal
-#from qcsp2sat import PropositionalAtoms
-
 allen_signature = [ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm', 'mi', 'o', 'oi' ]
 
 # description of intervals (x,y) in terms of start (?,-) and endpoints (?,+)
