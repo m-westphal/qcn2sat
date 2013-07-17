@@ -343,12 +343,10 @@ def check_options():
     encoding_inf = '; see \"Towards An Efficient SAT Encoding for' \
                    ' Temporal Reasoning\", Pham et al.,' \
                    ' \"Reasoning about Temporal Relations: A Maximal' \
-                   ' Tractable Subclass\", Nebel and Bürckert.' \
-                   ' \"An Automatic Decomposition Method for Qualitative' \
-                   ' Spatial and Temporal Reasoning\" Hué et al.'
+                   ' Tractable Subclass\", Nebel and Bürckert.'
     parser.add_argument('--encoding', metavar='STR', nargs=1, default=False,
         required=True, type=str,
-        choices=['support', 'direct', 'syn-int', 'ord-clauses',
+        choices=['support', 'direct', 'ord-clauses',
                 'support-pa', 'direct-pa'],
         help='encoding [%(choices)s]'+encoding_inf)
     parser.add_argument('GQR_COMPOSITION_TABLE_FILE')
@@ -385,9 +383,6 @@ if __name__ == '__main__':
         binra_support(qcn, comptable, instance)
     elif clause_type == 'direct':
         binra_direct(qcn, comptable, instance)
-    elif clause_type == 'syn-int':
-        import syntactic_interpretation
-        syntactic_interpretation.binra_synint(qcn, comptable, instance)
     elif clause_type == 'ord-clauses':
         import allen
         allen.nebel_buerckert_encode_variables(qcn, instance)

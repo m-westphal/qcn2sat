@@ -1,8 +1,0 @@
-char(3,5)
-inf(1,2,1,2,0,0) inf(1,0,1,2,0,2) inf(1,2,0,1,1,2) 
-inf(1,1,0,2,1,2) inf(0,2,0,2,0,1) inf(0,2,0,0,0,2)
-inf(1,1,1,1,0,0) inf(1,0,1,0,0,1) inf(1,1,0,0,1,1) 
-inf(1,0,0,1,1,0) inf(0,1,0,1,0,1) inf(0,0,0,0,0,0) 
-dec(0,xDC,2) dec(1,xPPC,2) dec(1,xPP,2) dec(1,xPO,2) dec(1,x=,2)
-dec(0,xPPC,1) dec(0,x=,1) dec(1,xPP,1) dec(1,xPO,1) dec(1,xDC,1)
-dec(0,xPP,0) dec(0,x=,0) dec(1,xPPC,0) dec(1,xPO,0) dec(1,xDC,0)
