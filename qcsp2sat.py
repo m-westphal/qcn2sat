@@ -259,36 +259,6 @@ def binra_direct(qcn, comptable, out):
                         cl2 = cl + [ -1 * atoms.encode(i, k, br) ]
                         out.add_clause(cl2)
 
-def binra_gac(qcn, comptable, out):
-    atoms = PropositionalAtoms()
-
-    directDomEncoding(out, qcn, atoms)
-
-    for i, j, k in qcn.iterate_strict_triples():
-        r_ij = qcn.get(i, j)
-        r_ik = qcn.get(i, k)
-        r_jk = qcn.get(j, k)
-        # for each falsifying triple of labels
-        #    add \not triple_1, ..., \not triple_n  (BLOCKS this assignment)
-        c_clauses = [ ]
-        for br1 in r_ij:
-            a_br1 = atoms.encode(i, j, br1)
-            for br2 in r_jk:
-                a_br2 = atoms.encode(j, k, br2)
-
-                supported = comptable[br1 + " " + br2] & frozenset(r_ik)
-                if not supported:  # TODO: annoying case
-                    cl = [ -1 * a_br1, -1 * a_br2 ]
-                    c_clauses.append(cl)
-                else:
-                    not_supported = list(frozenset(r_ik) - supported)
-                    not_supported.sort()
-                    for br3 in not_supported:
-                        cl = [ -1 * a_br1, -1 * a_br2, -1 * atoms.encode(i, k, br3) ]
-                        c_clauses.append(cl)
-        for cl in c_clauses:
-            out.add_clause(cl)
-
 def lexBFS(vertices, edges):
     assert vertices
     assert edges
@@ -352,8 +322,7 @@ def check_options():
     add_inf = 'Notes: (1) the script does stream processing: a qualitative' \
               ' CSP in GQR format is read from stdin, clauses written' \
               ' to stdout. ' \
-              '(2) \"gac\" does not compute prime implicates. ' \
-              '(3) Syntactical processing only, chosen options may result' \
+              '(2) Syntactical processing only, chosen options may result' \
               ' in unsound output.'
     copyright = 'Copyright (C) 2009-2013 Matthias Westphal.' \
                 ' This program comes with ABSOLUTELY NO WARRANTY.' \
@@ -373,14 +342,13 @@ def check_options():
         help='constraint graph type [%(choices)s]'+graph_type_inf)
     encoding_inf = '; see \"Towards An Efficient SAT Encoding for' \
                    ' Temporal Reasoning\", Pham et al.,' \
-                   ' \"GAC via Unit Propagation\", Bacchus,' \
                    ' \"Reasoning about Temporal Relations: A Maximal' \
                    ' Tractable Subclass\", Nebel and Bürckert.' \
                    ' \"An Automatic Decomposition Method for Qualitative' \
                    ' Spatial and Temporal Reasoning\" Hué et al.'
     parser.add_argument('--encoding', metavar='STR', nargs=1, default=False,
         required=True, type=str,
-        choices=['support', 'direct', 'gac', 'syn-int', 'ord-clauses',
+        choices=['support', 'direct', 'syn-int', 'ord-clauses',
                 'support-pa', 'direct-pa'],
         help='encoding [%(choices)s]'+encoding_inf)
     parser.add_argument('GQR_COMPOSITION_TABLE_FILE')
@@ -417,13 +385,11 @@ if __name__ == '__main__':
         binra_support(qcn, comptable, instance)
     elif clause_type == 'direct':
         binra_direct(qcn, comptable, instance)
-    elif clause_type == 'gac':
-        binra_gac(qcn, comptable, instance)
     elif clause_type == 'syn-int':
         import syntactic_interpretation
         syntactic_interpretation.binra_synint(qcn, comptable, instance)
     elif clause_type == 'ord-clauses':
-        import allen # TODO
+        import allen
         allen.nebel_buerckert_encode_variables(qcn, instance)
     elif clause_type == 'support-pa':
         import allen
