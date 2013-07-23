@@ -107,6 +107,12 @@ class QCN:
         except KeyError:
             return self.universal
 
+    def is_2_consistent(self):
+        for i,j in self.iterate_strict_triangle():
+            if not self.get(i,j):
+                return False
+        return True
+
     def iterate_strict_triangle(self):
         if not self.graph:
             for i in xrange(0, self.size):
@@ -117,6 +123,7 @@ class QCN:
             iterate.sort()
             for (i, j) in iterate:
                 yield i, j
+
     def iterate_strict_triples(self):
         """iterate i < j < k triples"""
         if not self.graph:
@@ -361,7 +368,7 @@ if __name__ == '__main__':
     comptable, signature = readCompTable(ct_filename)
     qcn = readGQRCSPstdin(signature)
 
-    if qcn.size == 0:  # no constraints read; assume problem was unsatisfiable
+    if qcn.size == 0 or not qcn.is_2_consistent():  # no constraints read; assume problem was unsatisfiable
         print "p cnf 1 2"
         print "1 0"
         print "-1 0"
