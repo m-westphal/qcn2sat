@@ -288,6 +288,47 @@ def lexBFS(vertices, edges):
 
     return order
 
+def greedyX(vertices, edges):
+    assert vertices
+    assert edges
+
+    order = dict()
+    import copy
+    h_v = copy.deepcopy(vertices)
+    h_e = copy.deepcopy(edges)
+
+    for i in xrange(len(vertices)):
+        sigma = dict()
+        for v in h_v:
+            sigma[v] = 0
+            for x in h_e[v]:
+                for y in h_e[v]:
+                    if x == y:
+                        continue
+                    assert x != v and y != v
+                    if not x in h_e[y]:
+                        sigma[v] += 1
+        todo = [ v for v in h_v ]
+        todo.sort(key=lambda x: sigma[x])
+        assert sigma[todo[0]] <= sigma[todo[-1]]
+        v = todo[0]
+        order[v] = i
+
+        for x in h_e[v]:
+            for y in h_e[v]:
+                if x == y:
+                    continue
+                if not x in h_e[y]:
+                    h_e[y].add(x)
+                    h_e[x].add(y)
+
+        h_v.remove(v)
+        for x in h_e[v]:
+            h_e[x].remove(v)
+        del h_e[v]
+
+    return order
+
 def eliminationGame(vertices, edges, order):
     from itertools import product
     import copy
@@ -345,7 +386,7 @@ def check_options():
 
     graph_type_inf = '; partitioning may be unsound for several calculi.'
     parser.add_argument('--graph-type', metavar='STR', nargs=1, default=False,
-        required = True, type=str, choices=['complete', 'lexbfs'],
+        required = True, type=str, choices=['complete', 'lexbfs', 'gfi'],
         help='constraint graph type [%(choices)s]'+graph_type_inf)
     encoding_inf = '; see \"Towards An Efficient SAT Encoding for' \
                    ' Temporal Reasoning\", Pham et al.,' \
@@ -374,7 +415,7 @@ if __name__ == '__main__':
         print "-1 0"
         raise SystemExit()
 
-    if graph_type == 'lexbfs':
+    if graph_type != 'complete':
             vertices = set( [ t for (t, _) in qcn.constraints.keys() ] +
                             [ t for (_, t) in qcn.constraints.keys() ] )
             edges = dict( [ (v, set()) for v in vertices ] )
@@ -382,7 +423,12 @@ if __name__ == '__main__':
                 edges[i].add(j)
                 edges[j].add(i)
 
-            order = lexBFS(vertices, edges)
+            order = None
+            if graph_type == 'lexbfs':
+                order = lexBFS(vertices, edges)
+            else:
+                assert graph_type == 'gfi'
+                order = greedyX(vertices, edges)
             qcn.graph = eliminationGame(vertices, edges, order)
 
     instance = cnf_output(only_estimate_size)
