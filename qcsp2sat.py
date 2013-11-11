@@ -438,7 +438,7 @@ if __name__ == '__main__':
         binra_direct(qcn, comptable, instance)
     elif clause_type == 'ord-clauses':
         import allen
-        allen.nebel_buerckert_encode_variables(qcn, instance)
+        allen.ord_horn_encode_variables(qcn, instance)
     elif clause_type == 'support-pa':
         import allen
         allen.pham_support_pt_encode(qcn, instance)
