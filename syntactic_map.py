@@ -4,7 +4,7 @@
 
 # ex: set tabstop=4 expandtab softtabstop=4:
 
-# qcsp2sat.py: convert qualitative CSPs to CNF formulae
+# qcn2sat.py: convert qualitative constraint networks to propositional CNF
 # Copyright (C) 2009-2013  Matthias Westphal
 #
 # This program is free software: you can redistribute it and/or modify

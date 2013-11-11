@@ -4,7 +4,7 @@
 
 # ex: set tabstop=4 expandtab softtabstop=4:
 
-# qcsp2sat.py: convert qualitative CSPs to CNF formulae
+# qcn2sat.py: convert qualitative constraint networks to propositional CNF
 # Copyright (C) 2009-2013  Matthias Westphal
 #
 # This program is free software: you can redistribute it and/or modify
@@ -63,7 +63,7 @@ class CNFOutput:
             size = len(self.generate_header())+self.bytes
             print "Constructed %d variables and %d clauses" % (
                 self.variables, self.number_of_clauses)
-            print "Computed %d bytes (%d MiB) of CNF formulae" % (
+            print "Computed %d bytes (%d MiB) of propositional CNF" % (
                 size, size/1024**2)
         else:
             self.clauses_bz2.append(self.bzip2.flush())
@@ -397,8 +397,8 @@ def check_options():
             ' under certain conditions; see `GPL-3\' for details'
 
     parser = ArgumentParser(
-        description='qcsp2sat.py: convert QCNs to CNF formulae (version %s)'\
-            % __VERSION,
+        description= 'qcn2sat.py: convert QCNs to propositional CNF' \
+            ' (version %s)' % __VERSION,
         epilog=add_inf+" "+script_copyright)
 
     parser.add_argument('--only-estimate', action='store_true',

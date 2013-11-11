@@ -4,7 +4,7 @@
 
 # ex: set tabstop=4 expandtab softtabstop=4:
 
-# qcsp2sat.py: convert qualitative CSPs to CNF formulae
+# qcn2sat.py: convert qualitative constraint networks to propositional CNF
 # Copyright (C) 2009-2013  Matthias Westphal
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,6 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from qcsp2sat import PropositionalAtoms
 
 def check_allen_signature(signature):
     """Check if signature is Allen signature."""
@@ -85,6 +83,7 @@ def ord_horn_encode_variables(qcn, instance): # pylint: disable=R0912
     """Encode instance according to ORD-Horn map."""
     check_allen_signature(qcn.signature)
 
+    from qcn2sat import PropositionalAtoms
     atoms = PropositionalAtoms()
 
     # encode input
@@ -267,6 +266,8 @@ def pham_support_pt_encode(qcn, instance): # pylint: disable=R0914,R0912
     check_allen_signature(qcn.signature)
 
     pa_comp = point_algebra_comptable()
+
+    from qcn2sat import PropositionalAtoms
     atoms = PropositionalAtoms()
     pa_network = pham_pt_directDomEnc(qcn, instance, atoms)
 
@@ -313,6 +314,7 @@ def pham_direct_pt_encode(qcn, instance):  # pylint: disable=R0914,R0912
     check_allen_signature(qcn.signature)
 
     pa_comp = point_algebra_comptable()
+    from qcn2sat import PropositionalAtoms
     atoms = PropositionalAtoms()
     pa_network = pham_pt_directDomEnc(qcn, instance, atoms)
 
