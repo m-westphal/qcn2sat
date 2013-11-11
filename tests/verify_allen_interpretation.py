@@ -177,7 +177,11 @@ if __name__ == '__main__':
 
     MAP_FILE = argv[1]
     print "Read '%s'" % (MAP_FILE)
-    from syntactic_map import read_map
+
+    import sys, os
+    sys.path.insert(1, os.path.join(sys.path[0], '..'))
+    from syntactic_map import read_map  # pylint: disable=F0401
+
     SYNTACTIC_MAP = read_map(MAP_FILE)
     print "DONE"
 

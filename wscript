@@ -11,10 +11,14 @@ def configure(ctx):
 def build(ctx):
     import os
 
+    # DATA tests
+    ctx(rule="pylint ../tests/${SRC}", source="tests/verify_allen_interpretation.py")
+
     # test ORD-Horn map
-    ctx(rule="python ../${SRC[0]} ../data/${SRC[1]}",
-        source='verify_allen_interpretation.py data/ia_ordclauses.map')
+    ctx(rule="python ../tests/${SRC[0]} ../data/${SRC[1]}",
+        source='tests/verify_allen_interpretation.py data/ia_ordclauses.map syntactic_map.py')
 
     for filename in os.listdir('.'):
         if filename.endswith('.py') and os.path.isfile(filename):
-            ctx(rule="pylint ${SRC}", source=filename)
+#            ctx(rule="pylint ${SRC}", source=filename)
+            pass
