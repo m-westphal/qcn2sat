@@ -184,7 +184,7 @@ def read_comp_table(calculus):
 
     lines = open(calculus, 'r')
     for line in lines:
-        extract = re.search('^(.*):(.*)::[ ]*\((.*)\)$', line)
+        extract = re.search(r'^(.*):(.*)::[ ]*\((.*)\)$', line)
         assert(extract)
         left = extract.group(1).strip()
         right = extract.group(2).strip()
@@ -197,14 +197,14 @@ def read_comp_table(calculus):
     return table, frozenset(all_relations)
 
 def read_gqr_csp_stdin(signature):
-    """Read an ALlen-solver/GQR-format CSP from input"""
+    """Read an Allen-solver/GQR-format CSP from input"""
     import sys, re
 
     data = QCN(signature)
 
     lines = sys.stdin.readlines()
     for line in lines:
-        res = re.search('^[ ]*([0-9]*)[ ]*([0-9]*) \((.*)\)', line)
+        res = re.search(r'^[ ]*([0-9]*)[ ]*([0-9]*) \((.*)\)', line)
         if res:
             i = int(res.group(1))
             j = int(res.group(2))

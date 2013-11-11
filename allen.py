@@ -166,7 +166,7 @@ def point_algebra_comptable():
     return point_algebra_ct
 
 def pham_mu(base_relation):
-    """The \mu function defined by Pham et al."""
+    """The mu function defined by Pham et al."""
 
     mu_fct = {
         '=': ['=--', '<-+', '>+-', '=++'],

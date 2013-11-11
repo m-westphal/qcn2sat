@@ -113,7 +113,7 @@ def check_instance(name, known_value):
     hashlib.sha256(open(name, 'rb').read()).hexdigest() # pylint: disable=E1101
 
     if value != known_value:
-        msg = "'%s' hash value mismatch\n\tKnown\t%s\n\tActual\t%s" % (
+        msg = "FAIL '%s' hash value mismatch\n\tKnown\t%s\n\tActual\t%s" % (
         name, known_value, value)
 
         raise SystemExit(msg)
@@ -125,7 +125,7 @@ def check_output(name, given_args, stdout, known_value):
     import hashlib
     value = hashlib.sha256(stdout).hexdigest() # pylint: disable=E1101
     if value != known_value:
-        msg = "'%s' output hash value mismatch" % name
+        msg = "FAIL '%s' output hash value mismatch" % name
         msg += "\n\targs\t%s\n\tKnown\t%s\n\tActual\t%s" % (given_args,
             known_value, value)
         raise SystemExit(msg)
