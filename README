@@ -1,0 +1,140 @@
+qcn2sat.py
+==========
+
+A simple script to rewrite qualitative constraint networks (QCN) into
+propositional CNF. The aim of the script is to provide a simple testbed for
+various SAT encodings. It was extensively used in 'On the Propagation Strength
+of SAT Encodings for Qualitative Temporal Reasoning' by Westphal, Hué, and
+Wölfl [1]. The paper provides more (theoretical) details than this README
+file.
+
+'qcn2sat.py' provides stream processing: a qualitative constraint network in
+the format of the Allen/GQR-solver is read from stdin, DIMACS is written to
+stdout.
+
+Copyright (C) 2009-2013 Matthias Westphal. This program comes with ABSOLUTELY
+NO WARRANTY. This is free software, and you are welcome to redistribute it
+under certain conditions; see `GPL-3' for details.
+
+
+Examples
+--------
+
+Running
+"./qcn2sat.py --only-estimate --graph-type gfi --encoding ord-clauses
+ data/allen.comp < data/allen_example.csp"
+gives the output:
+> Constructed 33 variables and 94 clauses
+> Computed 999 bytes (0 MiB) of propositional CNF
+
+Removing the option "--only-estimate" gives the DIMACS output on stdout:
+"./qcn2sat.py --graph-type gfi --encoding ord-clauses
+ data/allen.comp < data/allen_example.csp"
+> p cnf 33 94
+> -1 0
+> -2 3 0
+> [...]
+
+To put the output directly into a SAT solver of your choice use:
+"./qcn2sat.py --graph-type gfi --encoding ord-clauses
+ data/allen.comp < data/allen_example.csp  | <SAT_SOLVER>"
+> [...]
+> s SATISFIABLE
+
+Running "./qcn2sat.py -h" gives the full help text.
+
+
+Shortcomings
+------------
+
+The script as-provided has several shortcomings which users should be aware of:
+
+1. It is written in Python which is not the fastest programming language. Using
+a fast interpreter/JIT-compiler (e.g. pypy http://pypy.org) is recommended, but
+the runtime will still be high.
+
+2. The script stores all clauses in memory until CNF construction is finished.
+This is done on purpose such that encodings can be written/modified without
+calculating the number of atoms and clauses prior to CNF construction.
+As the CNF is usually quite large it is written into memory as a compressed
+string (BZIP2) which also adds to the run time.
+Finally, all encodings (internally) refer to propositional atoms as strings
+which are translated to integer variables on the fly: adding to runtime, but
+simplifying modifications of the script.
+
+**If you use this script to run benchmarks, make sure to NOT include the
+runtime of the script.**
+
+3. The implementations of the (primal constraint) graph triangulations are
+rather slow.
+
+4. The script does not have a "default" parameter setting. In the paper [1]
+"--graph-type gfi" and "--encoding ord-clauses" is recommended for Allen's
+Interval Algebra.
+
+5. Graph triangulation is done on the primal constraint graph of the input,
+not the translation (as assumed in [1]).
+
+6. The script is explicitly meant NOT to perform (much) preprocessing. Due
+to the encodings by Pham et al. [2] it has to assert strong 2-consistency.
+If you want to perform strong 3-consistency preprocessing do so prior to
+invoking this script.
+
+
+Missing Features / Wish List
+----------------------------
+
+1. Support triangulation based on the constraint graph of the translation.
+
+2. Input is here required to be a strict form of the Allen/GQR-format. Thus,
+the input is always 1-consistent and the script further establishes
+2-consistency. This is necessary for the encodings discussed by Pham et al.
+[2], but not for the ORD-theory underlying the "ord-clauses" encoding.
+In particular, the ORD-theory could directly be applied to any
+(quantifier-free) FO formula on the structure (Q, <).
+It would be nice to remove all preprocessing that is not necessary for the
+requested encoding.
+
+
+Additional information
+----------------------
+
+1. The script ignores the size given in an input instances, and uses the max
+value of all nodes as the upper limit. Thus, an instance with two nodes "0" and
+"100" results in (100*100)/2 arcs if the script is run with
+"--graph-type complete" (same as the GQR solver [3,4,5]).
+Again, preprocessing my be desired; [1] used strong 3-consistency and
+re-enumerating nodes in such cases.
+
+2. The encodings by Pham et al. are applicable to any relation algebra (not
+just Allen's Interval Algebra). If you have a suitable '.comp' file that
+contains the composition table in GQR format you can use it with the provided
+script.
+Note, GQR [5] ships with several such composition tables.
+
+
+Included data files
+-------------------
+
+The 'data/' directory contains some data files:
+
+1. 'allen.comp': the composition table for Allen's Interval Algebra taken from
+the GQR project [3,4,5].
+
+2. 'ia_ordclauses.map':	the defining formulas for ORD-clauses. Note: the empty
+relation is not defined.
+
+
+References
+----------
+[1] Westphal, Hué, and Wölfl, 'On the Propagation Strength of SAT Encodings
+	for Qualitative Temporal Reasoning', ICTAI 2013 (to appear)
+[2] Pham, Thornton, and Sattar, 'Towards an Efficient SAT Encoding for
+	Temporal Reasoning', CP 2006.
+[3] Westphal, Wölfl, and Gantner, 'GQR - A Fast Reasoner for Binary
+	Qualitative Constraint Calculi', AAAI'08 Workshop on Spatial and
+	Temporal Reasoning.
+[4] Westphal, Hué, 'Nogoods in Qualitative Constraint-Based Reasoning',
+	KI 2012.
+[5] GQR URL as of writing:
+	http://sfbtr8.informatik.uni-freiburg.de/R4LogoSpace/Tools/gqr.html
