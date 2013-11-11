@@ -91,13 +91,13 @@ def ord_horn_encode_variables(qcn, instance): # pylint: disable=R0912
     used_points = ord_horn_encode_input(qcn, instance, atoms)
 
     # encode ORD theory
-    from syntactic_map import predicate
+    from syntactic_map import Predicate
     for i, s1 in used_points: # pylint: disable=C0103
         # domain formula
         if s1 == '-' and (i, '+') in used_points:
-            instance.add_clause([ instantiate((True, predicate(None,
+            instance.add_clause([ instantiate((True, Predicate(None,
                 'x-', '<=', 'x+')), i, i, atoms) ])
-            instance.add_clause([ instantiate((False, predicate(None,
+            instance.add_clause([ instantiate((False, Predicate(None,
                 'x-', '=', 'x+')), i, i, atoms) ])
         continue
 
@@ -112,17 +112,17 @@ def ord_horn_encode_variables(qcn, instance): # pylint: disable=R0912
             # x <= y ^ y <= x -> x = y
             if i < j or (i == j and s1 < s2):
                 # avoid generating the same clauses twice
-                instance.add_clause([ instantiate( (False, predicate(None,
+                instance.add_clause([ instantiate( (False, Predicate(None,
                     'x'+s1, '<=', 'y'+s2)), i, j, atoms),
-                    instantiate( (False, predicate(None, 'x'+s2, '<=', 'y'+s1)),
+                    instantiate( (False, Predicate(None, 'x'+s2, '<=', 'y'+s1)),
                     j, i, atoms),
-                    instantiate( (True, predicate(None, 'x'+s1, '=', 'y'+s2)),
+                    instantiate( (True, Predicate(None, 'x'+s1, '=', 'y'+s2)),
                     i, j, atoms) ])
 
             # x = y -> x <= y
-            instance.add_clause([ instantiate( (False, predicate(None,
+            instance.add_clause([ instantiate( (False, Predicate(None,
                 'x'+s1, '=', 'y'+s2)), i, j, atoms),
-                instantiate( (True, predicate(None, 'x'+s1, '<=', 'y'+s2)),
+                instantiate( (True, Predicate(None, 'x'+s1, '<=', 'y'+s2)),
                 i, j, atoms) ])
     for i, s1 in used_points:  # pylint: disable=C0103
         for j, s2 in used_points:  # pylint: disable=C0103
@@ -143,11 +143,11 @@ def ord_horn_encode_variables(qcn, instance): # pylint: disable=R0912
                     continue
 
                 # x <= y ^ y <= z -> x <= z
-                instance.add_clause([ instantiate( (False, predicate(None,
+                instance.add_clause([ instantiate( (False, Predicate(None,
                     'x'+s1, '<=', 'y'+s2)), i, j, atoms),
-                    instantiate( (False, predicate(None, 'x'+s2, '<=', 'y'+s3)),
+                    instantiate( (False, Predicate(None, 'x'+s2, '<=', 'y'+s3)),
                     j, k, atoms),
-                    instantiate( (True, predicate(None, 'x'+s1, '<=', 'y'+s3)),
+                    instantiate( (True, Predicate(None, 'x'+s1, '<=', 'y'+s3)),
                     i, k, atoms) ])
 
 def point_algebra_comptable():

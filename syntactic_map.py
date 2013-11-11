@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: UTF-8 -*-
+"""Functions for syntactic maps"""
 
 # ex: set tabstop=4 expandtab softtabstop=4:
 
@@ -19,9 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import string
-
-class predicate:
+class Predicate:  # pylint: disable=R0903
+    """Relation with arguments."""
     def __init__(self, string, var1=None, rel=None, var2=None):
         if string is None:
             self.var1 = var1
@@ -45,15 +45,18 @@ class predicate:
         self.hashvalue = self.hashvalue.__hash__()
 
     def swap_variables_string(self):
+        """Swap arguments for relation, but not the relation itself."""
         return "%s %s %s" % (self.var2, self.relation, self.var1)
 
     def __eq__(self, other):
-        return self.var1 == other.var1 and self.var2 == other.var2 and self.relation == other.relation
+        return self.var1 == other.var1 and self.var2 == other.var2 and \
+            self.relation == other.relation
 
     def __hash__(self):
         return self.hashvalue
 
 def read_map(filename):
+    """Read map from 'filename', return dict."""
     import re
 
     content = open(filename, 'r')
@@ -68,7 +71,8 @@ def read_map(filename):
             org_string = match.group(1)
             relation = frozenset(org_string.strip().split(' '))
             if relation in syn_map:
-                raise SystemExit("Relation symbol '%s' appears twice in map" % (relation))
+                msg = "Relation symbol '%s' appears twice in map" % (relation)
+                raise SystemExit(msg)
             assert not relation in syn_map
 
             defining_formula = match.group(2).strip()
@@ -77,13 +81,16 @@ def read_map(filename):
 
             syn_map[relation] = cnf
         else:
-            raise SystemExit("Failed to parse syntactic map in '%s', line '%s'" % (filename, line))
+            msg = "Failed to parse syntactic map in '%s', line '%s'" % (
+                filename, line)
+            raise SystemExit(msg)
 
     content.close()
 
     return syn_map
 
 def parse_cnf_string(string):
+    """Parse string denoting a CNF (defining) formula."""
     import re
 
     clause_regexp = re.compile(r'^{([^}]+)}(.*)')
@@ -111,19 +118,20 @@ def parse_cnf_string(string):
             if match.group(1) == '-':
                 positive = False
 
-            clause_set.add( (positive, predicate(match.group(2))) )
+            clause_set.add( (positive, Predicate(match.group(2))) )
         cnf.add( frozenset(clause_set) )
 
     return cnf
 
-def write_map(syn_map):
+def print_map(syn_map):
+    """Print a map to stdout in sorted order."""
+
     sorted_map = dict()
     for relation in syn_map.keys():
         elements = list(relation)
 
         elements.sort()
-        from string import join
-        name = join(elements)
+        name = ' '.join(elements)
 
         sorted_clauses = list()
         for clause in syn_map[relation]:
@@ -138,20 +146,21 @@ def write_map(syn_map):
     names.sort()
     for name in names:
         clauses_str = ""
-        from string import join
         for clause in sorted_map[name]:
             clause_str = " {"
             for atom in clause:
                 mod = '+'
                 if not atom[0]:
                     mod = '-'
-                clause_str += " %s(%s)" % (mod,atom[1].string)
+                clause_str += " %s(%s)" % (mod, atom[1].string)
             clause_str += " }"
             clauses_str += clause_str
          
         print "x ( %s ) y :: {%s }" % (name, clauses_str)
 
 def is_horn_clause(clause):
+    """Is clause a Horn-clause?"""
+
     pos = False
     for atom in clause:
         if atom[0]:
@@ -161,19 +170,24 @@ def is_horn_clause(clause):
     return True
 
 def is_horn_formula(formula):
+    """Is formula a horn formula?"""
+
     for clause in formula:
         if not is_horn_clause(clause):
             return False
     return True
 
 def is_primitive_formula(formula):
-    """Purely conjunctional formula"""
+    """Is formula purely conjunctive?"""
+
     for clause in formula:
         if len(clause) > 1:
             return False
     return True
 
 def stat_map(syn_map):
+    """Print some statistics on given map."""
+
     print "Map statistics"
     print
     print "Defines %d relations" % len(syn_map)
@@ -216,8 +230,10 @@ def stat_map(syn_map):
     print "Unit clauses:\t\t%10u" % unit_clauses
     print "Horn clauses:\t\t%10u" % horn_clauses
     print
-    print "Primitive relations:\t%10u (%.3f)" % (primitive_relations, float(primitive_relations) / len(syn_map))
-    print "Horn relations:\t\t%10u (%.3f)" % (horn_relations, float(horn_relations) / len(syn_map))
+    print "Primitive relations:\t%10u (%.3f)" % (
+        primitive_relations, float(primitive_relations) / len(syn_map))
+    print "Horn relations:\t\t%10u (%.3f)" % (
+        horn_relations, float(horn_relations) / len(syn_map))
 
 if __name__ == '__main__':
     print "Utility script for syntactic maps"
@@ -225,12 +241,12 @@ if __name__ == '__main__':
     print "Usage: scrip <some.map>"
 
     from sys import argv
-    map_file = argv[1]
-    print "Read '%s'" % (map_file)
-    syn_map = read_map(map_file)
+    MAP_FILE = argv[1]
+    print "Read '%s'" % (MAP_FILE)
+    SYN_MAP = read_map(MAP_FILE)
     print "DONE"
 
     print "Sorted map"
-    write_map(syn_map)
+    print_map(SYN_MAP)
 
-    stat_map(syn_map)
+    stat_map(SYN_MAP)
