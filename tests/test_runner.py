@@ -53,7 +53,7 @@ KNOWN_RESULTS = {
         '--graph-type gfi --encoding support':
             'fd019ed5c640cee95085c24bfa50e1a0a8e31ba43881e7e5b05753862d281e7f',
         '--graph-type gfi --encoding direct':
-            '2431277fba8aeea2cb80c8492d99c29091d712b5976529a53621f0ca42673126',
+            'a66f58898591f28862eb3dfb1f98fa64b2e997e639eb2673b76f52d7870e4cd5',
         '--graph-type gfi --encoding support-pa':
             '43ca3524a63bc2c8ba7ff6409e1e0612fea3e3b965aea9ccb897ba56cbdcd35a',
         '--graph-type gfi --encoding direct-pa':
@@ -71,7 +71,7 @@ KNOWN_RESULTS = {
         '--graph-type gfi --encoding support':
             '969a0896fff5f4cc63eeca50cae2d810222ecc3aab5ea01dde53a6e67295e249',
         '--graph-type gfi --encoding direct':
-            '2580f372d4c1a46f59fe0b26671ce6e3b4a8c8e171634799bbefae5c17a340ae',
+            '8b2bd678bdf98a75f5d95cee1aa33f9177c4e83169d7e1ce53cc57e65daebb80',
         '--graph-type gfi --encoding support-pa':
             '9bc50bcd98be85022ffc12870efed2715e67aaf736f67149649dd5a451fc7d17',
         '--graph-type gfi --encoding direct-pa':

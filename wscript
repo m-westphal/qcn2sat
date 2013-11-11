@@ -36,5 +36,4 @@ def build(ctx):
                 source=['tests/test_runner.py', csp_source]+python_code_files_main_dir)
 
     for filename in python_code_files_main_dir:
-        print filename
         ctx(rule="cd .. && pylint %s" % filename, source=filename)
