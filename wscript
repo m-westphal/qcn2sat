@@ -14,7 +14,7 @@ def build(ctx):
     # DATA tests
 
     # lint verifier
-    ctx(rule="pylint ../tests/${SRC}", source="tests/verify_allen_interpretation.py")
+    ctx(rule="pylint ${SRC}", source="tests/verify_allen_interpretation.py")
     # verify ORD-Horn map
     ctx(rule="python ../tests/${SRC[0]} ../data/${SRC[1]}",
         source='tests/verify_allen_interpretation.py data/ia_ordclauses.map syntactic_map.py')
@@ -36,5 +36,5 @@ def build(ctx):
                 source=['tests/test_runner.py', csp_source]+python_code_files_main_dir)
 
     for filename in python_code_files_main_dir:
-#        ctx(rule="pylint ${SRC}", source=filename)
-        pass
+        print filename
+        ctx(rule="cd .. && pylint %s" % filename, source=filename)
