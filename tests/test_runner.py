@@ -25,7 +25,9 @@ TEST_INSTANCES = {
     'test_instance_1.csp':
         'd0dffeb1e15c22b1b4f694325d4058868552b5d5f824502f901e8a85a6f3b4e7',
     'test_instance_2.csp':
-        'b807bd394d6a55e825623016109527c0ee4c3c67fb237383b904be4ead3490f3'
+        'b807bd394d6a55e825623016109527c0ee4c3c67fb237383b904be4ead3490f3',
+    'test_instance_3.csp':
+        '103bc467a875ac12cb1a77b730c707b04c5f3ff20634e7919fa3ae27de08ba3f',
 }
 
 KNOWN_RESULTS = {
@@ -60,6 +62,26 @@ KNOWN_RESULTS = {
             '5a23b1a50abbdc27745f4eaaa606ea122cd142cb31e23a606d3b82ad781e7947',
         '--graph-type lexbfs --encoding support':
             'fd019ed5c640cee95085c24bfa50e1a0a8e31ba43881e7e5b05753862d281e7f',
+        },
+    'test_instance_3.csp': {
+        '--graph-type complete --encoding support':
+            'c0f484380994eb6521f09173e9b8adc6788b99e716c2221d2e59724aa1c6718a',
+        '--graph-type complete --encoding ord-clauses':
+            '107baf68764551af8e2b2f47dbc57343b8c2708441bdb09b986a1a62feb0a34e',
+        '--graph-type gfi --encoding support':
+            '969a0896fff5f4cc63eeca50cae2d810222ecc3aab5ea01dde53a6e67295e249',
+        '--graph-type gfi --encoding direct':
+            '2580f372d4c1a46f59fe0b26671ce6e3b4a8c8e171634799bbefae5c17a340ae',
+        '--graph-type gfi --encoding support-pa':
+            '9bc50bcd98be85022ffc12870efed2715e67aaf736f67149649dd5a451fc7d17',
+        '--graph-type gfi --encoding direct-pa':
+            'b1fdce62fe212ba4aab95818d66b2cfd8d3b6e62efdc7e1855a06952e0999cd6',
+        '--graph-type gfi --encoding ord-clauses':
+            '61d720ea01f0adc251675be047663fbf73ef8d3910f54a2967b6857d859005cf',
+        '--graph-type lexbfs --encoding support':
+            '969a0896fff5f4cc63eeca50cae2d810222ecc3aab5ea01dde53a6e67295e249',
+        '--graph-type lexbfs --encoding ord-clauses':
+            '61d720ea01f0adc251675be047663fbf73ef8d3910f54a2967b6857d859005cf',
         },
 }
 
