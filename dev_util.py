@@ -20,18 +20,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-LAST_TIME_STAMP = None
-def print_time_delta(val):
-    """Measure and print wall clock time difference"""
-    global LAST_TIME_STAMP   # pylint: disable=W0603
-    import time
+import time
 
-    if type(val) == bool:
-        if val:
-            assert LAST_TIME_STAMP is None
-            LAST_TIME_STAMP = time.time()
-    elif not LAST_TIME_STAMP is None:
+class TimeDelta():
+    """Measure wall clock time deltas."""
+    def __init__(self, string):
+        self.name = string
+        self.last_time_stamp = None
+        self.set_to_current_time()
+
+    def set_to_current_time(self):
+        """Set stored time to current time."""
+
+        self.last_time_stamp = time.time()
+    def print_time_delta(self):
+        """Measure and print wall clock time difference"""
+
         current_time_stamp = time.time()
-        delta = current_time_stamp - LAST_TIME_STAMP
-        print("[%2.2f sec] " % (delta) + val)
-        LAST_TIME_STAMP = current_time_stamp
+        delta = current_time_stamp - self.last_time_stamp
+        print("[%2.2f sec] " % (delta) + self.name)
+        self.last_time_stamp = current_time_stamp

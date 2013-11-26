@@ -138,16 +138,19 @@ if __name__ == '__main__':
         CYCLE_E[X].add((X-2)%LEN)
         CYCLE_E[(X-2)%LEN].add(X)
 
-    import dev_util
+    from dev_util import TimeDelta
 
-    dev_util.print_time_delta(True)
+    time_lexbfs = TimeDelta("LexBFS")
     ORDER_L = lex_bfs(CYCLE_V, CYCLE_E)
-    dev_util.print_time_delta("Order: Lex BFS")
+    time_lexbfs.print_time_delta()
+    time_gfi = TimeDelta("GFI")
     ORDER_G = greedy_x(CYCLE_V, CYCLE_E)
-    dev_util.print_time_delta("Order: GFI")
+    time_gfi.print_time_delta()
 
     print "Test edges\t", len(CYCLE_E)
+    time_lexbfs.set_to_current_time()
     print "LexBFS edges\t", len(elimination_game(CYCLE_V, CYCLE_E, ORDER_L))
-    dev_util.print_time_delta("Elimination game (Lex BFS)")
+    time_lexbfs.print_time_delta()
+    time_gfi.set_to_current_time()
     print "GFI edges\t", len(elimination_game(CYCLE_V, CYCLE_E, ORDER_G))
-    dev_util.print_time_delta("Elimination game (GFI)")
+    time_gfi.print_time_delta()
