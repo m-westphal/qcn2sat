@@ -122,12 +122,16 @@ def elimination_game(vertices, edges, order): # pylint: disable=R0914
     return frozenset(ret)
 
 if __name__ == '__main__':
+    # simple test case
     LEN = 100
     CYCLE_V = set(range(0, LEN))
     CYCLE_E = dict([ (V, set([(V-1)%LEN, (V+1)%LEN])) for V in CYCLE_V ])
+    for X in range(3, LEN, LEN/25): #  more interesting test
+        CYCLE_E[X].add((X-2)%LEN)
+        CYCLE_E[(X-2)%LEN].add(X)
     ORDER_L = lex_bfs(CYCLE_V, CYCLE_E)
     ORDER_G = greedy_x(CYCLE_V, CYCLE_E)
 
-    print "edges\t", len(CYCLE_E)
-    print "lex_bfs edges\t", len(elimination_game(CYCLE_V, CYCLE_E, ORDER_L))
+    print "Test edges\t", len(CYCLE_E)
+    print "LexBFS edges\t", len(elimination_game(CYCLE_V, CYCLE_E, ORDER_L))
     print "GFI edges\t", len(elimination_game(CYCLE_V, CYCLE_E, ORDER_G))
