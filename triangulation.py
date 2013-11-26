@@ -95,43 +95,33 @@ def elimination_game_build_queue(vertices, order):
 
     return queue
 
-def elimination_game(vertices, edges, order):
-    """Run the elimination game"""
+def fill_in(vertices, edges, order):
+    """Compute Fill-In graph of input graph."""
     from itertools import product
     import copy
-    from dev_util import TimeDelta
-
-    new_edges = [ edges.copy() ] # G^0
 
     queue = elimination_game_build_queue(vertices, order)
 
-    x = TimeDelta("Build G^i")
-    for vertex in queue:
-        tmp = copy.deepcopy(new_edges[-1]) # G^{i-1}
-
-        # Turn vertex into a clique in tmp
-        for nb1, nb2 in product(new_edges[-1][vertex], new_edges[-1][vertex]):
-            if nb1 == nb2:
-                continue
-            tmp[nb1].add(nb2)
-            tmp[nb2].add(nb1)
-        # remove vertex from G^i
-        for nb1 in tmp:
-            tmp[nb1].discard(vertex) # remove edges to vertex if present
-        del tmp[vertex] # remove vertex itself
-        new_edges.append(tmp) # add G^i
-    x.print_time_delta()
-
-    x = TimeDelta("Assemble graph")
-    final = dict( [ (vertex, set()) for vertex in vertices ] )
-    for graph in new_edges[:-1]:
-        for vertex in graph:
-            final[vertex] |= graph[vertex]
-
+    # add input edges
     ret = set()
     for vertex in vertices:
-        ret |= set( [ (vertex, nb1) for nb1 in final[vertex] ] )
-    x.print_time_delta()
+        for nb1 in edges[vertex]:
+            ret.add( (vertex, nb1) )
+
+    tmp_graph = copy.deepcopy(edges)
+    for vertex in queue:
+        # Turn vertex into a clique in tmp
+        for nb1, nb2 in product(tmp_graph[vertex], tmp_graph[vertex]):
+            if nb1 == nb2 or order[vertex] > order[nb1] \
+                or order[vertex] > order[nb2]:
+
+                continue
+
+            if not nb1 in tmp_graph[nb2]:
+                tmp_graph[nb1].add(nb2)
+                tmp_graph[nb2].add(nb1)
+                ret.add( (nb1, nb2) )
+                ret.add( (nb2, nb1) )
 
     return frozenset(ret)
 
@@ -144,6 +134,8 @@ if __name__ == '__main__':
         CYCLE_E[X].add((X-2)%LEN)
         CYCLE_E[(X-2)%LEN].add(X)
 
+    print "Test edges\t", len(CYCLE_E)
+
     import dev_util
     from dev_util import TimeDelta
 
@@ -152,14 +144,11 @@ if __name__ == '__main__':
     TIME_LEXBFS = TimeDelta("LexBFS")
     ORDER_L = lex_bfs(CYCLE_V, CYCLE_E)
     TIME_LEXBFS.print_time_delta()
+    print "LexBFS edges\t%d" % (len(fill_in(CYCLE_V, CYCLE_E, ORDER_L)))
+    TIME_LEXBFS.print_time_delta()
+
     TIME_GFI = TimeDelta("GFI")
     ORDER_G = greedy_x(CYCLE_V, CYCLE_E)
     TIME_GFI.print_time_delta()
-
-    print "Test edges\t", len(CYCLE_E)
-    TIME_LEXBFS.set_to_current_time()
-    print "LexBFS edges\t%d" % (len(elimination_game(CYCLE_V, CYCLE_E, ORDER_L)))
-    TIME_LEXBFS.print_time_delta()
-    TIME_GFI.set_to_current_time()
-    print "GFI edges\t%d" % (len(elimination_game(CYCLE_V, CYCLE_E, ORDER_G)))
+    print "GFI edges\t%d" % (len(fill_in(CYCLE_V, CYCLE_E, ORDER_G)))
     TIME_GFI.print_time_delta()

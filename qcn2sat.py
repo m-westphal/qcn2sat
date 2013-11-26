@@ -353,7 +353,7 @@ if __name__ == '__main__':
         else:
             assert GRAPH_TYPE == 'gfi'
             ORDER = triangulation.greedy_x(VERTICES, EDGES)
-        INPUT_QCN.graph = triangulation.elimination_game(VERTICES, EDGES, ORDER)
+        INPUT_QCN.graph = triangulation.fill_in(VERTICES, EDGES, ORDER)
 
     CNFINSTANCE = CNFOutput(ONLY_ESTIMATE_SIZE)
     if CLAUSE_TYPE == 'support':
