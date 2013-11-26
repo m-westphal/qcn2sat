@@ -85,16 +85,24 @@ def greedy_x(vertices, edges):
 
     return order
 
-def elimination_game(vertices, edges, order): # pylint: disable=R0914
+def elimination_game_build_queue(vertices, order):
+    """Turn dict VERTEX->WEIGHT into a list"""
+
+    assert vertices == set(order.keys())
+    queue = list(vertices)
+    queue.sort(key=lambda x: order[x]) # lowest weight first
+    assert order[queue[0]] <= order[queue[1]]
+
+    return queue
+
+def elimination_game(vertices, edges, order):
     """Run the elimination game"""
     from itertools import product
     import copy
 
     new_edges = [ edges.copy() ] # G^0
 
-    queue = list(vertices)
-    queue.sort(key=lambda x: order[x]) # lowest weight first
-    assert order[queue[0]] <= order[queue[1]]
+    queue = elimination_game_build_queue(vertices, order)
 
     for vertex in queue:
         tmp = copy.deepcopy(new_edges[-1]) # G^{i-1}
@@ -106,12 +114,12 @@ def elimination_game(vertices, edges, order): # pylint: disable=R0914
             tmp[nb1].add(nb2)
             tmp[nb2].add(nb1)
         # remove v from G^i
-        for ngb in tmp:
-            tmp[ngb].discard(vertex) # remove edges to vertex if present
+        for nb1 in tmp:
+            tmp[nb1].discard(vertex) # remove edges to vertex if present
         del tmp[vertex] # remove vertex itself
         new_edges.append(tmp) # add G^i
 
-    final = dict( [ (v, set()) for v in vertices ] )
+    final = dict( [ (vertex, set()) for vertex in vertices ] )
     for graph in new_edges[:-1]:
         for vertex in graph:
             final[vertex] |= graph[vertex]
