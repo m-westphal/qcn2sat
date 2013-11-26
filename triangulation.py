@@ -85,7 +85,7 @@ def greedy_x(vertices, edges):
 
     return order
 
-def elimination_game_build_queue(vertices, order):
+def fill_in_build_queue(vertices, order):
     """Turn dict VERTEX->WEIGHT into a list"""
 
     assert vertices == set(order.keys())
@@ -100,7 +100,7 @@ def fill_in(vertices, edges, order):
     from itertools import product
     import copy
 
-    queue = elimination_game_build_queue(vertices, order)
+    queue = fill_in_build_queue(vertices, order)
 
     # add input edges
     ret = set()
