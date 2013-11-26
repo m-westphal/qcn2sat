@@ -131,15 +131,23 @@ def elimination_game(vertices, edges, order):
 
 if __name__ == '__main__':
     # simple test case
-    LEN = 100
+    LEN = 500
     CYCLE_V = set(range(0, LEN))
     CYCLE_E = dict([ (V, set([(V-1)%LEN, (V+1)%LEN])) for V in CYCLE_V ])
     for X in range(3, LEN, LEN/25): #  more interesting test
         CYCLE_E[X].add((X-2)%LEN)
         CYCLE_E[(X-2)%LEN].add(X)
+
+    import dev_util
+
+    dev_util.print_time_delta(True)
     ORDER_L = lex_bfs(CYCLE_V, CYCLE_E)
+    dev_util.print_time_delta("Order: Lex BFS")
     ORDER_G = greedy_x(CYCLE_V, CYCLE_E)
+    dev_util.print_time_delta("Order: GFI")
 
     print "Test edges\t", len(CYCLE_E)
     print "LexBFS edges\t", len(elimination_game(CYCLE_V, CYCLE_E, ORDER_L))
+    dev_util.print_time_delta("Elimination game (Lex BFS)")
     print "GFI edges\t", len(elimination_game(CYCLE_V, CYCLE_E, ORDER_G))
+    dev_util.print_time_delta("Elimination game (GFI)")
