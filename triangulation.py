@@ -99,26 +99,30 @@ def elimination_game(vertices, edges, order):
     """Run the elimination game"""
     from itertools import product
     import copy
+    from dev_util import TimeDelta
 
     new_edges = [ edges.copy() ] # G^0
 
     queue = elimination_game_build_queue(vertices, order)
 
+    x = TimeDelta("Build G^i")
     for vertex in queue:
         tmp = copy.deepcopy(new_edges[-1]) # G^{i-1}
 
-        # Turn v into a clique in tmp
+        # Turn vertex into a clique in tmp
         for nb1, nb2 in product(new_edges[-1][vertex], new_edges[-1][vertex]):
             if nb1 == nb2:
                 continue
             tmp[nb1].add(nb2)
             tmp[nb2].add(nb1)
-        # remove v from G^i
+        # remove vertex from G^i
         for nb1 in tmp:
             tmp[nb1].discard(vertex) # remove edges to vertex if present
         del tmp[vertex] # remove vertex itself
         new_edges.append(tmp) # add G^i
+    x.print_time_delta()
 
+    x = TimeDelta("Assemble graph")
     final = dict( [ (vertex, set()) for vertex in vertices ] )
     for graph in new_edges[:-1]:
         for vertex in graph:
@@ -126,31 +130,36 @@ def elimination_game(vertices, edges, order):
 
     ret = set()
     for vertex in vertices:
-        ret |= set( [ (vertex, x) for x in final[vertex] ] )
+        ret |= set( [ (vertex, nb1) for nb1 in final[vertex] ] )
+    x.print_time_delta()
+
     return frozenset(ret)
 
 if __name__ == '__main__':
     # simple test case
-    LEN = 500
+    LEN = 1000
     CYCLE_V = set(range(0, LEN))
     CYCLE_E = dict([ (V, set([(V-1)%LEN, (V+1)%LEN])) for V in CYCLE_V ])
     for X in range(3, LEN, LEN/25): #  more interesting test
         CYCLE_E[X].add((X-2)%LEN)
         CYCLE_E[(X-2)%LEN].add(X)
 
+    import dev_util
     from dev_util import TimeDelta
 
-    time_lexbfs = TimeDelta("LexBFS")
+    dev_util._SILENT = False
+
+    TIME_LEXBFS = TimeDelta("LexBFS")
     ORDER_L = lex_bfs(CYCLE_V, CYCLE_E)
-    time_lexbfs.print_time_delta()
-    time_gfi = TimeDelta("GFI")
+    TIME_LEXBFS.print_time_delta()
+    TIME_GFI = TimeDelta("GFI")
     ORDER_G = greedy_x(CYCLE_V, CYCLE_E)
-    time_gfi.print_time_delta()
+    TIME_GFI.print_time_delta()
 
     print "Test edges\t", len(CYCLE_E)
-    time_lexbfs.set_to_current_time()
-    print "LexBFS edges\t", len(elimination_game(CYCLE_V, CYCLE_E, ORDER_L))
-    time_lexbfs.print_time_delta()
-    time_gfi.set_to_current_time()
-    print "GFI edges\t", len(elimination_game(CYCLE_V, CYCLE_E, ORDER_G))
-    time_gfi.print_time_delta()
+    TIME_LEXBFS.set_to_current_time()
+    print "LexBFS edges\t%d" % (len(elimination_game(CYCLE_V, CYCLE_E, ORDER_L)))
+    TIME_LEXBFS.print_time_delta()
+    TIME_GFI.set_to_current_time()
+    print "GFI edges\t%d" % (len(elimination_game(CYCLE_V, CYCLE_E, ORDER_G)))
+    TIME_GFI.print_time_delta()

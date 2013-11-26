@@ -22,6 +22,8 @@
 
 import time
 
+_SILENT = True
+
 class TimeDelta():
     """Measure wall clock time deltas."""
     def __init__(self, string):
@@ -33,10 +35,14 @@ class TimeDelta():
         """Set stored time to current time."""
 
         self.last_time_stamp = time.time()
+
     def print_time_delta(self):
         """Measure and print wall clock time difference"""
 
-        current_time_stamp = time.time()
-        delta = current_time_stamp - self.last_time_stamp
-        print("[%2.2f sec] " % (delta) + self.name)
-        self.last_time_stamp = current_time_stamp
+        if _SILENT:
+            self.set_to_current_time()
+        else:
+            current_time_stamp = time.time()
+            delta = current_time_stamp - self.last_time_stamp
+            self.last_time_stamp = current_time_stamp
+            print("[%2.2f sec] " % (delta) + self.name)
