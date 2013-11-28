@@ -94,8 +94,47 @@ def rcc8_rcc7_encode_input(qcn, instance, atoms):
 def rcc8_rcc7_encode_theory(qcn, instance, atoms):
     print 'TODO REST OF ENCODING'
 
-    # encode ORD theory
+    # encode RCC7 theory
     from syntactic_map import Predicate
+
+    rules_2 = [ ([ (False, Predicate("x NDC y") ], (False, Predicate("x P y")),
+                ([ (False, Predicate("x NDC y") ], (False, Predicate("x NTP y")),
+                ([ (False, Predicate("x NDC y") ], (False, Predicate("y NTP x")),
+                ([ (False, Predicate("x NDC y") ], (False, Predicate("x O y")),
+            ]
+        # NTP
+#        ([(True, Predicate('x NTP y'))], (True, Predicate('x P y'))),
+#        ([(True, Predicate('y NTP x'))], (True, Predicate('y P x'))),
+#        ([(True, Predicate('x NTP y'))], (False, Predicate('y P x'))),
+#        ([(True, Predicate('y NTP x'))], (False, Predicate('x P y'))),
+#        ([(True, Predicate('x NTP y'))], (True, Predicate('x NDC y'))),
+#        ([(True, Predicate('y NTP x'))], (True, Predicate('x NDC y'))),
+        # P
+#        ([(True, Predicate('x P y'))], (True, Predicate('x NDC y'))),
+#        ([(True, Predicate('y P x'))], (True, Predicate('x NDC y'))),
+        # ODD?!?!?!
+#        ([(False, Predicate('x O y')), (True, Predicate('x NDC y'))], (False, Predicate('x P y'))),
+#        ([(False, Predicate('x O y')), (True, Predicate('x NDC y'))], (False, Predicate('y P x'))),
+#        ([(True, Predicate('x O y'))], (True, Predicate('x NDC y'))),
+
+#        ([(True, Predicate('x EC y'))], (False, Predicate('x O y'))),
+#        ([(True, Predicate('x P y'))], (True, Predicate('x O y'))),
+#        ([(True, Predicate('y P x'))], (True, Predicate('x O y'))),
+#        ([(False, Predicate('x O y'))], (False, Predicate('x NTP y'))),
+#        ([(True, Predicate('x P y'))], (False, Predicate('y NTP x'))),
+#        ([(True, Predicate('y P x'))], (False, Predicate('x NTP y'))),
+#        ([(False, Predicate('x P y'))], (False, Predicate('x NTP y'))),
+#        ([(False, Predicate('y P x'))], (False, Predicate('y NTP x'))),
+
+
+    # TODO COPY THE AXIOMS FROM PAPER
+    rules_3 = [ ([ (True, Predicate("x P y"), (True, Predicate("x P y") ], (True, Predicate("x PO y")), # BS EXAMPLE RULE
+            ]
+
+
+
+
+
     for i, s1 in used_points: # pylint: disable=C0103
         # domain formula
         if s1 == '-' and (i, '+') in used_points:
