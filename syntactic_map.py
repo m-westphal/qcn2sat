@@ -31,10 +31,9 @@ class Predicate:  # pylint: disable=R0903
         else:
             import re
 
-            match = re.match(r'^([xy][-+]) ([<=>]+) ([xy][-+])$', string)
+            match = re.match(r'^([xy+-]+) ([<=>A-Z]+) ([xy+-]+)$', string)
 
             rel = match.group(2)
-            assert rel in [ '<', '=', '>', '<=', '>=' ]
 
             self.var1 = match.group(1)
             self.relation = rel
