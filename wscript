@@ -18,7 +18,9 @@ def build(ctx):
     # verify ORD-Horn map
     ctx(rule="python ../tests/${SRC[0]} ../data/${SRC[1]}",
         source='tests/verify_allen_interpretation.py data/ia_ordclauses.map syntactic_map.py')
-
+    # verify RCC8 map
+    ctx(rule="python ../tests/${SRC[0]} ../data/${SRC[1]}",
+        source='tests/verify_rcc8_interpretation.py data/rcc8_rcc7.map syntactic_map.py')
 
     # collect python files
     python_code_files_main_dir = list()

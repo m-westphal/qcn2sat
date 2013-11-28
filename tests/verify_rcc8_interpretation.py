@@ -410,34 +410,11 @@ def evaluate_predicate(atom):
 
     return relations
 
-def evaluate_atom(literal):
-    """Return Allen base relations satisfying given literal."""
-    relations = evaluate_predicate(literal[1])
-    if literal[0]:
-        return relations
-    return set(ALLEN_SIGNATURE) ^ relations
-
-def evaluate_clause(clause):
-    """Return Allen base relations satisfying given clause."""
-    relations = set()
-    for atom in clause:
-        relations |= evaluate_atom(atom)
-    
-    return relations
-
-def evaluate_cnf(cnf):
-    """Return Allen base relations satisfying given CNF."""
-    relations = set(ALLEN_SIGNATURE)
-    for clause in cnf:
-        relations &= evaluate_clause(clause)
-
-    return relations
-
 def verify_is_fo_interpretation(syntactic_map):
     """Test all defining formulas in syntactic map."""
     is_valid = True
     for relation in syntactic_map:
-        relations = evaluate_cnf(syntactic_map[relation])
+        relations = get_base_relations_satisfying_cnf(syntactic_map[relation])
 
         if relation != relations:
             print "Defining formula for %s broken" % relation
@@ -461,7 +438,7 @@ def verify_minimality(syntactic_map):
             for atom in clause:
                 mod_clause = set(clause)
                 mod_clause.remove(atom)
-                if relation <= evaluate_clause(mod_clause):
+                if relation <= get_base_relations_satisfying_cl(mod_clause):
                     print "Defining formula for %s broken" % relation
                     print "Formula is"
                     print syntactic_map[relation]
@@ -476,7 +453,7 @@ def verify_minimality(syntactic_map):
             mod_formula = deepcopy(def_formula)
             mod_formula.remove(clause)
 
-            if relation == evaluate_cnf(mod_formula):
+            if relation == get_base_relations_satisfying_cnf(mod_formula):
                 print "Relation '%s' is not minimally defined:" % relation
                 print
                 print "Original defintion"
@@ -508,7 +485,7 @@ if __name__ == '__main__':
     # TMP CODE
 
     self_test()
-    build_syn_int(True)
+#    build_syn_int(True)
 
 #    from qcn2sat import read_comp_table
 #    COMP, SIG = read_comp_table(MAP_FILE)
