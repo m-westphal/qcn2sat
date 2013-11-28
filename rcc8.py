@@ -31,10 +31,6 @@ def check_rcc8_signature(signature):
 def instantiate(l, x, y, atoms): # pylint: disable=C0103
     """encode instantiated literal l on x,y"""
 
-    # TODO REWRITE FOR {NDC, O, P, NTP}
-
-    print "TODO", l[0], l[1].string
-
     assert l[1].relation in [ 'NDC', 'O', 'NTP', 'P' ]
 
     mod = 1
@@ -95,20 +91,9 @@ def rcc8_rcc7_encode_input(qcn, instance, atoms):
             instance.add_clause( new_clause )
 
 
-def rcc8_rcc7_encode(qcn, instance):
-    """Encode instance according to RCC8->RCC7 map."""
-
-    check_rcc8_signature(qcn.signature)
-
-    from qcn2sat import PropositionalAtoms
-    atoms = PropositionalAtoms()
-
-
-    # encode input
-    rcc8_rcc7_encode_input(qcn, instance, atoms)
-
+def rcc8_rcc7_encode_theory(qcn, instance, atoms):
     print 'TODO REST OF ENCODING'
-    return
+
     # encode ORD theory
     from syntactic_map import Predicate
     for i, s1 in used_points: # pylint: disable=C0103
@@ -168,3 +153,15 @@ def rcc8_rcc7_encode(qcn, instance):
                     j, k, atoms),
                     instantiate( (True, Predicate(None, 'x'+s1, '<=', 'y'+s3)),
                     i, k, atoms) ])
+def rcc8_rcc7_encode(qcn, instance):
+    """Encode instance according to RCC8->RCC7 map."""
+
+    check_rcc8_signature(qcn.signature)
+
+    from qcn2sat import PropositionalAtoms
+    atoms = PropositionalAtoms()
+
+    # encode input
+    rcc8_rcc7_encode_input(qcn, instance, atoms)
+
+    rcc8_rcc7_encode_theory(qcn, instance, atoms)
