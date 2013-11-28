@@ -25,23 +25,47 @@ def check_rcc8_signature(signature):
 
     rcc8_signature = [ 'EQ', 'DC', 'EC', 'PO', 'TPP', 'NTPP', 'TPPI', 'NTPPI' ]
 
-    if signature != rcc8_signature:
+    if signature != frozenset(rcc8_signature):
         raise SystemExit('Given signature does not match RCC8 signature')
 
 def instantiate(l, x, y, atoms): # pylint: disable=C0103
     """encode instantiated literal l on x,y"""
 
+    # TODO REWRITE FOR {NDC, O, P, NTP}
+
+    print "TODO", l[0], l[1].string
+
+    assert l[1].relation in [ 'NDC', 'O', 'NTP', 'P' ]
+
     mod = 1
     if not l[0]:  # negated predicate
         mod = -1
 
-    if l[1].relation == '=':  # for "=" we enforce symmetry
-        if y < x or (y == x and l[1].var1[1] == '+' and l[1].var2[1] == '-'):
+    # symmetry
+    if l[1].relation in [ 'O', 'NDC' ]:
+        if y < x:
             rel_string = l[1].swap_variables_string()
             rel_string = rel_string.replace('x', str(x))
             rel_string = rel_string.replace('y', str(y))
             return mod * atoms.encode(y, x, rel_string)
+        else:
+            rel_string = l[1].string.replace('x', str(x))
+            rel_string = rel_string.replace('y', str(y))
+            return mod * atoms.encode(x, y, rel_string)
 
+    # asymmetry
+    if l[1].relation == 'NTP':
+        if y < x:
+            rel_string = l[1].swap_variables_string()
+            rel_string = rel_string.replace('x', str(x))
+            rel_string = rel_string.replace('y', str(y))
+            return -1 * mod * atoms.encode(y, x, rel_string)
+        else:
+            rel_string = l[1].string.replace('x', str(x))
+            rel_string = rel_string.replace('y', str(y))
+            return mod * atoms.encode(x, y, rel_string)
+
+    # relation is 'P'
     rel_string = l[1].string.replace('x', str(x))
     rel_string = rel_string.replace('y', str(y))
 
@@ -52,15 +76,14 @@ def instantiate(l, x, y, atoms): # pylint: disable=C0103
     return mod * atoms.encode(y, x, rel_string)
 
 
-def ord_horn_encode_input(qcn, instance, atoms):
-    """Encode instance according to ORD-Horn map (but not the ORD-theory)."""
+def rcc8_rcc7_encode_input(qcn, instance, atoms):
+    """Encode instance according to RCC8->RCC7 map (but not the RCC7-theory)."""
 
     import os.path
     from syntactic_map import read_map
     syntactic_interpretation = \
-        read_map(os.path.join('data', 'ia_ordclauses.map'))
+        read_map(os.path.join('data', 'rcc8_rcc7.map'))
 
-    used_points = set()
     for i, j in qcn.iterate_strict_triangle():
         relation = qcn.get(i, j)
 
@@ -69,28 +92,23 @@ def ord_horn_encode_input(qcn, instance, atoms):
             for l in clause:  # pylint: disable=C0103
                 new_clause.append( instantiate(l, i, j, atoms) )
 
-                if 'x+' in l[1].string:
-                    used_points.add( (i,'+') )
-                if 'x-' in l[1].string:
-                    used_points.add( (i,'-') )
-                if 'y+' in l[1].string:
-                    used_points.add( (j,'+') )
-                if 'y-' in l[1].string:
-                    used_points.add( (j,'-') )
             instance.add_clause( new_clause )
 
-    return used_points
 
-def ord_horn_encode_variables(qcn, instance): # pylint: disable=R0912
-    """Encode instance according to ORD-Horn map."""
-    check_allen_signature(qcn.signature)
+def rcc8_rcc7_encode(qcn, instance):
+    """Encode instance according to RCC8->RCC7 map."""
+
+    check_rcc8_signature(qcn.signature)
 
     from qcn2sat import PropositionalAtoms
     atoms = PropositionalAtoms()
 
-    # encode input
-    used_points = ord_horn_encode_input(qcn, instance, atoms)
 
+    # encode input
+    rcc8_rcc7_encode_input(qcn, instance, atoms)
+
+    print 'TODO REST OF ENCODING'
+    return
     # encode ORD theory
     from syntactic_map import Predicate
     for i, s1 in used_points: # pylint: disable=C0103
@@ -150,22 +168,3 @@ def ord_horn_encode_variables(qcn, instance): # pylint: disable=R0912
                     j, k, atoms),
                     instantiate( (True, Predicate(None, 'x'+s1, '<=', 'y'+s3)),
                     i, k, atoms) ])
-
-def point_algebra_comptable():
-    """Return composition table of the point algebra."""
-
-    point_algebra_ct = dict()
-    point_algebra_ct["< <"] = frozenset( [ '<' ] )
-    point_algebra_ct["< ="] = frozenset( [ '<' ] )
-    point_algebra_ct["< >"] = frozenset( [ '<', '=', '>' ] )
-    point_algebra_ct["= <"] = frozenset( [ '<' ] )
-    point_algebra_ct["= ="] = frozenset( [ '=' ] )
-    point_algebra_ct["= >"] = frozenset( [ '>' ] )
-    point_algebra_ct["> <"] = frozenset( [ '<', '=', '>' ] )
-    point_algebra_ct["> ="] = frozenset( [ '>' ] )
-    point_algebra_ct["> >"] = frozenset( [ '>' ] )
-
-    return point_algebra_ct
-
-def rcc8_rcc7_encode(INPUT_QCN, CNFINSTANCE):
-    print 'TODO'
