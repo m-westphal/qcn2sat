@@ -27,9 +27,9 @@ RCC8_SIGNATURE = [ 'EQ', 'DC', 'EC', 'PO', 'TPP', 'NTPP', 'TPPI', 'NTPPI' ]
 # Relationships" Bennett) p. 90
 FULL_DESCRIPTION = {
     'EQ': [ '+(x P y)', '+(y P x)' ],
-    'DC': [ '+(x DC y)'],
-    'EC': [ '+(x DR y)', '-(x DC y)' ],
-    'PO': [ '-(x DR y)', '-(x P y)', '-(y P x)' ],
+    'DC': [ '-(x NDC y)'],
+    'EC': [ '-(x O y)', '+(x NDC y)' ],
+    'PO': [ '+(x O y)', '-(x P y)', '-(y P x)' ],
     'TPP': [ '+(x P y)', '-(y P x)', '-(x NTP y)' ],
     'TPPI': [ '+(y P x)', '-(x P y)', '-(y NTP x)' ],
     'NTPP': [ '+(x NTP y)' ],
@@ -46,6 +46,46 @@ def form_literal(string):
         assert string[0] == '+'
     return (positive, Predicate(string[2:-1]))
 
+def _assert_is_horn(relation, cnf):
+    try:
+        lines = open('hornalg', 'r')
+        found = False
+        for l in lines:
+            stuff = frozenset(l.split(' '))
+            if set(relation) <= stuff and len(relation)+2 == len(stuff):
+                found = True
+                break
+        lines.close()
+        if not found:
+            print "[ERROR] ... is erroneously horn"
+
+            print relation
+            print_cnf(cnf)
+            return False
+
+    except IOError, e:
+        print "File 'hornalg': IO Error"
+
+    return True
+
+def _assert_is_not_horn(relation, cnf):
+    try:
+        lines = open('hornalg', 'r')
+        for l in lines:
+            stuff = frozenset(l.split(' '))
+            if set(relation) <= stuff and len(relation)+2 == len(stuff):
+                print "[ERROR] ... is not horn"
+
+                print relation
+                print_cnf(cnf)
+                lines.close()
+                return False
+
+        lines.close()
+    except IOError, e:
+        print "File 'hornalg': IO Error"
+    return True
+
 def build_syn_int(output_map=False):
     from itertools import combinations
 
@@ -59,6 +99,8 @@ def build_syn_int(output_map=False):
 
     syn_map = dict()
     horn_relations = 0
+    missed_horn = 0
+    erroneously_horn = 0
     for relation in relations:
         dnf = set()
         for base_relation in relation:
@@ -69,7 +111,6 @@ def build_syn_int(output_map=False):
             dnf.add(frozenset(conjunction))
         cnf = dnf_to_cnf(dnf)
         cnf = simplify_cnf(cnf)
-        print relation, len(cnf) # get_base_relations_satisfying_cnf(cnf)
         if frozenset(relation) != get_base_relations_satisfying_cnf(cnf):
             print "Failed to get simplified CNF for", relation
             print_cnf(cnf)
@@ -79,16 +120,23 @@ def build_syn_int(output_map=False):
 #        print len(cnf)
 #        print is_horn(cnf)
         if is_horn(cnf):
-            print "Is horn: ", relation
+            if not _assert_is_horn(relation, cnf):
+                erroneously_horn += 1
+#            print "Is horn: ", relation
 #            print cnf
             horn_relations += 1
         else:
-            if len(cnf) < 3:
+            if not _assert_is_not_horn(relation, cnf):
+                missed_horn += 1
+#            if len(cnf) < 3:
 #                print relation
 #                print_cnf(cnf)
-                print
+#                print
 
-    print "%d horn relations (should be 147+empty_relation)" % horn_relations
+    print "Horn statistics (there must be 147+1 such relations)"
+    print "\t%d generated horn" % horn_relations
+    print "\t%d erroneously horn (generated horn, but must not be)" % erroneously_horn
+    print "\t%d missed horn relations" % missed_horn
 
     if output_map:
         from syntactic_map import print_map
@@ -182,41 +230,41 @@ def rules(facts):
         # *symmetry
         ([(True, Predicate('x NTP y'))], (False, Predicate('y NTP x'))),
         ([(True, Predicate('y NTP x'))], (False, Predicate('x NTP y'))),
-        ([(True, Predicate('x DC y'))], (True, Predicate('y DC x'))),
-        ([(True, Predicate('y DC x'))], (True, Predicate('x DC y'))),
-        ([(False, Predicate('x DC y'))], (False, Predicate('y DC x'))),
-        ([(False, Predicate('y DC x'))], (False, Predicate('x DC y'))),
-        ([(True, Predicate('x DR y'))], (True, Predicate('y DR x'))),
-        ([(True, Predicate('y DR x'))], (True, Predicate('x DR y'))),
-        ([(False, Predicate('x DR y'))], (False, Predicate('y DR x'))),
-        ([(False, Predicate('y DR x'))], (False, Predicate('x DR y'))),
+        ([(True, Predicate('x NDC y'))], (True, Predicate('y NDC x'))),
+        ([(True, Predicate('y NDC x'))], (True, Predicate('x NDC y'))),
+        ([(False, Predicate('x NDC y'))], (False, Predicate('y NDC x'))),
+        ([(False, Predicate('y NDC x'))], (False, Predicate('x NDC y'))),
+        ([(True, Predicate('x O y'))], (True, Predicate('y O x'))),
+        ([(True, Predicate('y O x'))], (True, Predicate('x O y'))),
+        ([(False, Predicate('x O y'))], (False, Predicate('y O x'))),
+        ([(False, Predicate('y O x'))], (False, Predicate('x O y'))),
         # DC
-        ([(True, Predicate('x DC y'))], (False, Predicate('x P y'))),
-        ([(True, Predicate('x DC y'))], (False, Predicate('y P x'))),
-        ([(True, Predicate('x DC y'))], (False, Predicate('x NTP y'))),
-        ([(True, Predicate('y DC x'))], (False, Predicate('x NTP y'))),
-        ([(True, Predicate('x DC y'))], (False, Predicate('y NTP x'))),
-        ([(True, Predicate('y DC x'))], (False, Predicate('y NTP x'))),
-        ([(True, Predicate('x DC y'))], (True, Predicate('x DR y'))),
+        ([(False, Predicate('x NDC y'))], (False, Predicate('x P y'))),
+        ([(False, Predicate('x NDC y'))], (False, Predicate('y P x'))),
+        ([(False, Predicate('x NDC y'))], (False, Predicate('x NTP y'))),
+        ([(False, Predicate('y NDC x'))], (False, Predicate('x NTP y'))),
+        ([(False, Predicate('x NDC y'))], (False, Predicate('y NTP x'))),
+        ([(False, Predicate('y NDC x'))], (False, Predicate('y NTP x'))),
+        ([(False, Predicate('x NDC y'))], (False, Predicate('x O y'))),
         # NTP
         ([(True, Predicate('x NTP y'))], (True, Predicate('x P y'))),
         ([(True, Predicate('y NTP x'))], (True, Predicate('y P x'))),
         ([(True, Predicate('x NTP y'))], (False, Predicate('y P x'))),
         ([(True, Predicate('y NTP x'))], (False, Predicate('x P y'))),
-        ([(True, Predicate('x NTP y'))], (False, Predicate('x DC y'))),
-        ([(True, Predicate('y NTP x'))], (False, Predicate('x DC y'))),
+        ([(True, Predicate('x NTP y'))], (True, Predicate('x NDC y'))),
+        ([(True, Predicate('y NTP x'))], (True, Predicate('x NDC y'))),
         # P
-        ([(True, Predicate('x P y'))], (False, Predicate('x DC y'))),
-        ([(True, Predicate('y P x'))], (False, Predicate('x DC y'))),
+        ([(True, Predicate('x P y'))], (True, Predicate('x NDC y'))),
+        ([(True, Predicate('y P x'))], (True, Predicate('x NDC y'))),
         # ODD?!?!?!
-        ([(True, Predicate('x DR y')), (False, Predicate('x DC y'))], (False, Predicate('x P y'))),
-        ([(True, Predicate('x DR y')), (False, Predicate('x DC y'))], (False, Predicate('y P x'))),
-        ([(False, Predicate('x DR y'))], (False, Predicate('x DC y'))),
+        ([(False, Predicate('x O y')), (True, Predicate('x NDC y'))], (False, Predicate('x P y'))),
+        ([(False, Predicate('x O y')), (True, Predicate('x NDC y'))], (False, Predicate('y P x'))),
+        ([(True, Predicate('x O y'))], (True, Predicate('x NDC y'))),
 
-        ([(True, Predicate('x EC y'))], (True, Predicate('x DR y'))),
-        ([(True, Predicate('x P y'))], (False, Predicate('x DR y'))),
-        ([(True, Predicate('y P x'))], (False, Predicate('x DR y'))),
-        ([(True, Predicate('x DR y'))], (False, Predicate('x NTP y'))),
+        ([(True, Predicate('x EC y'))], (False, Predicate('x O y'))),
+        ([(True, Predicate('x P y'))], (True, Predicate('x O y'))),
+        ([(True, Predicate('y P x'))], (True, Predicate('x O y'))),
+        ([(False, Predicate('x O y'))], (False, Predicate('x NTP y'))),
         ([(True, Predicate('x P y'))], (False, Predicate('y NTP x'))),
         ([(True, Predicate('y P x'))], (False, Predicate('x NTP y'))),
         ([(False, Predicate('x P y'))], (False, Predicate('x NTP y'))),
@@ -228,18 +276,6 @@ def rules(facts):
     # TODO add facts, derive conflicts
 
     # TODO needs set semantics (list grows infinite x DC y => y DC x => x DC y ...
-
-    # symmetry
-
-#    if lit[0] and lit[1] == Predicate('x NTP y'):
-#        res += [ (True, Predicate('x P y')),
-#                 (False, Predicate('y NTP x')) ]
-#    if lit[0] and lit[1] == Predicate('x NTP y'):
-#        res += [ (True, Predicate('x P y')),
-#                 (False, Predicate('y NTP x')) ]
-#    if lit[0] and lit[1] == Predicate('y NTP x'):
-#        res += [ (True, Predicate('y P x')) ]
-
 
     for body, head in my_rules:
         sat = True
@@ -472,7 +508,7 @@ if __name__ == '__main__':
     # TMP CODE
 
     self_test()
-    build_syn_int()
+    build_syn_int(True)
 
 #    from qcn2sat import read_comp_table
 #    COMP, SIG = read_comp_table(MAP_FILE)
