@@ -31,7 +31,7 @@ class Predicate:  # pylint: disable=R0903
         else:
             import re
 
-            match = re.match(r'^([xy+-]+) ([<=>A-Z]+) ([xy+-]+)$', string)
+            match = re.match(r'^([xyz+-]+) ([<=>A-Z]+) ([xyz+-]+)$', string)
 
             rel = match.group(2)
 
