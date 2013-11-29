@@ -256,12 +256,11 @@ def rules(facts):
         # P
         ([(True, Predicate('x P y'))], (True, Predicate('x NDC y'))),
         ([(True, Predicate('y P x'))], (True, Predicate('x NDC y'))),
-        # ODD?!?!?!
-        ([(False, Predicate('x O y')), (True, Predicate('x NDC y'))], (False, Predicate('x P y'))),
-        ([(False, Predicate('x O y')), (True, Predicate('x NDC y'))], (False, Predicate('y P x'))),
+
+        ([(False, Predicate('x O y'))], (False, Predicate('x P y'))),
+        ([(False, Predicate('x O y'))], (False, Predicate('y P x'))),
         ([(True, Predicate('x O y'))], (True, Predicate('x NDC y'))),
 
-        ([(True, Predicate('x EC y'))], (False, Predicate('x O y'))),
         ([(True, Predicate('x P y'))], (True, Predicate('x O y'))),
         ([(True, Predicate('y P x'))], (True, Predicate('x O y'))),
         ([(False, Predicate('x O y'))], (False, Predicate('x NTP y'))),
@@ -484,7 +483,7 @@ if __name__ == '__main__':
     sys.path.insert(1, os.path.join(sys.path[0], '..'))
     # TMP CODE
 
-    self_test()
+#    self_test()
 #    build_syn_int(True)
 
 #    from qcn2sat import read_comp_table

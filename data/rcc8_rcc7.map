@@ -2,20 +2,20 @@ x ( DC ) y :: { { -(x NDC y) } }
 x ( DC EC ) y :: { { -(x O y) } }
 x ( DC EC EQ ) y :: { { -(x O y) +(x P y) } { -(x O y) +(y P x) } }
 x ( DC EC EQ NTPP ) y :: { { -(x O y) +(x P y) } { -(x O y) +(x NTP y) +(y P x) } }
-x ( DC EC EQ NTPP NTPPI ) y :: { { -(x O y) +(x NTP y) +(y P x) } { -(x O y) +(y NTP x) +(x P y) } }
+x ( DC EC EQ NTPP NTPPI ) y :: { { -(x O y) +(y NTP x) +(x P y) } { -(x O y) +(x NTP y) +(y P x) } }
 x ( DC EC EQ NTPP NTPPI PO ) y :: { { -(x P y) +(x NTP y) +(y P x) } { -(y P x) +(y NTP x) +(x P y) } }
 x ( DC EC EQ NTPP NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) +(x P y) } }
 x ( DC EC EQ NTPP NTPPI PO TPP TPPI ) y :: { }
-x ( DC EC EQ NTPP NTPPI PO TPPI ) y :: { { -(x P y) +(x NTP y) +(y P x) } }
+x ( DC EC EQ NTPP NTPPI PO TPPI ) y :: { { -(x P y) +(y P x) +(x NTP y) } }
 x ( DC EC EQ NTPP NTPPI TPP ) y :: { { -(x O y) +(y NTP x) +(x P y) } }
 x ( DC EC EQ NTPP NTPPI TPP TPPI ) y :: { { -(x O y) +(x P y) +(y P x) } }
 x ( DC EC EQ NTPP NTPPI TPPI ) y :: { { -(x O y) +(x NTP y) +(y P x) } }
-x ( DC EC EQ NTPP PO ) y :: { { -(x P y) +(x NTP y) +(y P x) } { -(y P x) +(x P y) } }
+x ( DC EC EQ NTPP PO ) y :: { { -(y P x) +(x P y) } { -(x P y) +(x NTP y) +(y P x) } }
 x ( DC EC EQ NTPP PO TPP ) y :: { { -(y P x) +(x P y) } }
 x ( DC EC EQ NTPP PO TPP TPPI ) y :: { { -(y NTP x) } }
 x ( DC EC EQ NTPP PO TPPI ) y :: { { -(y NTP x) } { -(x P y) +(x NTP y) +(y P x) } }
 x ( DC EC EQ NTPP TPP ) y :: { { -(x O y) +(x P y) } }
-x ( DC EC EQ NTPP TPP TPPI ) y :: { { -(x O y) +(x P y) +(y P x) } { -(y NTP x) } }
+x ( DC EC EQ NTPP TPP TPPI ) y :: { { -(y NTP x) } { -(x O y) +(x P y) +(y P x) } }
 x ( DC EC EQ NTPP TPPI ) y :: { { -(y NTP x) } { -(x O y) +(x NTP y) +(y P x) } }
 x ( DC EC EQ NTPPI ) y :: { { -(x O y) +(y P x) } { -(x O y) +(y NTP x) +(x P y) } }
 x ( DC EC EQ NTPPI PO ) y :: { { -(x P y) +(y P x) } { -(y P x) +(y NTP x) +(x P y) } }
@@ -26,111 +26,111 @@ x ( DC EC EQ NTPPI TPP ) y :: { { -(x NTP y) } { -(x O y) +(y NTP x) +(x P y) } 
 x ( DC EC EQ NTPPI TPP TPPI ) y :: { { -(x O y) +(x P y) +(y P x) } { -(x NTP y) } }
 x ( DC EC EQ NTPPI TPPI ) y :: { { -(x O y) +(y P x) } }
 x ( DC EC EQ PO ) y :: { { -(x P y) +(y P x) } { -(y P x) +(x P y) } }
-x ( DC EC EQ PO TPP ) y :: { { -(x NTP y) } { -(y P x) +(x P y) } }
-x ( DC EC EQ PO TPP TPPI ) y :: { { -(x NTP y) } { -(y NTP x) } }
+x ( DC EC EQ PO TPP ) y :: { { -(y P x) +(x P y) } { -(x NTP y) } }
+x ( DC EC EQ PO TPP TPPI ) y :: { { -(y NTP x) } { -(x NTP y) } }
 x ( DC EC EQ PO TPPI ) y :: { { -(y NTP x) } { -(x P y) +(y P x) } }
 x ( DC EC EQ TPP ) y :: { { -(x O y) +(x P y) } { -(x NTP y) } }
 x ( DC EC EQ TPP TPPI ) y :: { { -(y NTP x) } { -(x O y) +(x P y) +(y P x) } { -(x NTP y) } }
 x ( DC EC EQ TPPI ) y :: { { -(y NTP x) } { -(x O y) +(y P x) } }
 x ( DC EC NTPP ) y :: { { -(x O y) +(x NTP y) } }
 x ( DC EC NTPP NTPPI ) y :: { { -(x O y) +(x NTP y) +(y NTP x) } }
-x ( DC EC NTPP NTPPI PO ) y :: { { -(x P y) +(x NTP y) } { -(y P x) +(y NTP x) } }
+x ( DC EC NTPP NTPPI PO ) y :: { { -(y P x) +(y NTP x) } { -(x P y) +(x NTP y) } }
 x ( DC EC NTPP NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) } }
 x ( DC EC NTPP NTPPI PO TPP TPPI ) y :: { { -(y P x) -(x P y) } }
 x ( DC EC NTPP NTPPI PO TPPI ) y :: { { -(x P y) +(x NTP y) } }
-x ( DC EC NTPP NTPPI TPP ) y :: { { -(x O y) +(y NTP x) +(x P y) } { -(y P x) +(y NTP x) } }
+x ( DC EC NTPP NTPPI TPP ) y :: { { -(y P x) +(y NTP x) } { -(x O y) +(y NTP x) +(x P y) } }
 x ( DC EC NTPP NTPPI TPP TPPI ) y :: { { -(x O y) +(x P y) +(y P x) } { -(y P x) -(x P y) } }
 x ( DC EC NTPP NTPPI TPPI ) y :: { { -(x P y) +(x NTP y) } { -(x O y) +(x NTP y) +(y P x) } }
 x ( DC EC NTPP PO ) y :: { { -(x P y) +(x NTP y) } { -(y P x) } }
 x ( DC EC NTPP PO TPP ) y :: { { -(y P x) } }
-x ( DC EC NTPP PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(y NTP x) } }
+x ( DC EC NTPP PO TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } }
 x ( DC EC NTPP PO TPPI ) y :: { { -(x P y) +(x NTP y) } { -(y NTP x) } }
-x ( DC EC NTPP TPP ) y :: { { -(x O y) +(x P y) } { -(y P x) } }
-x ( DC EC NTPP TPP TPPI ) y :: { { -(y NTP x) } { -(x O y) +(x P y) +(y P x) } { -(y P x) -(x P y) } }
+x ( DC EC NTPP TPP ) y :: { { -(y P x) } { -(x O y) +(x P y) } }
+x ( DC EC NTPP TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { -(x O y) +(x P y) +(y P x) } }
 x ( DC EC NTPP TPPI ) y :: { { -(x P y) +(x NTP y) } { -(y NTP x) } { -(x O y) +(x NTP y) +(y P x) } }
 x ( DC EC NTPPI ) y :: { { -(x O y) +(y NTP x) } }
 x ( DC EC NTPPI PO ) y :: { { -(y P x) +(y NTP x) } { -(x P y) } }
 x ( DC EC NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) } { -(x NTP y) } }
 x ( DC EC NTPPI PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NTP y) } }
 x ( DC EC NTPPI PO TPPI ) y :: { { -(x P y) } }
-x ( DC EC NTPPI TPP ) y :: { { -(x O y) +(y NTP x) +(x P y) } { -(y P x) +(y NTP x) } { -(x NTP y) } }
-x ( DC EC NTPPI TPP TPPI ) y :: { { -(x O y) +(x P y) +(y P x) } { -(x NTP y) } { -(y P x) -(x P y) } }
+x ( DC EC NTPPI TPP ) y :: { { -(y P x) +(y NTP x) } { -(x NTP y) } { -(x O y) +(y NTP x) +(x P y) } }
+x ( DC EC NTPPI TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NTP y) } { -(x O y) +(x P y) +(y P x) } }
 x ( DC EC NTPPI TPPI ) y :: { { -(x P y) } { -(x O y) +(y P x) } }
-x ( DC EC PO ) y :: { { -(y P x) } { -(x P y) } }
-x ( DC EC PO TPP ) y :: { { -(x NTP y) } { -(y P x) } }
-x ( DC EC PO TPP TPPI ) y :: { { -(x NTP y) } { -(y NTP x) } { -(y P x) -(x P y) } }
+x ( DC EC PO ) y :: { { -(x P y) } { -(y P x) } }
+x ( DC EC PO TPP ) y :: { { -(y P x) } { -(x NTP y) } }
+x ( DC EC PO TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { -(x NTP y) } }
 x ( DC EC PO TPPI ) y :: { { -(y NTP x) } { -(x P y) } }
-x ( DC EC TPP ) y :: { { -(x NTP y) } { -(x O y) +(x P y) } { -(y P x) } }
-x ( DC EC TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x O y) +(x P y) +(y P x) } { -(x NTP y) } { -(y NTP x) } }
-x ( DC EC TPPI ) y :: { { -(y NTP x) } { -(x O y) +(y P x) } { -(x P y) } }
-x ( DC EQ ) y :: { { -(x NDC y) +(y P x) } { -(x NDC y) +(x P y) } }
-x ( DC EQ NTPP ) y :: { { -(x NDC y) +(y P x) +(x NTP y) } { -(x NDC y) +(x P y) } }
-x ( DC EQ NTPP NTPPI ) y :: { { -(x NDC y) +(y NTP x) +(x P y) } { -(x NDC y) +(x NTP y) +(y P x) } }
-x ( DC EQ NTPP NTPPI PO ) y :: { { -(x NDC y) +(x O y) } { -(x P y) +(x NTP y) +(y P x) } { -(y P x) +(y NTP x) +(x P y) } }
-x ( DC EQ NTPP NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) +(x P y) } { -(x NDC y) +(x O y) } }
+x ( DC EC TPP ) y :: { { -(y P x) } { -(x O y) +(x P y) } { -(x NTP y) } }
+x ( DC EC TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { -(x NTP y) } { -(x O y) +(y P x) +(x P y) } }
+x ( DC EC TPPI ) y :: { { -(y NTP x) } { -(x P y) } { -(x O y) +(y P x) } }
+x ( DC EQ ) y :: { { -(x NDC y) +(x P y) } { -(x NDC y) +(y P x) } }
+x ( DC EQ NTPP ) y :: { { -(x NDC y) +(x P y) } { -(x NDC y) +(x NTP y) +(y P x) } }
+x ( DC EQ NTPP NTPPI ) y :: { { -(x NDC y) +(x NTP y) +(y P x) } { -(x NDC y) +(y NTP x) +(x P y) } }
+x ( DC EQ NTPP NTPPI PO ) y :: { { -(x P y) +(x NTP y) +(y P x) } { -(y P x) +(y NTP x) +(x P y) } { -(x NDC y) +(x O y) } }
+x ( DC EQ NTPP NTPPI PO TPP ) y :: { { -(x NDC y) +(x O y) } { -(y P x) +(y NTP x) +(x P y) } }
 x ( DC EQ NTPP NTPPI PO TPP TPPI ) y :: { { -(x NDC y) +(x O y) } }
 x ( DC EQ NTPP NTPPI PO TPPI ) y :: { { -(x P y) +(x NTP y) +(y P x) } { -(x NDC y) +(x O y) } }
 x ( DC EQ NTPP NTPPI TPP ) y :: { { -(x NDC y) +(y NTP x) +(x P y) } }
 x ( DC EQ NTPP NTPPI TPP TPPI ) y :: { { -(x NDC y) +(x P y) +(y P x) } }
 x ( DC EQ NTPP NTPPI TPPI ) y :: { { -(x NDC y) +(x NTP y) +(y P x) } }
-x ( DC EQ NTPP PO ) y :: { { -(y P x) +(x P y) } { -(x P y) +(x NTP y) +(y P x) } { -(x NDC y) +(x O y) } }
-x ( DC EQ NTPP PO TPP ) y :: { { -(x NDC y) +(x O y) } { -(y P x) +(x P y) } }
+x ( DC EQ NTPP PO ) y :: { { -(x P y) +(x NTP y) +(y P x) } { -(y P x) +(x P y) } { -(x NDC y) +(x O y) } }
+x ( DC EQ NTPP PO TPP ) y :: { { -(y P x) +(x P y) } { -(x NDC y) +(x O y) } }
 x ( DC EQ NTPP PO TPP TPPI ) y :: { { -(y NTP x) } { -(x NDC y) +(x O y) } }
-x ( DC EQ NTPP PO TPPI ) y :: { { -(y NTP x) } { -(x NDC y) +(x O y) } { -(x P y) +(x NTP y) +(y P x) } }
+x ( DC EQ NTPP PO TPPI ) y :: { { -(y NTP x) } { -(x P y) +(x NTP y) +(y P x) } { -(x NDC y) +(x O y) } }
 x ( DC EQ NTPP TPP ) y :: { { -(x NDC y) +(x P y) } }
 x ( DC EQ NTPP TPP TPPI ) y :: { { -(y NTP x) } { -(x NDC y) +(x P y) +(y P x) } }
-x ( DC EQ NTPP TPPI ) y :: { { -(x NDC y) +(x NTP y) +(y P x) } { -(y NTP x) } }
-x ( DC EQ NTPPI ) y :: { { -(x NDC y) +(y P x) } { -(x NDC y) +(x P y) +(y NTP x) } }
+x ( DC EQ NTPP TPPI ) y :: { { -(y NTP x) } { -(x NDC y) +(x NTP y) +(y P x) } }
+x ( DC EQ NTPPI ) y :: { { -(x NDC y) +(y NTP x) +(x P y) } { -(x NDC y) +(y P x) } }
 x ( DC EQ NTPPI PO ) y :: { { -(x P y) +(y P x) } { -(x NDC y) +(x O y) } { -(y P x) +(y NTP x) +(x P y) } }
-x ( DC EQ NTPPI PO TPP ) y :: { { -(x NTP y) } { -(y P x) +(y NTP x) +(x P y) } { -(x NDC y) +(x O y) } }
-x ( DC EQ NTPPI PO TPP TPPI ) y :: { { -(x NTP y) } { -(x NDC y) +(x O y) } }
-x ( DC EQ NTPPI PO TPPI ) y :: { { -(x NDC y) +(x O y) } { -(x P y) +(y P x) } }
-x ( DC EQ NTPPI TPP ) y :: { { -(x NDC y) +(y NTP x) +(x P y) } { -(x NTP y) } }
-x ( DC EQ NTPPI TPP TPPI ) y :: { { -(x NTP y) } { -(x NDC y) +(x P y) +(y P x) } }
+x ( DC EQ NTPPI PO TPP ) y :: { { -(x NDC y) +(x O y) } { -(y P x) +(y NTP x) +(x P y) } { -(x NTP y) } }
+x ( DC EQ NTPPI PO TPP TPPI ) y :: { { -(x NDC y) +(x O y) } { -(x NTP y) } }
+x ( DC EQ NTPPI PO TPPI ) y :: { { -(x P y) +(y P x) } { -(x NDC y) +(x O y) } }
+x ( DC EQ NTPPI TPP ) y :: { { -(x NTP y) } { -(x NDC y) +(y NTP x) +(x P y) } }
+x ( DC EQ NTPPI TPP TPPI ) y :: { { -(x NDC y) +(x P y) +(y P x) } { -(x NTP y) } }
 x ( DC EQ NTPPI TPPI ) y :: { { -(x NDC y) +(y P x) } }
-x ( DC EQ PO ) y :: { { -(y P x) +(x P y) } { -(x P y) +(y P x) } { -(x NDC y) +(x O y) } }
-x ( DC EQ PO TPP ) y :: { { -(x NTP y) } { -(y P x) +(x P y) } { -(x NDC y) +(x O y) } }
-x ( DC EQ PO TPP TPPI ) y :: { { -(x NTP y) } { -(y NTP x) } { -(x NDC y) +(x O y) } }
-x ( DC EQ PO TPPI ) y :: { { -(x P y) +(y P x) } { -(x NDC y) +(x O y) } { -(y NTP x) } }
-x ( DC EQ TPP ) y :: { { -(x NTP y) } { -(x NDC y) +(x P y) } }
-x ( DC EQ TPP TPPI ) y :: { { -(x NDC y) +(y P x) +(x P y) } { -(x NTP y) } { -(y NTP x) } }
-x ( DC EQ TPPI ) y :: { { -(x NDC y) +(y P x) } { -(y NTP x) } }
+x ( DC EQ PO ) y :: { { -(x P y) +(y P x) } { -(y P x) +(x P y) } { -(x NDC y) +(x O y) } }
+x ( DC EQ PO TPP ) y :: { { -(y P x) +(x P y) } { -(x NDC y) +(x O y) } { -(x NTP y) } }
+x ( DC EQ PO TPP TPPI ) y :: { { -(y NTP x) } { -(x NDC y) +(x O y) } { -(x NTP y) } }
+x ( DC EQ PO TPPI ) y :: { { -(y NTP x) } { -(x P y) +(y P x) } { -(x NDC y) +(x O y) } }
+x ( DC EQ TPP ) y :: { { -(x NDC y) +(x P y) } { -(x NTP y) } }
+x ( DC EQ TPP TPPI ) y :: { { -(y NTP x) } { -(x NDC y) +(x P y) +(y P x) } { -(x NTP y) } }
+x ( DC EQ TPPI ) y :: { { -(y NTP x) } { -(x NDC y) +(y P x) } }
 x ( DC NTPP ) y :: { { -(x NDC y) +(x NTP y) } }
-x ( DC NTPP NTPPI ) y :: { { -(x NDC y) +(y NTP x) +(x NTP y) } }
-x ( DC NTPP NTPPI PO ) y :: { { -(x NDC y) +(x O y) } { -(x P y) +(x NTP y) } { -(y P x) +(y NTP x) } }
+x ( DC NTPP NTPPI ) y :: { { -(x NDC y) +(x NTP y) +(y NTP x) } }
+x ( DC NTPP NTPPI PO ) y :: { { -(x P y) +(x NTP y) } { -(y P x) +(y NTP x) } { -(x NDC y) +(x O y) } }
 x ( DC NTPP NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) } { -(x NDC y) +(x O y) } }
-x ( DC NTPP NTPPI PO TPP TPPI ) y :: { { -(x NDC y) +(x O y) } { -(y P x) -(x P y) } }
-x ( DC NTPP NTPPI PO TPPI ) y :: { { -(x NDC y) +(x O y) } { -(x P y) +(x NTP y) } }
+x ( DC NTPP NTPPI PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NDC y) +(x O y) } }
+x ( DC NTPP NTPPI PO TPPI ) y :: { { -(x P y) +(x NTP y) } { -(x NDC y) +(x O y) } }
 x ( DC NTPP NTPPI TPP ) y :: { { -(y P x) +(y NTP x) } { -(x NDC y) +(y NTP x) +(x P y) } }
-x ( DC NTPP NTPPI TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NDC y) +(x P y) +(y P x) } }
-x ( DC NTPP NTPPI TPPI ) y :: { { -(x NDC y) +(x NTP y) +(y P x) } { -(x P y) +(x NTP y) } }
-x ( DC NTPP PO ) y :: { { -(y P x) } { -(x NDC y) +(x O y) } { -(x P y) +(x NTP y) } }
+x ( DC NTPP NTPPI TPP TPPI ) y :: { { -(x NDC y) +(x P y) +(y P x) } { -(y P x) -(x P y) } }
+x ( DC NTPP NTPPI TPPI ) y :: { { -(x P y) +(x NTP y) } { -(x NDC y) +(x NTP y) +(y P x) } }
+x ( DC NTPP PO ) y :: { { -(x P y) +(x NTP y) } { -(x NDC y) +(x O y) } { -(y P x) } }
 x ( DC NTPP PO TPP ) y :: { { -(x NDC y) +(x O y) } { -(y P x) } }
-x ( DC NTPP PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(y NTP x) } { -(x NDC y) +(x O y) } }
-x ( DC NTPP PO TPPI ) y :: { { -(x NDC y) +(x O y) } { -(y NTP x) } { -(x P y) +(x NTP y) } }
-x ( DC NTPP TPP ) y :: { { -(x NDC y) +(x P y) } { -(y P x) } }
-x ( DC NTPP TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NDC y) +(x P y) +(y P x) } { -(y NTP x) } }
-x ( DC NTPP TPPI ) y :: { { -(x P y) +(x NTP y) } { -(x NDC y) +(y P x) +(x NTP y) } { -(y NTP x) } }
+x ( DC NTPP PO TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { -(x NDC y) +(x O y) } }
+x ( DC NTPP PO TPPI ) y :: { { -(x P y) +(x NTP y) } { -(x NDC y) +(x O y) } { -(y NTP x) } }
+x ( DC NTPP TPP ) y :: { { -(y P x) } { -(x NDC y) +(x P y) } }
+x ( DC NTPP TPP TPPI ) y :: { { -(y NTP x) } { -(x NDC y) +(x P y) +(y P x) } { -(y P x) -(x P y) } }
+x ( DC NTPP TPPI ) y :: { { -(x P y) +(x NTP y) } { -(y NTP x) } { -(x NDC y) +(x NTP y) +(y P x) } }
 x ( DC NTPPI ) y :: { { -(x NDC y) +(y NTP x) } }
-x ( DC NTPPI PO ) y :: { { -(x NDC y) +(x O y) } { -(x P y) } { -(y P x) +(y NTP x) } }
-x ( DC NTPPI PO TPP ) y :: { { -(x NDC y) +(x O y) } { -(y P x) +(y NTP x) } { -(x NTP y) } }
-x ( DC NTPPI PO TPP TPPI ) y :: { { -(x NDC y) +(x O y) } { -(x NTP y) } { -(y P x) -(x P y) } }
+x ( DC NTPPI PO ) y :: { { -(x P y) } { -(x NDC y) +(x O y) } { -(y P x) +(y NTP x) } }
+x ( DC NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) } { -(x NDC y) +(x O y) } { -(x NTP y) } }
+x ( DC NTPPI PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NDC y) +(x O y) } { -(x NTP y) } }
 x ( DC NTPPI PO TPPI ) y :: { { -(x P y) } { -(x NDC y) +(x O y) } }
-x ( DC NTPPI TPP ) y :: { { -(x NDC y) +(x P y) +(y NTP x) } { -(x NTP y) } { -(y P x) +(y NTP x) } }
-x ( DC NTPPI TPP TPPI ) y :: { { -(x NTP y) } { -(y P x) -(x P y) } { -(x NDC y) +(x P y) +(y P x) } }
-x ( DC NTPPI TPPI ) y :: { { -(x NDC y) +(y P x) } { -(x P y) } }
+x ( DC NTPPI TPP ) y :: { { -(y P x) +(y NTP x) } { -(x NTP y) } { -(x NDC y) +(y NTP x) +(x P y) } }
+x ( DC NTPPI TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NDC y) +(x P y) +(y P x) } { -(x NTP y) } }
+x ( DC NTPPI TPPI ) y :: { { -(x P y) } { -(x NDC y) +(y P x) } }
 x ( DC PO ) y :: { { -(x P y) } { -(x NDC y) +(x O y) } { -(y P x) } }
-x ( DC PO TPP ) y :: { { -(x NTP y) } { -(y P x) } { -(x NDC y) +(x O y) } }
-x ( DC PO TPP TPPI ) y :: { { -(y NTP x) } { -(x NDC y) +(x O y) } { -(x NTP y) } { -(y P x) -(x P y) } }
-x ( DC PO TPPI ) y :: { { -(x P y) } { -(y NTP x) } { -(x NDC y) +(x O y) } }
-x ( DC TPP ) y :: { { -(y P x) } { -(x NTP y) } { -(x NDC y) +(x P y) } }
-x ( DC TPP TPPI ) y :: { { -(x NTP y) } { -(y NTP x) } { -(x NDC y) +(x P y) +(y P x) } { -(y P x) -(x P y) } }
-x ( DC TPPI ) y :: { { -(x NDC y) +(y P x) } { -(y NTP x) } { -(x P y) } }
+x ( DC PO TPP ) y :: { { -(x NTP y) } { -(x NDC y) +(x O y) } { -(y P x) } }
+x ( DC PO TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { -(x NDC y) +(x O y) } { -(x NTP y) } }
+x ( DC PO TPPI ) y :: { { -(y NTP x) } { -(x P y) } { -(x NDC y) +(x O y) } }
+x ( DC TPP ) y :: { { -(y P x) } { -(x NDC y) +(x P y) } { -(x NTP y) } }
+x ( DC TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { -(x NDC y) +(x P y) +(y P x) } { -(x NTP y) } }
+x ( DC TPPI ) y :: { { -(y NTP x) } { -(x P y) } { -(x NDC y) +(y P x) } }
 x ( EC ) y :: { { -(x O y) } { +(x NDC y) } }
-x ( EC EQ ) y :: { { -(x O y) +(y P x) } { -(x O y) +(x P y) } { +(x NDC y) } }
-x ( EC EQ NTPP ) y :: { { -(x O y) +(y P x) +(x NTP y) } { -(x O y) +(x P y) } { +(x NDC y) } }
+x ( EC EQ ) y :: { { -(x O y) +(x P y) } { -(x O y) +(y P x) } { +(x NDC y) } }
+x ( EC EQ NTPP ) y :: { { -(x O y) +(x P y) } { -(x O y) +(x NTP y) +(y P x) } { +(x NDC y) } }
 x ( EC EQ NTPP NTPPI ) y :: { { -(x O y) +(y NTP x) +(x P y) } { -(x O y) +(x NTP y) +(y P x) } { +(x NDC y) } }
-x ( EC EQ NTPP NTPPI PO ) y :: { { -(y P x) +(y NTP x) +(x P y) } { -(x P y) +(x NTP y) +(y P x) } { +(x NDC y) } }
+x ( EC EQ NTPP NTPPI PO ) y :: { { -(x P y) +(x NTP y) +(y P x) } { -(y P x) +(y NTP x) +(x P y) } { +(x NDC y) } }
 x ( EC EQ NTPP NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) +(x P y) } { +(x NDC y) } }
 x ( EC EQ NTPP NTPPI PO TPP TPPI ) y :: { { +(x NDC y) } }
 x ( EC EQ NTPP NTPPI PO TPPI ) y :: { { -(x P y) +(x NTP y) +(y P x) } { +(x NDC y) } }
@@ -144,112 +144,112 @@ x ( EC EQ NTPP PO TPPI ) y :: { { -(y NTP x) } { -(x P y) +(x NTP y) +(y P x) } 
 x ( EC EQ NTPP TPP ) y :: { { -(x O y) +(x P y) } { +(x NDC y) } }
 x ( EC EQ NTPP TPP TPPI ) y :: { { -(y NTP x) } { -(x O y) +(x P y) +(y P x) } { +(x NDC y) } }
 x ( EC EQ NTPP TPPI ) y :: { { -(y NTP x) } { -(x O y) +(x NTP y) +(y P x) } { +(x NDC y) } }
-x ( EC EQ NTPPI ) y :: { { -(x O y) +(y P x) } { -(x O y) +(x P y) +(y NTP x) } { +(x NDC y) } }
-x ( EC EQ NTPPI PO ) y :: { { -(y P x) +(y NTP x) +(x P y) } { -(x P y) +(y P x) } { +(x NDC y) } }
-x ( EC EQ NTPPI PO TPP ) y :: { { -(x NTP y) } { -(y P x) +(y NTP x) +(x P y) } { +(x NDC y) } }
+x ( EC EQ NTPPI ) y :: { { -(x O y) +(y NTP x) +(x P y) } { -(x O y) +(y P x) } { +(x NDC y) } }
+x ( EC EQ NTPPI PO ) y :: { { -(x P y) +(y P x) } { -(y P x) +(y NTP x) +(x P y) } { +(x NDC y) } }
+x ( EC EQ NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) +(x P y) } { -(x NTP y) } { +(x NDC y) } }
 x ( EC EQ NTPPI PO TPP TPPI ) y :: { { -(x NTP y) } { +(x NDC y) } }
 x ( EC EQ NTPPI PO TPPI ) y :: { { -(x P y) +(y P x) } { +(x NDC y) } }
-x ( EC EQ NTPPI TPP ) y :: { { -(x O y) +(y NTP x) +(x P y) } { -(x NTP y) } { +(x NDC y) } }
-x ( EC EQ NTPPI TPP TPPI ) y :: { { -(x NTP y) } { -(x O y) +(x P y) +(y P x) } { +(x NDC y) } }
+x ( EC EQ NTPPI TPP ) y :: { { -(x NTP y) } { -(x O y) +(y NTP x) +(x P y) } { +(x NDC y) } }
+x ( EC EQ NTPPI TPP TPPI ) y :: { { -(x O y) +(x P y) +(y P x) } { -(x NTP y) } { +(x NDC y) } }
 x ( EC EQ NTPPI TPPI ) y :: { { -(x O y) +(y P x) } { +(x NDC y) } }
-x ( EC EQ PO ) y :: { { -(y P x) +(x P y) } { -(x P y) +(y P x) } { +(x NDC y) } }
-x ( EC EQ PO TPP ) y :: { { -(x NTP y) } { -(y P x) +(x P y) } { +(x NDC y) } }
-x ( EC EQ PO TPP TPPI ) y :: { { -(x NTP y) } { -(y NTP x) } { +(x NDC y) } }
-x ( EC EQ PO TPPI ) y :: { { -(x P y) +(y P x) } { -(y NTP x) } { +(x NDC y) } }
-x ( EC EQ TPP ) y :: { { -(x NTP y) } { -(x O y) +(x P y) } { +(x NDC y) } }
-x ( EC EQ TPP TPPI ) y :: { { -(x O y) +(y P x) +(x P y) } { -(x NTP y) } { -(y NTP x) } { +(x NDC y) } }
+x ( EC EQ PO ) y :: { { -(x P y) +(y P x) } { -(y P x) +(x P y) } { +(x NDC y) } }
+x ( EC EQ PO TPP ) y :: { { -(y P x) +(x P y) } { -(x NTP y) } { +(x NDC y) } }
+x ( EC EQ PO TPP TPPI ) y :: { { -(y NTP x) } { -(x NTP y) } { +(x NDC y) } }
+x ( EC EQ PO TPPI ) y :: { { -(y NTP x) } { -(x P y) +(y P x) } { +(x NDC y) } }
+x ( EC EQ TPP ) y :: { { -(x O y) +(x P y) } { -(x NTP y) } { +(x NDC y) } }
+x ( EC EQ TPP TPPI ) y :: { { -(y NTP x) } { -(x O y) +(x P y) +(y P x) } { -(x NTP y) } { +(x NDC y) } }
 x ( EC EQ TPPI ) y :: { { -(y NTP x) } { -(x O y) +(y P x) } { +(x NDC y) } }
 x ( EC NTPP ) y :: { { -(x O y) +(x NTP y) } { +(x NDC y) } }
-x ( EC NTPP NTPPI ) y :: { { -(x O y) +(y NTP x) +(x NTP y) } { +(x NDC y) } }
+x ( EC NTPP NTPPI ) y :: { { -(x O y) +(x NTP y) +(y NTP x) } { +(x NDC y) } }
 x ( EC NTPP NTPPI PO ) y :: { { -(x P y) +(x NTP y) } { -(y P x) +(y NTP x) } { +(x NDC y) } }
 x ( EC NTPP NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) } { +(x NDC y) } }
 x ( EC NTPP NTPPI PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { +(x NDC y) } }
 x ( EC NTPP NTPPI PO TPPI ) y :: { { -(x P y) +(x NTP y) } { +(x NDC y) } }
 x ( EC NTPP NTPPI TPP ) y :: { { -(y P x) +(y NTP x) } { -(x O y) +(y NTP x) +(x P y) } { +(x NDC y) } }
 x ( EC NTPP NTPPI TPP TPPI ) y :: { { -(x O y) +(x P y) +(y P x) } { -(y P x) -(x P y) } { +(x NDC y) } }
-x ( EC NTPP NTPPI TPPI ) y :: { { -(x O y) +(x NTP y) +(y P x) } { -(x P y) +(x NTP y) } { +(x NDC y) } }
-x ( EC NTPP PO ) y :: { { -(y P x) } { -(x P y) +(x NTP y) } { +(x NDC y) } }
+x ( EC NTPP NTPPI TPPI ) y :: { { -(x P y) +(x NTP y) } { -(x O y) +(x NTP y) +(y P x) } { +(x NDC y) } }
+x ( EC NTPP PO ) y :: { { -(x P y) +(x NTP y) } { -(y P x) } { +(x NDC y) } }
 x ( EC NTPP PO TPP ) y :: { { -(y P x) } { +(x NDC y) } }
-x ( EC NTPP PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(y NTP x) } { +(x NDC y) } }
+x ( EC NTPP PO TPP TPPI ) y :: { { -(y NTP x) } { -(x P y) -(y P x) } { +(x NDC y) } }
 x ( EC NTPP PO TPPI ) y :: { { -(y NTP x) } { -(x P y) +(x NTP y) } { +(x NDC y) } }
-x ( EC NTPP TPP ) y :: { { -(x O y) +(x P y) } { -(y P x) } { +(x NDC y) } }
-x ( EC NTPP TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { -(x O y) +(x P y) +(y P x) } { +(x NDC y) } }
+x ( EC NTPP TPP ) y :: { { -(y P x) } { -(x O y) +(x P y) } { +(x NDC y) } }
+x ( EC NTPP TPP TPPI ) y :: { { -(y NTP x) } { -(x O y) +(x P y) +(y P x) } { -(y P x) -(x P y) } { +(x NDC y) } }
 x ( EC NTPP TPPI ) y :: { { -(x P y) +(x NTP y) } { -(y NTP x) } { -(x O y) +(x NTP y) +(y P x) } { +(x NDC y) } }
 x ( EC NTPPI ) y :: { { -(x O y) +(y NTP x) } { +(x NDC y) } }
-x ( EC NTPPI PO ) y :: { { -(x P y) } { -(y P x) +(y NTP x) } { +(x NDC y) } }
+x ( EC NTPPI PO ) y :: { { -(y P x) +(y NTP x) } { -(x P y) } { +(x NDC y) } }
 x ( EC NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) } { -(x NTP y) } { +(x NDC y) } }
 x ( EC NTPPI PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NTP y) } { +(x NDC y) } }
 x ( EC NTPPI PO TPPI ) y :: { { -(x P y) } { +(x NDC y) } }
-x ( EC NTPPI TPP ) y :: { { -(y P x) +(y NTP x) } { -(x O y) +(y NTP x) +(x P y) } { -(x NTP y) } { +(x NDC y) } }
-x ( EC NTPPI TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x O y) +(x P y) +(y P x) } { -(x NTP y) } { +(x NDC y) } }
-x ( EC NTPPI TPPI ) y :: { { -(x O y) +(y P x) } { -(x P y) } { +(x NDC y) } }
-x ( EC PO ) y :: { { -(y P x) } { -(x P y) } { +(x NDC y) } }
+x ( EC NTPPI TPP ) y :: { { -(y P x) +(y NTP x) } { -(x NTP y) } { -(x O y) +(y NTP x) +(x P y) } { +(x NDC y) } }
+x ( EC NTPPI TPP TPPI ) y :: { { -(x NTP y) } { -(x O y) +(x P y) +(y P x) } { -(y P x) -(x P y) } { +(x NDC y) } }
+x ( EC NTPPI TPPI ) y :: { { -(x P y) } { -(x O y) +(y P x) } { +(x NDC y) } }
+x ( EC PO ) y :: { { -(x P y) } { -(y P x) } { +(x NDC y) } }
 x ( EC PO TPP ) y :: { { -(y P x) } { -(x NTP y) } { +(x NDC y) } }
-x ( EC PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(y NTP x) } { -(x NTP y) } { +(x NDC y) } }
+x ( EC PO TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { -(x NTP y) } { +(x NDC y) } }
 x ( EC PO TPPI ) y :: { { -(y NTP x) } { -(x P y) } { +(x NDC y) } }
-x ( EC TPP ) y :: { { -(x O y) +(x P y) } { -(x NTP y) } { -(y P x) } { +(x NDC y) } }
-x ( EC TPP TPPI ) y :: { { -(x O y) +(y P x) +(x P y) } { -(x NTP y) } { -(y NTP x) } { -(y P x) -(x P y) } { +(x NDC y) } }
+x ( EC TPP ) y :: { { -(y P x) } { -(x O y) +(x P y) } { -(x NTP y) } { +(x NDC y) } }
+x ( EC TPP TPPI ) y :: { { -(x NTP y) } { -(y P x) -(x P y) } { -(y NTP x) } { -(x O y) +(x P y) +(y P x) } { +(x NDC y) } }
 x ( EC TPPI ) y :: { { -(y NTP x) } { -(x P y) } { -(x O y) +(y P x) } { +(x NDC y) } }
-x ( EQ ) y :: { { +(x P y) } { +(y P x) } }
-x ( EQ NTPP ) y :: { { +(x NTP y) +(y P x) } { +(x P y) } }
-x ( EQ NTPP NTPPI ) y :: { { +(y NTP x) +(x P y) } { +(x NTP y) +(y P x) } }
-x ( EQ NTPP NTPPI PO ) y :: { { -(y P x) +(y NTP x) +(x P y) } { -(x P y) +(x NTP y) +(y P x) } { +(x O y) } }
+x ( EQ ) y :: { { +(y P x) } { +(x P y) } }
+x ( EQ NTPP ) y :: { { +(x P y) } { +(x NTP y) +(y P x) } }
+x ( EQ NTPP NTPPI ) y :: { { +(x NTP y) +(y P x) } { +(y NTP x) +(x P y) } }
+x ( EQ NTPP NTPPI PO ) y :: { { -(x P y) +(x NTP y) +(y P x) } { -(y P x) +(y NTP x) +(x P y) } { +(x O y) } }
 x ( EQ NTPP NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) +(x P y) } { +(x O y) } }
 x ( EQ NTPP NTPPI PO TPP TPPI ) y :: { { +(x O y) } }
 x ( EQ NTPP NTPPI PO TPPI ) y :: { { -(x P y) +(x NTP y) +(y P x) } { +(x O y) } }
 x ( EQ NTPP NTPPI TPP ) y :: { { +(y NTP x) +(x P y) } }
 x ( EQ NTPP NTPPI TPP TPPI ) y :: { { +(x P y) +(y P x) } }
 x ( EQ NTPP NTPPI TPPI ) y :: { { +(x NTP y) +(y P x) } }
-x ( EQ NTPP PO ) y :: { { -(y P x) +(x P y) } { -(x P y) +(y P x) +(x NTP y) } { +(x O y) } }
+x ( EQ NTPP PO ) y :: { { -(x P y) +(x NTP y) +(y P x) } { -(y P x) +(x P y) } { +(x O y) } }
 x ( EQ NTPP PO TPP ) y :: { { -(y P x) +(x P y) } { +(x O y) } }
 x ( EQ NTPP PO TPP TPPI ) y :: { { -(y NTP x) } { +(x O y) } }
-x ( EQ NTPP PO TPPI ) y :: { { -(x P y) +(y P x) +(x NTP y) } { -(y NTP x) } { +(x O y) } }
+x ( EQ NTPP PO TPPI ) y :: { { -(y NTP x) } { -(x P y) +(x NTP y) +(y P x) } { +(x O y) } }
 x ( EQ NTPP TPP ) y :: { { +(x P y) } }
-x ( EQ NTPP TPP TPPI ) y :: { { -(y NTP x) } { +(x P y) +(y P x) } }
-x ( EQ NTPP TPPI ) y :: { { -(y NTP x) } { +(y P x) +(x NTP y) } }
-x ( EQ NTPPI ) y :: { { +(y P x) } { +(x P y) +(y NTP x) } }
-x ( EQ NTPPI PO ) y :: { { -(x P y) +(y P x) } { -(y P x) +(x P y) +(y NTP x) } { +(x O y) } }
-x ( EQ NTPPI PO TPP ) y :: { { -(y P x) +(x P y) +(y NTP x) } { -(x NTP y) } { +(x O y) } }
+x ( EQ NTPP TPP TPPI ) y :: { { -(y NTP x) } { +(y P x) +(x P y) } }
+x ( EQ NTPP TPPI ) y :: { { -(y NTP x) } { +(x NTP y) +(y P x) } }
+x ( EQ NTPPI ) y :: { { +(y P x) } { +(y NTP x) +(x P y) } }
+x ( EQ NTPPI PO ) y :: { { -(x P y) +(y P x) } { -(y P x) +(y NTP x) +(x P y) } { +(x O y) } }
+x ( EQ NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) +(x P y) } { -(x NTP y) } { +(x O y) } }
 x ( EQ NTPPI PO TPP TPPI ) y :: { { -(x NTP y) } { +(x O y) } }
 x ( EQ NTPPI PO TPPI ) y :: { { -(x P y) +(y P x) } { +(x O y) } }
 x ( EQ NTPPI TPP ) y :: { { -(x NTP y) } { +(y NTP x) +(x P y) } }
 x ( EQ NTPPI TPP TPPI ) y :: { { -(x NTP y) } { +(x P y) +(y P x) } }
 x ( EQ NTPPI TPPI ) y :: { { +(y P x) } }
-x ( EQ PO ) y :: { { -(x P y) +(y P x) } { -(y P x) +(x P y) } { +(x O y) } }
-x ( EQ PO TPP ) y :: { { -(x NTP y) } { -(y P x) +(x P y) } { +(x O y) } }
-x ( EQ PO TPP TPPI ) y :: { { -(x NTP y) } { -(y NTP x) } { +(x O y) } }
+x ( EQ PO ) y :: { { -(y P x) +(x P y) } { -(x P y) +(y P x) } { +(x O y) } }
+x ( EQ PO TPP ) y :: { { -(y P x) +(x P y) } { -(x NTP y) } { +(x O y) } }
+x ( EQ PO TPP TPPI ) y :: { { -(y NTP x) } { -(x NTP y) } { +(x O y) } }
 x ( EQ PO TPPI ) y :: { { -(y NTP x) } { -(x P y) +(y P x) } { +(x O y) } }
 x ( EQ TPP ) y :: { { -(x NTP y) } { +(x P y) } }
-x ( EQ TPP TPPI ) y :: { { -(x NTP y) } { -(y NTP x) } { +(y P x) +(x P y) } }
+x ( EQ TPP TPPI ) y :: { { -(y NTP x) } { -(x NTP y) } { +(x P y) +(y P x) } }
 x ( EQ TPPI ) y :: { { -(y NTP x) } { +(y P x) } }
 x ( NTPP ) y :: { { +(x NTP y) } }
-x ( NTPP NTPPI ) y :: { { +(y NTP x) +(x NTP y) } }
-x ( NTPP NTPPI PO ) y :: { { -(x P y) +(x NTP y) } { -(y P x) +(y NTP x) } { +(x O y) } }
+x ( NTPP NTPPI ) y :: { { +(x NTP y) +(y NTP x) } }
+x ( NTPP NTPPI PO ) y :: { { -(y P x) +(y NTP x) } { -(x P y) +(x NTP y) } { +(x O y) } }
 x ( NTPP NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) } { +(x O y) } }
 x ( NTPP NTPPI PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { +(x O y) } }
 x ( NTPP NTPPI PO TPPI ) y :: { { -(x P y) +(x NTP y) } { +(x O y) } }
 x ( NTPP NTPPI TPP ) y :: { { -(y P x) +(y NTP x) } { +(y NTP x) +(x P y) } }
 x ( NTPP NTPPI TPP TPPI ) y :: { { -(y P x) -(x P y) } { +(x P y) +(y P x) } }
 x ( NTPP NTPPI TPPI ) y :: { { -(x P y) +(x NTP y) } { +(x NTP y) +(y P x) } }
-x ( NTPP PO ) y :: { { -(y P x) } { -(x P y) +(x NTP y) } { +(x O y) } }
+x ( NTPP PO ) y :: { { -(x P y) +(x NTP y) } { -(y P x) } { +(x O y) } }
 x ( NTPP PO TPP ) y :: { { -(y P x) } { +(x O y) } }
-x ( NTPP PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(y NTP x) } { +(x O y) } }
+x ( NTPP PO TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { +(x O y) } }
 x ( NTPP PO TPPI ) y :: { { -(y NTP x) } { -(x P y) +(x NTP y) } { +(x O y) } }
 x ( NTPP TPP ) y :: { { -(y P x) } { +(x P y) } }
 x ( NTPP TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { +(x P y) +(y P x) } }
-x ( NTPP TPPI ) y :: { { -(y NTP x) } { -(x P y) +(x NTP y) } { +(y P x) +(x NTP y) } }
+x ( NTPP TPPI ) y :: { { -(x P y) +(x NTP y) } { -(y NTP x) } { +(x NTP y) +(y P x) } }
 x ( NTPPI ) y :: { { +(y NTP x) } }
 x ( NTPPI PO ) y :: { { -(y P x) +(y NTP x) } { -(x P y) } { +(x O y) } }
-x ( NTPPI PO TPP ) y :: { { -(x NTP y) } { -(y P x) +(y NTP x) } { +(x O y) } }
+x ( NTPPI PO TPP ) y :: { { -(y P x) +(y NTP x) } { -(x NTP y) } { +(x O y) } }
 x ( NTPPI PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NTP y) } { +(x O y) } }
 x ( NTPPI PO TPPI ) y :: { { -(x P y) } { +(x O y) } }
-x ( NTPPI TPP ) y :: { { -(x NTP y) } { -(y P x) +(y NTP x) } { +(x P y) +(y NTP x) } }
-x ( NTPPI TPP TPPI ) y :: { { -(x NTP y) } { -(y P x) -(x P y) } { +(x P y) +(y P x) } }
+x ( NTPPI TPP ) y :: { { -(y P x) +(y NTP x) } { -(x NTP y) } { +(y NTP x) +(x P y) } }
+x ( NTPPI TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NTP y) } { +(x P y) +(y P x) } }
 x ( NTPPI TPPI ) y :: { { -(x P y) } { +(y P x) } }
-x ( PO ) y :: { { -(y P x) } { -(x P y) } { +(x O y) } }
+x ( PO ) y :: { { -(x P y) } { -(y P x) } { +(x O y) } }
 x ( PO TPP ) y :: { { -(y P x) } { -(x NTP y) } { +(x O y) } }
-x ( PO TPP TPPI ) y :: { { -(y NTP x) } { -(x P y) -(y P x) } { -(x NTP y) } { +(x O y) } }
-x ( PO TPPI ) y :: { { -(x P y) } { -(y NTP x) } { +(x O y) } }
-x ( TPP ) y :: { { -(x NTP y) } { -(y P x) } { +(x P y) } }
-x ( TPP TPPI ) y :: { { -(x NTP y) } { -(y NTP x) } { -(y P x) -(x P y) } { +(x P y) +(y P x) } }
-x ( TPPI ) y :: { { -(x P y) } { -(y NTP x) } { +(y P x) } }
+x ( PO TPP TPPI ) y :: { { -(y P x) -(x P y) } { -(x NTP y) } { -(y NTP x) } { +(x O y) } }
+x ( PO TPPI ) y :: { { -(y NTP x) } { -(x P y) } { +(x O y) } }
+x ( TPP ) y :: { { -(y P x) } { -(x NTP y) } { +(x P y) } }
+x ( TPP TPPI ) y :: { { -(y NTP x) } { -(y P x) -(x P y) } { -(x NTP y) } { +(x P y) +(y P x) } }
+x ( TPPI ) y :: { { -(y NTP x) } { -(x P y) } { +(y P x) } }
