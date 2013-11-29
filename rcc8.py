@@ -49,18 +49,6 @@ def instantiate(l, x, y, atoms): # pylint: disable=C0103
             rel_string = rel_string.replace('y', str(y))
             return mod * atoms.encode(x, y, rel_string)
 
-    # asymmetry
-#    if l[1].relation == 'NTP':
-#        if y < x:
-#            rel_string = l[1].swap_variables_string()
-#            rel_string = rel_string.replace('x', str(x))
-#            rel_string = rel_string.replace('y', str(y))
-#            return -1 * mod * atoms.encode(y, x, rel_string)
-#        else:
-#            rel_string = l[1].string.replace('x', str(x))
-#            rel_string = rel_string.replace('y', str(y))
-#            return mod * atoms.encode(x, y, rel_string)
-
     # relation is 'P' or 'NTP'
     rel_string = l[1].string.replace('x', str(x))
     rel_string = rel_string.replace('y', str(y))
@@ -85,7 +73,7 @@ def instantiate_up_to_z(l, x, y, z, atoms):
     if 'y' != l[1].var1 and 'y' != l[1].var2:
         name = l[1].string
         name = name.replace('z', 'y')
-        return instantiate((l[0], Predicate(name)), y, z, atoms)
+        return instantiate((l[0], Predicate(name)), x, z, atoms)
     assert False
 
 
