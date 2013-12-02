@@ -146,12 +146,16 @@ def rcc8_rcc7_encode_theory(qcn, instance, atoms):
 #9	NDC xz	:- Pyx, Pyz
 
     clauses_3 = [ [ (True, Predicate("x NDC y")), (False, Predicate("x NDC z")), (False, Predicate("z P y")) ],
-                  [ (True, Predicate("x O y")), (False, Predicate("x NDC y")), (False, Predicate("z NTP y")), (False, Predicate("x NDC z")) ],
+# useless: y P x -> NDC xy
+#                  [ (True, Predicate("x NDC z")), (False, Predicate("y P x")), (False, Predicate("y P z")) ]
+# propagate NTP
                   [ (True, Predicate("x NTP z")), (False, Predicate("x NTP y")), (False, Predicate("y P z")) ],
                   [ (True, Predicate("x NTP z")), (False, Predicate("x P y")), (False, Predicate("y NTP z")) ],
-                  [ (True, Predicate("x P y")), (False, Predicate("x P z")), (False, Predicate("z P y")) ],
-                  [ (True, Predicate("x NDC z")), (False, Predicate("y P x")), (False, Predicate("y P z")) ]
+# shared interior points
+                  [ (True, Predicate("x O y")), (False, Predicate("z NTP y")), (False, Predicate("x NDC z")) ],
                   [ (True, Predicate("x O y")), (False, Predicate("x O z")), (False, Predicate("z P y")) ],
+# P transitive
+                  [ (True, Predicate("x P y")), (False, Predicate("x P z")), (False, Predicate("z P y")) ],
 # useless Oxy <- O xz, z P y
 #                  [ (True, Predicate("x O y")), (False, Predicate("x NDC y")), (False, Predicate("z P y")), (False, Predicate("x O z")) ],
 # useless Pyz, Pzx -> Pyx -> Oxy
