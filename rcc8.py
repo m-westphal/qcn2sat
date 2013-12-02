@@ -154,9 +154,10 @@ def rcc8_rcc7_encode_theory(qcn, instance, atoms):
                   [ (True, Predicate("x NTP z")), (False, Predicate("x NTP y")), (False, Predicate("y P z")) ],
                   [ (True, Predicate("x NTP z")), (False, Predicate("x P y")), (False, Predicate("y NTP z")) ],
                   [ (True, Predicate("x P y")), (False, Predicate("x P z")), (False, Predicate("z P y")) ],
-                  [ (True, Predicate("y P x")), (False, Predicate("z P x")), (False, Predicate("x P y")), (False, Predicate("y P z")) ],
-                  [ (True, Predicate("z P x")), (False, Predicate("z P x")), (False, Predicate("x P y")), (False, Predicate("y P z")) ],
                   [ (True, Predicate("x NDC z")), (False, Predicate("y P x")), (False, Predicate("y P z")) ]
+# Consequence of P-transitivity:
+#                  [ (True, Predicate("y P x")), (False, Predicate("z P x")), (False, Predicate("x P y")), (False, Predicate("y P z")) ],
+#                  [ (True, Predicate("z P x")), (False, Predicate("z P x")), (False, Predicate("x P y")), (False, Predicate("y P z")) ],
                 ]
 
     for i in xrange(0, qcn.size):
