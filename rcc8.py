@@ -117,8 +117,7 @@ def rcc8_rcc7_encode_theory(qcn, instance, atoms):
     clauses_2 = [ [ (True, Predicate("x NDC y")), (False, Predicate("x O y")) ],
                   [ (True, Predicate("x O y")), (False, Predicate("x P y")) ],
                   [ (True, Predicate("x P y")), (False, Predicate("x NTP y")) ],
-                  [ (False, Predicate("y P x")), (False, Predicate("x NTP y")) ],
-                  [ (False, Predicate("y NTP x")), (False, Predicate("x NTP y")) ]
+                  [ (False, Predicate("y P x")), (False, Predicate("x NTP y")) ]
             ]
 
     for i, j in qcn.iterate_strict_triangle():
