@@ -29,7 +29,7 @@ TEST_INSTANCES = {
     'test_instance_3.csp':
         '103bc467a875ac12cb1a77b730c707b04c5f3ff20634e7919fa3ae27de08ba3f',
     'test_instance_rcc8.csp':
-        '88896f9ece5397b06428410f97f63ca927c7ff721647b8029ed2e16c56800dbc',
+        '6488b05a3e1aee9d02db4362a525ce035375b95ac4514021df7ed5c0a0d8c489',
 }
 
 CALCULUS = {
@@ -94,7 +94,11 @@ KNOWN_RESULTS = {
         },
     'test_instance_rcc8.csp': {
         '--graph-type gfi --encoding rcc8-rcc7':
-            'e4538b8b819a811d3d7f5b831f73c25b19bca9651af097f451f36cd4962b6512'
+            'd4218cd079c6e6b56aa63b7e2f07039a1c54cef06c9c2a49c95265184248b785',
+        '--graph-type gfi --encoding support':
+            '9208e01f98e2952b9e6ba4b5aa72ca566afd483ca273710f4cbc05cd8b83b915',
+        '--graph-type gfi --encoding direct':
+            '4ffec259f9d0fa01b69ec62545cee97c756c6fff0930a84b68bba258b1ab1030',
         },
 }
 

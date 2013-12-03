@@ -1,4 +1,6 @@
-2 #TestInstance
+3 #TestInstance
 0 1 ( NTPP )
 1 2 ( TPP DC EC )
+2 3 ( TPP TPPI )
+0 3 ( PO DC EC )
 .
