@@ -348,21 +348,6 @@ def self_test():
 
     print "Self test OK"
 
-#def unit_resolution(cnf):
-#    import copy
-#
-#    fixpoint = False
-#    while not fixpoint:
-#        units = [ x for x in cnf if len(x) == 1 ]
-#        for x in units:
-#            for y in units:
-#                if x == y:
-#                    continue
-#                if x.relation
-
-#    return cnf
-        
-
 def is_rcc8_interpretation(syntactic_map):
     """Check input signature of syntactic map."""
     symbols = set()
@@ -372,42 +357,6 @@ def is_rcc8_interpretation(syntactic_map):
 
     if symbols != frozenset(RCC8_SIGNATURE):
         raise SystemExit('Given signature does not match RCC8 signature')
-
-def evaluate_predicate(atom):
-    """Return RCC8 base relations satisfied by given atom."""
-
-    sig_1 = atom.var1[1]
-    predicate = atom.relation
-    sig_2 = atom.var2[1]
-
-    if atom.var2[0] < atom.var1[0]:
-        if predicate == '<=':
-            predicate = '>='
-        elif predicate == '>=':
-            predicate = '<='
-        elif predicate == '<':
-            predicate = '>'
-        elif predicate == '>':
-            predicate = '<'
-        (sig_2, sig_1) = (sig_1, sig_2)
-
-    compare = [ predicate ]
-    if predicate == "<=":
-        compare = [ '<', '=' ]
-    elif predicate == ">=":
-        compare = [ '>', '=' ]
-
-    relations = set()
-    for base_relation in ALLEN_SIGNATURE:
-        for prop in FULL_POINT_DESCRIPTION[base_relation]:
-            if prop[1:] != sig_1+sig_2:
-                continue
-            for base in compare:
-                assert base in [ '<', '=', '>' ]
-                if base == prop[0]:
-                    relations.add(base_relation)
-
-    return relations
 
 def verify_is_fo_interpretation(syntactic_map):
     """Test all defining formulas in syntactic map."""
@@ -471,7 +420,7 @@ if __name__ == '__main__':
     from sys import argv
 
     if len(argv) != 2:
-        print "Script for verifying syntactic maps of Allen's Interval Calculus"
+        print "Script for verifying syntactic maps of RCC8"
         print
         print "Usage: scrip <some.map>"
 
