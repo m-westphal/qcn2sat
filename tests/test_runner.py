@@ -28,6 +28,15 @@ TEST_INSTANCES = {
         'b807bd394d6a55e825623016109527c0ee4c3c67fb237383b904be4ead3490f3',
     'test_instance_3.csp':
         '103bc467a875ac12cb1a77b730c707b04c5f3ff20634e7919fa3ae27de08ba3f',
+    'test_instance_rcc8.csp':
+        '88896f9ece5397b06428410f97f63ca927c7ff721647b8029ed2e16c56800dbc',
+}
+
+CALCULUS = {
+    'test_instance_1.csp': 'allen',
+    'test_instance_2.csp': 'allen',
+    'test_instance_3.csp': 'allen',
+    'test_instance_rcc8.csp': 'rcc8',
 }
 
 KNOWN_RESULTS = {
@@ -83,6 +92,10 @@ KNOWN_RESULTS = {
         '--graph-type lexbfs --encoding ord-clauses':
             '61d720ea01f0adc251675be047663fbf73ef8d3910f54a2967b6857d859005cf',
         },
+    'test_instance_rcc8.csp': {
+        '--graph-type gfi --encoding rcc8-rcc7':
+            'e4538b8b819a811d3d7f5b831f73c25b19bca9651af097f451f36cd4962b6512'
+        },
 }
 
 def get_file_location(name):
@@ -132,7 +145,7 @@ def check_output(name, given_args, stdout, known_value):
 
     print "Correct '%s'\n\t'%s'\n\t\t'%s'" % (name, given_args, known_value)
 
-def run_test(with_args, inputname):
+def run_test(with_args, calculus, inputname):
     """Run main script with_args < input."""
 
     import os
@@ -149,8 +162,8 @@ def run_test(with_args, inputname):
 
     inputfile = open(inputname, 'rb')
 
-    allen_comp = 'data/allen.comp'
-    cmdline = parent+'python '+script_name+' '+with_args+' '+allen_comp
+    comp = 'data/%s.comp' % calculus
+    cmdline = parent+'python '+script_name+' '+with_args+' '+comp
 
     print "Run '%s'" % cmdline
 
@@ -173,6 +186,6 @@ if __name__ == '__main__':
         for args in KNOWN_RESULTS[instance]:
             known_output_value = KNOWN_RESULTS[instance][args]
 
-            output = run_test(args, filename)
+            output = run_test(args, CALCULUS[instance], filename)
             check_output(instance, args, output, known_output_value)
         print "Done '%s'" % instance
