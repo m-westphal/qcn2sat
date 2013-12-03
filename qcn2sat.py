@@ -209,7 +209,10 @@ def read_gqr_csp_stdin(signature):
             i = int(res.group(1))
             j = int(res.group(2))
             assert 0 <= i < j
-            rel = res.group(3).strip().split(" ")
+            string = res.group(3).strip()
+            if not string:
+                return None
+            rel = string.split(" ")
             if not rel:
                 return None
             for base_rel in rel:
@@ -329,7 +332,7 @@ if __name__ == '__main__':
     COMPTABLE, SIGNATURE = read_comp_table(CT_FILENAME)
     INPUT_QCN = read_gqr_csp_stdin(SIGNATURE)
 
-    if INPUT_QCN.size == 0 or not INPUT_QCN.is_2_consistent():
+    if INPUT_QCN is None or INPUT_QCN.size == 0 or not INPUT_QCN.is_2_consistent():
         # no constraints read (assume problem was unsatisfiable) or
         # problem is not 2-consistency (=> unsat)
         print "p cnf 1 2"
