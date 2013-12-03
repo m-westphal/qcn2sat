@@ -332,7 +332,9 @@ if __name__ == '__main__':
     COMPTABLE, SIGNATURE = read_comp_table(CT_FILENAME)
     INPUT_QCN = read_gqr_csp_stdin(SIGNATURE)
 
-    if INPUT_QCN is None or INPUT_QCN.size == 0 or not INPUT_QCN.is_2_consistent():
+    if INPUT_QCN is None or INPUT_QCN.size == 0 or \
+        not INPUT_QCN.is_2_consistent():
+
         # no constraints read (assume problem was unsatisfiable) or
         # problem is not 2-consistency (=> unsat)
         print "p cnf 1 2"

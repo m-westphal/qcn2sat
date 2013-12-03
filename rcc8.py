@@ -59,7 +59,8 @@ def instantiate(l, x, y, atoms): # pylint: disable=C0103
     # The string is NOT rewritten ... It just gets filed under (y,x)
     return mod * atoms.encode(y, x, rel_string)
 
-def instantiate_up_to_z(l, x, y, z, atoms):
+def instantiate_up_to_z(l, x, y, z, atoms): # pylint: disable=C0103
+    """Wrapper for instantiate supporting 3 vars"""
     from syntactic_map import Predicate
 
     if 'z' != l[1].var1 and 'z' != l[1].var2:
@@ -97,6 +98,8 @@ def rcc8_rcc7_encode_input(qcn, instance, atoms):
 
 
 def rcc8_rcc7_encode_theory(qcn, instance, atoms):
+    """Ground the RCC8-RCC7 theory on qcn"""
+
     # encode RCC7 theory
     from syntactic_map import Predicate
 
@@ -167,12 +170,12 @@ def rcc8_rcc7_encode_theory(qcn, instance, atoms):
 
     for i in xrange(0, qcn.size):
         for j in xrange(0, qcn.size):
-            if i == j or (qcn.graph and (i,j) not in qcn.graph):
+            if i == j or (qcn.graph and (i, j) not in qcn.graph):
                 continue
             for k in xrange(0, qcn.size):
-                if i == k or (qcn.graph and (i,k) not in qcn.graph):
+                if i == k or (qcn.graph and (i, k) not in qcn.graph):
                     continue
-                if j == k or (qcn.graph and (j,k) not in qcn.graph):
+                if j == k or (qcn.graph and (j, k) not in qcn.graph):
                     continue
 
                 for rule in clauses_3:
