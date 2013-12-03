@@ -21,7 +21,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 def check_rcc8_signature(signature):
-    """Check if signature is Allen signature."""
+    """Check if signature is RCC8 signature."""
 
     rcc8_signature = [ 'EQ', 'DC', 'EC', 'PO', 'TPP', 'NTPP', 'TPPI', 'NTPPI' ]
 
