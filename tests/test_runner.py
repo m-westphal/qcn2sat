@@ -93,7 +93,7 @@ KNOWN_RESULTS = {
             '61d720ea01f0adc251675be047663fbf73ef8d3910f54a2967b6857d859005cf',
         },
     'test_instance_rcc8.csp': {
-        '--graph-type gfi --encoding rcc8-rcc7':
+        '--graph-type gfi --encoding rcc8-rcc4':
             'd4218cd079c6e6b56aa63b7e2f07039a1c54cef06c9c2a49c95265184248b785',
         '--graph-type gfi --encoding support':
             '9208e01f98e2952b9e6ba4b5aa72ca566afd483ca273710f4cbc05cd8b83b915',

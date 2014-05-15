@@ -317,7 +317,7 @@ def check_options():
     parser.add_argument('--encoding', metavar='STR', nargs=1, default=False,
         required=True, type=str,
         choices=['support', 'direct', 'ord-clauses',
-                'support-pa', 'direct-pa', 'rcc8-rcc7'],
+                'support-pa', 'direct-pa', 'rcc8-rcc4'],
         help='encoding [%(choices)s]'+encoding_inf)
     parser.add_argument('GQR_COMPOSITION_TABLE_FILE')
 
@@ -374,7 +374,7 @@ if __name__ == '__main__':
     elif CLAUSE_TYPE == 'direct-pa':
         import allen
         allen.pham_direct_pt_encode(INPUT_QCN, CNFINSTANCE)
-    elif CLAUSE_TYPE == 'rcc8-rcc7':
+    elif CLAUSE_TYPE == 'rcc8-rcc4':
         import rcc8
         rcc8.rcc8_rcc4_encode(INPUT_QCN, CNFINSTANCE)
     CNFINSTANCE.flush()  # note, invalidates content as well

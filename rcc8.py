@@ -98,9 +98,9 @@ def rcc8_rcc4_encode_input(qcn, instance, atoms):
 
 
 def rcc8_rcc4_encode_theory(qcn, instance, atoms):
-    """Ground the RCC8-RCC7 theory on qcn"""
+    """Ground the RCC8-RCC4 theory on qcn"""
 
-    # encode RCC7 theory
+    # encode RCC8 Horn theory using RCC4
     from syntactic_map import Predicate
 
     # 1-consistency asserted by SCRIPT
@@ -184,7 +184,7 @@ def rcc8_rcc4_encode_theory(qcn, instance, atoms):
 
 
 def rcc8_rcc4_encode(qcn, instance):
-    """Encode instance according to RCC8->RCC7 map."""
+    """Encode instance according to RCC8->RCC4 map."""
 
     check_rcc8_signature(qcn.signature)
 
