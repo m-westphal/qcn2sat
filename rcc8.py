@@ -105,18 +105,6 @@ def rcc8_rcc4_encode_theory(qcn, instance, atoms):
 
     # 1-consistency asserted by SCRIPT
 
-    # 2-consistency
-    #	C xy	:- P xy
-    #	C xy	:- NTP xy
-    #	C xy	:- O xy
-    #	P xy	:- x NTP y
-    #	O xy	:- P xy
-    #	O xy	:- NTP xy
-
-    # goal clauses
-    #	false	:- P yx, NTP xy
-    #	false	:- NTP yx, NTP xy
-
     clauses_2 = [ [ (True, Predicate("x C y")), (False, Predicate("x O y")) ],
                   [ (True, Predicate("x O y")), (False, Predicate("x P y")) ],
                   [ (True, Predicate("x P y")), (False, Predicate("x NTP y")) ],
@@ -135,17 +123,14 @@ def rcc8_rcc4_encode_theory(qcn, instance, atoms):
 
     clauses_3 = [ [ (True, Predicate("x C y")),
         (False, Predicate("x C z")), (False, Predicate("z P y")) ],
-# propagate NTP
         [ (True, Predicate("x NTP z")),
         (False, Predicate("x NTP y")), (False, Predicate("y P z")) ],
         [ (True, Predicate("x NTP z")),
         (False, Predicate("x P y")), (False, Predicate("y NTP z")) ],
-# shared interior points
         [ (True, Predicate("x O y")),
         (False, Predicate("z NTP y")), (False, Predicate("x C z")) ],
         [ (True, Predicate("x O y")),
         (False, Predicate("x O z")), (False, Predicate("z P y")) ],
-# P transitive
         [ (True, Predicate("x P y")),
         (False, Predicate("x P z")), (False, Predicate("z P y")) ],
         ]
