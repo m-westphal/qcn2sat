@@ -31,14 +31,14 @@ def check_rcc8_signature(signature):
 def instantiate(l, x, y, atoms): # pylint: disable=C0103
     """encode instantiated literal l on x,y"""
 
-    assert l[1].relation in [ 'NDC', 'O', 'NTP', 'P' ]
+    assert l[1].relation in [ 'C', 'O', 'NTP', 'P' ]
 
     mod = 1
     if not l[0]:  # negated predicate
         mod = -1
 
     # symmetry
-    if l[1].relation in [ 'O', 'NDC' ]:
+    if l[1].relation in [ 'O', 'C' ]:
         if y < x:
             rel_string = l[1].swap_variables_string()
             rel_string = rel_string.replace('x', str(x))
@@ -106,9 +106,9 @@ def rcc8_rcc4_encode_theory(qcn, instance, atoms):
     # 1-consistency asserted by SCRIPT
 
     # 2-consistency
-    #	NDC xy	:- P xy
-    #	NDC xy	:- NTP xy
-    #	NDC xy	:- O xy
+    #	C xy	:- P xy
+    #	C xy	:- NTP xy
+    #	C xy	:- O xy
     #	P xy	:- x NTP y
     #	O xy	:- P xy
     #	O xy	:- NTP xy
@@ -117,7 +117,7 @@ def rcc8_rcc4_encode_theory(qcn, instance, atoms):
     #	false	:- P yx, NTP xy
     #	false	:- NTP yx, NTP xy
 
-    clauses_2 = [ [ (True, Predicate("x NDC y")), (False, Predicate("x O y")) ],
+    clauses_2 = [ [ (True, Predicate("x C y")), (False, Predicate("x O y")) ],
                   [ (True, Predicate("x O y")), (False, Predicate("x P y")) ],
                   [ (True, Predicate("x P y")), (False, Predicate("x NTP y")) ],
                   [ (False, Predicate("y P x")), (False, Predicate("x NTP y")) ]
@@ -131,25 +131,10 @@ def rcc8_rcc4_encode_theory(qcn, instance, atoms):
             instance.add_clause(clause)
             clause_sym = [ instantiate(pred, j, i, atoms) for pred in rule_2 ]
             if frozenset(clause) != frozenset(clause_sym):
-                # no repetition by symmetry, pls.
                 instance.add_clause(clause_sym)
 
-#1	NDC xy	:- NDC xz, Pzy
-#2'	O xy	:- NDC xy, Pyz, Pzx
-#2''	NDC xz	:- NDC xy, Pyz
-#3	O xy	:- NDC xy, Pzy, Oxz
-#4	O xy	:- NDC xy, NTP zy, NDC xz
-#5'	is a tautology?!?
-#5''	O xz	:- O xy, P yz
-#6	NTP xz	:- NTP xy, P yz
-#7	NTP xz	:- P xy, NTP yz
-#8'	P xy	:- P xz, Pzy
-#8''	P zx	:- P xz, Pzy, Pyx
-#8'''	P yz	:- P xz, Pzy, Pyx
-#9	NDC xz	:- Pyx, Pyz
-
-    clauses_3 = [ [ (True, Predicate("x NDC y")),
-        (False, Predicate("x NDC z")), (False, Predicate("z P y")) ],
+    clauses_3 = [ [ (True, Predicate("x C y")),
+        (False, Predicate("x C z")), (False, Predicate("z P y")) ],
 # propagate NTP
         [ (True, Predicate("x NTP z")),
         (False, Predicate("x NTP y")), (False, Predicate("y P z")) ],
@@ -157,7 +142,7 @@ def rcc8_rcc4_encode_theory(qcn, instance, atoms):
         (False, Predicate("x P y")), (False, Predicate("y NTP z")) ],
 # shared interior points
         [ (True, Predicate("x O y")),
-        (False, Predicate("z NTP y")), (False, Predicate("x NDC z")) ],
+        (False, Predicate("z NTP y")), (False, Predicate("x C z")) ],
         [ (True, Predicate("x O y")),
         (False, Predicate("x O z")), (False, Predicate("z P y")) ],
 # P transitive
