@@ -5,8 +5,9 @@ A simple script to rewrite qualitative constraint networks (QCN) into
 propositional CNF. The aim of the script is to provide a simple testbed for
 various SAT encodings. It was extensively used in 'On the Propagation Strength
 of SAT Encodings for Qualitative Temporal Reasoning' by Westphal, Hué, and
-Wölfl [1]. The paper provides more (theoretical) details than this README
-file.
+Wölfl [1]. The script provided in this package also supports the spatial language
+RCC8 -- see 'A Concise Horn Theory for RCC8' by Westphal and Hué [6]. The first
+paper [1] provides more (theoretical) details than this README file.
 
 'qcn2sat.py' provides stream processing: a qualitative constraint network in
 the format of the Allen/GQR-solver is read from stdin, DIMACS is written to
@@ -72,8 +73,8 @@ rather slow.
 "--graph-type gfi" and "--encoding ord-clauses" is recommended for Allen's
 Interval Algebra.
 
-5. Graph triangulation is done on the primal constraint graph of the input,
-not the translation (as assumed in [1]).
+5. Graph triangulation is done on the primal constraint graph of the input
+(as assumed in [1]), not the graph of the translation.
 
 6. The script is explicitly meant NOT to perform (much) preprocessing. Due
 to the encodings by Pham et al. [2] it has to assert strong 2-consistency.
@@ -86,10 +87,11 @@ Missing Features / Wish List
 
 1. Support triangulation based on the constraint graph of the translation.
 
-2. Input is here required to be a strict form of the Allen/GQR-format. Thus,
-the input is always 1-consistent and the script further establishes
+2. Input is here required to be a strict form of the Allen/RCC8/GQR-format.
+Thus, the input is always 1-consistent and the script further establishes
 2-consistency. This is necessary for the encodings discussed by Pham et al.
-[2], but not for the ORD-theory underlying the "ord-clauses" encoding.
+[2], but not for the ORD-theory underlying the "ord-clauses" encoding and
+the RCC8 Horn theory.
 In particular, the ORD-theory could directly be applied to any
 (quantifier-free) FO formula on the structure (Q, <).
 It would be nice to remove all preprocessing that is not necessary for the
@@ -121,14 +123,21 @@ The 'data/' directory contains some data files:
 1. 'allen.comp': the composition table for Allen's Interval Algebra taken from
 the GQR project [3,4,5].
 
-2. 'ia_ordclauses.map':	the defining formulas for ORD-clauses. Note: the empty
+2. 'rcc8.comp': the composition table for RCC8 taken from the GQR project
+[3,4,5].
+
+3. 'ia_ordclauses.map':	the defining formulas for ORD-clauses. Note: the empty
 relation is not defined.
+
+4. 'rcc8_rcc4.map': the defining formulas for the concise RCC8 theory
+based on the RCC4 signature [6]. Note: the empty relation is not defined.
+
 
 
 References
 ----------
 [1] Westphal, Hué, and Wölfl, 'On the Propagation Strength of SAT Encodings
-	for Qualitative Temporal Reasoning', ICTAI 2013 (to appear)
+	for Qualitative Temporal Reasoning', ICTAI 2013.
 [2] Pham, Thornton, and Sattar, 'Towards an Efficient SAT Encoding for
 	Temporal Reasoning', CP 2006.
 [3] Westphal, Wölfl, and Gantner, 'GQR - A Fast Reasoner for Binary
@@ -138,3 +147,4 @@ References
 	KI 2012.
 [5] GQR URL as of writing:
 	http://sfbtr8.informatik.uni-freiburg.de/R4LogoSpace/Tools/gqr.html
+[6] Westphal, Hué, 'A Concise Horn Theory for RCC8', ECAI 2014.
