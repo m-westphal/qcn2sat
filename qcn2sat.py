@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__VERSION = ">1 (WIP)"
+__VERSION = "2"
 
 import collections, bz2
 
@@ -158,7 +158,7 @@ class PropositionalAtoms:  # pylint: disable=R0903
     def __init__(self):
         self.names = dict()
         self.last_used = 0
-    
+
     def encode(self, i, j, baserel):
         """assign a boolean atom (id number) to baserel in R_ij"""
 
