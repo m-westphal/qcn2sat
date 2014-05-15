@@ -78,13 +78,13 @@ def instantiate_up_to_z(l, x, y, z, atoms): # pylint: disable=C0103
     assert False
 
 
-def rcc8_rcc7_encode_input(qcn, instance, atoms):
-    """Encode instance according to RCC8->RCC7 map (but not the RCC7-theory)."""
+def rcc8_rcc4_encode_input(qcn, instance, atoms):
+    """Encode instance according to RCC8->RCC4 map (but not the RCC4-theory)."""
 
     import os.path
     from syntactic_map import read_map
     syntactic_interpretation = \
-        read_map(os.path.join('data', 'rcc8_rcc7.map'))
+        read_map(os.path.join('data', 'rcc8_rcc4.map'))
 
     for i, j in qcn.iterate_strict_triangle():
         relation = qcn.get(i, j)
@@ -97,7 +97,7 @@ def rcc8_rcc7_encode_input(qcn, instance, atoms):
             instance.add_clause( new_clause )
 
 
-def rcc8_rcc7_encode_theory(qcn, instance, atoms):
+def rcc8_rcc4_encode_theory(qcn, instance, atoms):
     """Ground the RCC8-RCC7 theory on qcn"""
 
     # encode RCC7 theory
@@ -183,7 +183,7 @@ def rcc8_rcc7_encode_theory(qcn, instance, atoms):
                     instance.add_clause(clause)
 
 
-def rcc8_rcc7_encode(qcn, instance):
+def rcc8_rcc4_encode(qcn, instance):
     """Encode instance according to RCC8->RCC7 map."""
 
     check_rcc8_signature(qcn.signature)
@@ -192,6 +192,6 @@ def rcc8_rcc7_encode(qcn, instance):
     atoms = PropositionalAtoms()
 
     # encode input
-    rcc8_rcc7_encode_input(qcn, instance, atoms)
+    rcc8_rcc4_encode_input(qcn, instance, atoms)
 
-    rcc8_rcc7_encode_theory(qcn, instance, atoms)
+    rcc8_rcc4_encode_theory(qcn, instance, atoms)

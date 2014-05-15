@@ -376,5 +376,5 @@ if __name__ == '__main__':
         allen.pham_direct_pt_encode(INPUT_QCN, CNFINSTANCE)
     elif CLAUSE_TYPE == 'rcc8-rcc7':
         import rcc8
-        rcc8.rcc8_rcc7_encode(INPUT_QCN, CNFINSTANCE)
+        rcc8.rcc8_rcc4_encode(INPUT_QCN, CNFINSTANCE)
     CNFINSTANCE.flush()  # note, invalidates content as well
