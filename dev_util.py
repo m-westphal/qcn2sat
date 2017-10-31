@@ -24,7 +24,7 @@ import time
 
 _SILENT = True
 
-class TimeDelta():
+class TimeDelta(object):
     """Measure wall clock time deltas."""
     def __init__(self, string):
         self.name = string

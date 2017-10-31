@@ -20,8 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-ALLEN_SIGNATURE = [ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm',
-    'mi', 'o', 'oi' ]
+ALLEN_SIGNATURE = ['=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm',
+                   'mi', 'o', 'oi']
 
 # description of intervals (x,y) in terms of start (?,-) and endpoints (?,+)
 FULL_POINT_DESCRIPTION = {
@@ -68,11 +68,11 @@ def evaluate_predicate(atom):
             predicate = '<'
         (sig_2, sig_1) = (sig_1, sig_2)
 
-    compare = [ predicate ]
+    compare = [predicate]
     if predicate == "<=":
-        compare = [ '<', '=' ]
+        compare = ['<', '=']
     elif predicate == ">=":
-        compare = [ '>', '=' ]
+        compare = ['>', '=']
 
     relations = set()
     for base_relation in ALLEN_SIGNATURE:
@@ -80,7 +80,7 @@ def evaluate_predicate(atom):
             if prop[1:] != sig_1+sig_2:
                 continue
             for base in compare:
-                assert base in [ '<', '=', '>' ]
+                assert base in ['<', '=', '>']
                 if base == prop[0]:
                     relations.add(base_relation)
 
