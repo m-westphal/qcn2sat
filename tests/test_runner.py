@@ -130,8 +130,8 @@ def check_instance(name, known_value):
     hashlib.sha256(open(name, 'rb').read()).hexdigest() # pylint: disable=E1101
 
     if value != known_value:
-        msg = "FAIL '%s' hash value mismatch\n\tKnown\t%s\n\tActual\t%s" % (
-        name, known_value, value)
+        msg = "FAIL '%s' hash value mismatch\n\tKnown\t%s\n\tActual\t%s" \
+              % (name, known_value, value)
 
         raise SystemExit(msg)
     print "Found '%s'\t'%s'" % (name, known_value)
@@ -143,8 +143,8 @@ def check_output(name, given_args, stdout, known_value):
     value = hashlib.sha256(stdout).hexdigest() # pylint: disable=E1101
     if value != known_value:
         msg = "FAIL '%s' output hash value mismatch" % name
-        msg += "\n\targs\t%s\n\tKnown\t%s\n\tActual\t%s" % (given_args,
-            known_value, value)
+        msg += "\n\targs\t%s\n\tKnown\t%s\n\tActual\t%s" \
+               % (given_args, known_value, value)
         raise SystemExit(msg)
 
     print "Correct '%s'\n\t'%s'\n\t\t'%s'" % (name, given_args, known_value)
@@ -172,7 +172,7 @@ def run_test(with_args, calculus, inputname):
     print "Run '%s'" % cmdline
 
     out = subprocess.check_output(cmdline, stdin=inputfile,
-        stderr=subprocess.STDOUT, shell=True)
+                                  stderr=subprocess.STDOUT, shell=True)
     inputfile.close()
     return out
 
