@@ -98,7 +98,7 @@ def evaluate_clause(clause):
     relations = set()
     for atom in clause:
         relations |= evaluate_atom(atom)
-    
+
     return relations
 
 def evaluate_cnf(cnf):

@@ -153,7 +153,7 @@ def run_test(with_args, calculus, inputname):
     """Run main script with_args < input."""
 
     import os
-    
+
     parent = ""
 
     script_name = 'qcn2sat.py'
