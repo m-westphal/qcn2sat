@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
 ALLEN_SIGNATURE = ['=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di', 'm',
                    'mi', 'o', 'oi']
 
@@ -116,11 +118,11 @@ def verify_is_fo_interpretation(syntactic_map):
         relations = evaluate_cnf(syntactic_map[relation])
 
         if relation != relations:
-            print "Defining formula for %s broken" % relation
-            print syntactic_map[relation]
-            print "yields"
-            print relations
-            print
+            print("Defining formula for %s broken" % relation)
+            print(syntactic_map[relation])
+            print("yields")
+            print(relations)
+            print()
             is_valid = False
     return is_valid
 
@@ -138,12 +140,12 @@ def verify_minimality(syntactic_map):
                 mod_clause = set(clause)
                 mod_clause.remove(atom)
                 if relation <= evaluate_clause(mod_clause):
-                    print "Defining formula for %s broken" % relation
-                    print "Formula is"
-                    print syntactic_map[relation]
-                    print "Clause"
-                    print clause
-                    print "is however not a PRIME implicate."
+                    print("Defining formula for %s broken" % relation)
+                    print("Formula is")
+                    print(syntactic_map[relation])
+                    print("Clause")
+                    print(clause)
+                    print("is however not a PRIME implicate.")
 
                     return False
 
@@ -153,15 +155,15 @@ def verify_minimality(syntactic_map):
             mod_formula.remove(clause)
 
             if relation == evaluate_cnf(mod_formula):
-                print "Relation '%s' is not minimally defined:" % relation
-                print
-                print "Original defintion"
-                print def_formula
-                print
-                print "Yet, removing"
-                print clause
-                print "does NOT invalidate formula."
-                print "Thus, a useless clause."
+                print("Relation '%s' is not minimally defined:" % relation)
+                print()
+                print("Original defintion")
+                print(def_formula)
+                print()
+                print("Yet, removing")
+                print(clause)
+                print("does NOT invalidate formula.")
+                print("Thus, a useless clause.")
 
                 return False
 
@@ -171,29 +173,29 @@ if __name__ == '__main__':
     from sys import argv
 
     if len(argv) != 2:
-        print "Script for verifying syntactic maps of Allen's Interval Calculus"
-        print
-        print "Usage: scrip <some.map>"
+        print("Script for verifying syntactic maps of Allen's Interval Calculus")
+        print()
+        print("Usage: scrip <some.map>")
 
     MAP_FILE = argv[1]
-    print "Read '%s'" % (MAP_FILE)
+    print("Read '%s'" % (MAP_FILE))
 
     import sys, os
     sys.path.insert(1, os.path.join(sys.path[0], '..'))
     from syntactic_map import read_map  # pylint: disable=F0401
 
     SYNTACTIC_MAP = read_map(MAP_FILE)
-    print "DONE"
+    print("DONE")
 
     is_allen_interpretation(SYNTACTIC_MAP)
 
-    print
-    print "Verify map is a FO interpretation"
+    print()
+    print("Verify map is a FO interpretation")
     if not verify_is_fo_interpretation(SYNTACTIC_MAP):
         raise SystemExit("Aborting script. Fix map first to run further tests.")
-    print "... is valid"
+    print("... is valid")
 
-    print
-    print "Verify minimality of defining formulas"
+    print()
+    print("Verify minimality of defining formulas")
     if verify_minimality(SYNTACTIC_MAP):
-        print "... act as prime implicates."
+        print("... act as prime implicates.")

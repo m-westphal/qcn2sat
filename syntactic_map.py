@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
 class Predicate:  # pylint: disable=R0903
     """Relation with arguments."""
     def __init__(self, string, var1=None, rel=None, var2=None):
@@ -141,7 +143,7 @@ def print_map(syn_map):
 
         sorted_map[name] = sorted_clauses
     
-    names = sorted_map.keys()
+    names = list(sorted_map.keys())
     names.sort()
     for name in names:
         clauses_str = ""
@@ -155,7 +157,7 @@ def print_map(syn_map):
             clause_str += " }"
             clauses_str += clause_str
          
-        print "x ( %s ) y :: {%s }" % (name, clauses_str)
+        print("x ( %s ) y :: {%s }" % (name, clauses_str))
 
 def is_horn_clause(clause):
     """Is clause a Horn-clause?"""
@@ -187,9 +189,9 @@ def is_primitive_formula(formula):
 def stat_map(syn_map):
     """Print some statistics on given map."""
 
-    print "Map statistics"
-    print
-    print "Defines %d relations" % len(syn_map)
+    print("Map statistics")
+    print()
+    print("Defines %d relations" % len(syn_map))
 
 
     clauses = 0
@@ -222,30 +224,30 @@ def stat_map(syn_map):
                 else:
                     negative_atoms += 1
 
-    print "Total clauses in map:\t%10u" % clauses
-    print "Total atoms in map:\t%10u" % atoms
-    print "Positive atoms:\t\t%10u" % positive_atoms
-    print "Negative atoms:\t\t%10u" % negative_atoms
-    print "Unit clauses:\t\t%10u" % unit_clauses
-    print "Horn clauses:\t\t%10u" % horn_clauses
-    print
-    print "Primitive relations:\t%10u (%.3f)" % (
-        primitive_relations, float(primitive_relations) / len(syn_map))
-    print "Horn relations:\t\t%10u (%.3f)" % (
-        horn_relations, float(horn_relations) / len(syn_map))
+    print("Total clauses in map:\t%10u" % clauses)
+    print("Total atoms in map:\t%10u" % atoms)
+    print("Positive atoms:\t\t%10u" % positive_atoms)
+    print("Negative atoms:\t\t%10u" % negative_atoms)
+    print("Unit clauses:\t\t%10u" % unit_clauses)
+    print("Horn clauses:\t\t%10u" % horn_clauses)
+    print()
+    print("Primitive relations:\t%10u (%.3f)" % (
+        primitive_relations, float(primitive_relations) / len(syn_map)))
+    print("Horn relations:\t\t%10u (%.3f)" % (
+        horn_relations, float(horn_relations) / len(syn_map)))
 
 if __name__ == '__main__':
-    print "Utility script for syntactic maps"
-    print
-    print "Usage: scrip <some.map>"
+    print("Utility script for syntactic maps")
+    print()
+    print("Usage: scrip <some.map>")
 
     from sys import argv
     MAP_FILE = argv[1]
-    print "Read '%s'" % (MAP_FILE)
+    print("Read '%s'" % (MAP_FILE))
     SYN_MAP = read_map(MAP_FILE)
-    print "DONE"
+    print("DONE")
 
-    print "Sorted map"
+    print("Sorted map")
     print_map(SYN_MAP)
 
     stat_map(SYN_MAP)

@@ -20,6 +20,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
+from six.moves import range
 __VERSION = "2"
 
 import collections, bz2
@@ -42,11 +45,11 @@ class CNFOutput:
         self.number_of_clauses += 1
         self.variables = max( max([abs(l) for l in clause]), self.variables)
         # turn into strings
-        cl_str = ' '.join([`l` for l in clause]+['0\n']) #pylint: disable=W0333
+        cl_str = ' '.join([repr(l) for l in clause]+['0\n']) #pylint: disable=W0333
         if self.only_estimate_size:
             self.bytes += len(cl_str)
         else:
-            chunk = self.bzip2.compress(cl_str)
+            chunk = self.bzip2.compress(bytes(cl_str, encoding='ascii'))
             if chunk:
                 self.clauses_bz2.append(chunk)
 
@@ -61,10 +64,10 @@ class CNFOutput:
         """output CNF; invalidates class content"""
         if self.only_estimate_size:
             size = len(self.generate_header())+self.bytes
-            print "Constructed %d variables and %d clauses" % (
-                self.variables, self.number_of_clauses)
-            print "Computed %d bytes (%d MiB) of propositional CNF" % (
-                size, size/1024**2)
+            print("Constructed %d variables and %d clauses" % (
+                self.variables, self.number_of_clauses))
+            print("Computed %d bytes (%d MiB) of propositional CNF" % (
+                size, size/1024**2))
         else:
             self.clauses_bz2.append(self.bzip2.flush())
             del self.bzip2
@@ -73,7 +76,7 @@ class CNFOutput:
             decomp = bz2.BZ2Decompressor()
             while self.clauses_bz2:
                 chunk = self.clauses_bz2.popleft()
-                self.filedescriptor.write(decomp.decompress(chunk))
+                self.filedescriptor.write(str(decomp.decompress(chunk), encoding='ascii'))
             del decomp
 
 class QCN:
@@ -122,8 +125,8 @@ class QCN:
     def iterate_strict_triangle(self):
         """Iterate all pairs i < j on current primal constraint graph."""
         if not self.graph:
-            for i in xrange(0, self.size):
-                for j in xrange(i+1, self.size):
+            for i in range(0, self.size):
+                for j in range(i+1, self.size):
                     yield i, j
         else:
             iterate = [ (i, j) for (i, j) in self.graph if i < j ]
@@ -134,16 +137,16 @@ class QCN:
     def iterate_strict_triples(self):
         """iterate i < j < k triples"""
         if not self.graph:
-            for i in xrange(0, self.size):
-                for j in xrange(i+1, self.size):
-                    for k in xrange(j+1, self.size):
+            for i in range(0, self.size):
+                for j in range(i+1, self.size):
+                    for k in range(j+1, self.size):
                         yield i, j, k
         else:
             iterate = [ (i, j) for (i, j) in self.graph if i < j ]
             iterate.sort()
 
             neighb = dict()
-            for i in xrange(self.size):
+            for i in range(self.size):
                 neighb[i] = set()
 
             for (i, j) in iterate:
@@ -233,9 +236,9 @@ def direct_dom_encoding(instance, qcn, atoms):
         alo = [ atoms.encode(i, j, br) for br in rel ]
         instance.add_clause(alo)
 
-        for idx1 in xrange(len(rel)):
+        for idx1 in range(len(rel)):
             br1 = rel[idx1]
-            for idx2 in xrange(idx1+1, len(rel)):
+            for idx2 in range(idx1+1, len(rel)):
                 br2 = rel[idx2]
                 amo = [ -1 * atoms.encode(i, j, br1),
                     -1 * atoms.encode(i, j, br2) ]
@@ -337,9 +340,9 @@ if __name__ == '__main__':
 
         # no constraints read (assume problem was unsatisfiable) or
         # problem is not 2-consistency (=> unsat)
-        print "p cnf 1 2"
-        print "1 0"
-        print "-1 0"
+        print("p cnf 1 2")
+        print("1 0")
+        print("-1 0")
         raise SystemExit()
 
     # triangulation

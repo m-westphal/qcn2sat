@@ -20,6 +20,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
+from six.moves import range
 RCC8_SIGNATURE = [ 'EQ', 'DC', 'EC', 'PO', 'TPP', 'NTPP', 'TPPI', 'NTPPI' ]
 
 # description of base relations in terms of {P, NTP, DC, DR}
@@ -57,14 +60,14 @@ def _assert_is_horn(relation, cnf):
                 break
         lines.close()
         if not found:
-            print "[ERROR] ... is erroneously horn"
+            print("[ERROR] ... is erroneously horn")
 
-            print relation
+            print(relation)
             print_cnf(cnf)
             return False
 
-    except IOError, e:
-        print "File 'hornalg': IO Error"
+    except IOError as e:
+        print("File 'hornalg': IO Error")
 
     return True
 
@@ -74,16 +77,16 @@ def _assert_is_not_horn(relation, cnf):
         for l in lines:
             stuff = frozenset(l.split(' '))
             if set(relation) <= stuff and len(relation)+2 == len(stuff):
-                print "[ERROR] ... is not horn"
+                print("[ERROR] ... is not horn")
 
-                print relation
+                print(relation)
                 print_cnf(cnf)
                 lines.close()
                 return False
 
         lines.close()
-    except IOError, e:
-        print "File 'hornalg': IO Error"
+    except IOError as e:
+        print("File 'hornalg': IO Error")
     return True
 
 def build_syn_int(output_map=False):
@@ -91,11 +94,11 @@ def build_syn_int(output_map=False):
 
 
     relations = []
-    for i in xrange(0,8):
+    for i in range(0,8):
         for relation in combinations(RCC8_SIGNATURE,i+1):
             relations.append(relation)
 
-    print "Work on %d relations" % (len(relations))
+    print("Work on %d relations" % (len(relations)))
 
     syn_map = dict()
     horn_relations = 0
@@ -112,7 +115,7 @@ def build_syn_int(output_map=False):
         cnf = dnf_to_cnf(dnf)
         cnf = simplify_cnf(cnf)
         if frozenset(relation) != get_base_relations_satisfying_cnf(cnf):
-            print "Failed to get simplified CNF for", relation
+            print("Failed to get simplified CNF for", relation)
             print_cnf(cnf)
         assert frozenset(relation) == get_base_relations_satisfying_cnf(cnf)
 
@@ -133,35 +136,35 @@ def build_syn_int(output_map=False):
 #                print_cnf(cnf)
 #                print
 
-    print "Horn statistics (there must be 147+1 such relations)"
-    print "\t%d generated horn" % horn_relations
-    print "\t%d erroneously horn (generated horn, but must not be)" % erroneously_horn
-    print "\t%d missed horn relations" % missed_horn
+    print("Horn statistics (there must be 147+1 such relations)")
+    print("\t%d generated horn" % horn_relations)
+    print("\t%d erroneously horn (generated horn, but must not be)" % erroneously_horn)
+    print("\t%d missed horn relations" % missed_horn)
 
     if output_map:
         from syntactic_map import print_map
         print_map(syn_map)
 
 def print_cnf(cnf):
-    print "CNF %d clause(s)" % len(cnf)
+    print("CNF %d clause(s)" % len(cnf))
     for clause in cnf:
-        print "(",
+        print("(", end=' ')
         for idx, literal in enumerate(clause):
             if not literal[0]:
-                print "not (",
-            print literal[1].string,
+                print("not (", end=' ')
+            print(literal[1].string, end=' ')
             if not literal[0]:
-                print ")",
+                print(")", end=' ')
 
             if idx+1 < len(clause):
-                print "or",
-        print ") and",
-    print "( T )"
+                print("or", end=' ')
+        print(") and", end=' ')
+    print("( T )")
     for clause in cnf:
-        print "Origin(?)",
-        print get_base_relations_satisfying_cl(clause)
+        print("Origin(?)", end=' ')
+        print(get_base_relations_satisfying_cl(clause))
 
-    print get_base_relations_satisfying_cnf(cnf)
+    print(get_base_relations_satisfying_cnf(cnf))
 
 
 def dnf_to_cnf(dnf):
@@ -332,7 +335,7 @@ def is_horn(cnf):
     return True
 
 def self_test():
-    print "Self test"
+    print("Self test")
 
     for base_relation in RCC8_SIGNATURE:
         cnf = set()
@@ -341,12 +344,12 @@ def self_test():
 
         base_relation_sat = get_base_relations_satisfying_cnf(cnf)
         if frozenset([base_relation]) != base_relation_sat:
-            print base_relation, "!=", base_relation_sat
+            print(base_relation, "!=", base_relation_sat)
             print_cnf(cnf)
 
         assert frozenset([base_relation]) == base_relation_sat
 
-    print "Self test OK"
+    print("Self test OK")
 
 def is_rcc8_interpretation(syntactic_map):
     """Check input signature of syntactic map."""
@@ -365,11 +368,11 @@ def verify_is_fo_interpretation(syntactic_map):
         relations = get_base_relations_satisfying_cnf(syntactic_map[relation])
 
         if relation != relations:
-            print "Defining formula for %s broken" % relation
-            print syntactic_map[relation]
-            print "yields"
-            print relations
-            print
+            print("Defining formula for %s broken" % relation)
+            print(syntactic_map[relation])
+            print("yields")
+            print(relations)
+            print()
             is_valid = False
     return is_valid
 
@@ -387,12 +390,12 @@ def verify_minimality(syntactic_map):
                 mod_clause = set(clause)
                 mod_clause.remove(atom)
                 if relation <= get_base_relations_satisfying_cl(mod_clause):
-                    print "Defining formula for %s broken" % relation
-                    print "Formula is"
-                    print syntactic_map[relation]
-                    print "Clause"
-                    print clause
-                    print "is however not a PRIME implicate."
+                    print("Defining formula for %s broken" % relation)
+                    print("Formula is")
+                    print(syntactic_map[relation])
+                    print("Clause")
+                    print(clause)
+                    print("is however not a PRIME implicate.")
 
                     return False
 
@@ -402,15 +405,15 @@ def verify_minimality(syntactic_map):
             mod_formula.remove(clause)
 
             if relation == get_base_relations_satisfying_cnf(mod_formula):
-                print "Relation '%s' is not minimally defined:" % relation
-                print
-                print "Original defintion"
-                print def_formula
-                print
-                print "Yet, removing"
-                print clause
-                print "does NOT invalidate formula."
-                print "Thus, a useless clause."
+                print("Relation '%s' is not minimally defined:" % relation)
+                print()
+                print("Original defintion")
+                print(def_formula)
+                print()
+                print("Yet, removing")
+                print(clause)
+                print("does NOT invalidate formula.")
+                print("Thus, a useless clause.")
 
                 return False
 
@@ -420,12 +423,12 @@ if __name__ == '__main__':
     from sys import argv
 
     if len(argv) != 2:
-        print "Script for verifying syntactic maps of RCC8"
-        print
-        print "Usage: scrip <some.map>"
+        print("Script for verifying syntactic maps of RCC8")
+        print()
+        print("Usage: scrip <some.map>")
 
     MAP_FILE = argv[1]
-    print "Read '%s'" % (MAP_FILE)
+    print("Read '%s'" % (MAP_FILE))
 
 
     import sys, os
@@ -443,17 +446,17 @@ if __name__ == '__main__':
     from syntactic_map import read_map  # pylint: disable=F0401
 
     SYNTACTIC_MAP = read_map(MAP_FILE)
-    print "DONE"
+    print("DONE")
 
     is_rcc8_interpretation(SYNTACTIC_MAP)
 
-    print
-    print "Verify map is a FO interpretation"
+    print()
+    print("Verify map is a FO interpretation")
     if not verify_is_fo_interpretation(SYNTACTIC_MAP):
         raise SystemExit("Aborting script. Fix map first to run further tests.")
-    print "... is valid"
+    print("... is valid")
 
-    print
-    print "Verify minimality of defining formulas"
+    print()
+    print("Verify minimality of defining formulas")
     if verify_minimality(SYNTACTIC_MAP):
-        print "... act as prime implicates."
+        print("... act as prime implicates.")

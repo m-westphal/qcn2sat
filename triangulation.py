@@ -20,6 +20,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
+from six.moves import range
 def lex_bfs(vertices, edges):
     """Compute LexBFS order of vertices"""
     assert vertices
@@ -30,7 +33,7 @@ def lex_bfs(vertices, edges):
     label = dict()
     for vertex in vertices:
         label[vertex] = [ ]
-    for i in xrange(len(vertices), 0, -1):
+    for i in range(len(vertices), 0, -1):
         todo = [ vertex for vertex in vertices if not vertex in order ]
         todo.sort(key=lambda x: label[x])
         todo.reverse()
@@ -53,7 +56,7 @@ def greedy_x(vertices, edges):
     h_v = copy.deepcopy(vertices)
     h_e = copy.deepcopy(edges)
 
-    for i in xrange(len(vertices)):
+    for i in range(len(vertices)):
         sigma = dict()
         for vertex in h_v:
             sigma[vertex] = 0
@@ -134,7 +137,7 @@ if __name__ == '__main__':
         CYCLE_E[X].add((X-2)%LEN)
         CYCLE_E[(X-2)%LEN].add(X)
 
-    print "Test edges\t", len(CYCLE_E)
+    print("Test edges\t", len(CYCLE_E))
 
     import dev_util
     from dev_util import TimeDelta
@@ -144,11 +147,11 @@ if __name__ == '__main__':
     TIME_LEXBFS = TimeDelta("LexBFS")
     ORDER_L = lex_bfs(CYCLE_V, CYCLE_E)
     TIME_LEXBFS.print_time_delta()
-    print "LexBFS edges\t%d" % (len(fill_in(CYCLE_V, CYCLE_E, ORDER_L)))
+    print("LexBFS edges\t%d" % (len(fill_in(CYCLE_V, CYCLE_E, ORDER_L))))
     TIME_LEXBFS.print_time_delta()
 
     TIME_GFI = TimeDelta("GFI")
     ORDER_G = greedy_x(CYCLE_V, CYCLE_E)
     TIME_GFI.print_time_delta()
-    print "GFI edges\t%d" % (len(fill_in(CYCLE_V, CYCLE_E, ORDER_G)))
+    print("GFI edges\t%d" % (len(fill_in(CYCLE_V, CYCLE_E, ORDER_G))))
     TIME_GFI.print_time_delta()

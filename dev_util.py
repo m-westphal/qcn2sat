@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
 import time
 
 _SILENT = True
@@ -45,4 +47,4 @@ class TimeDelta(object):
             current_time_stamp = time.time()
             delta = current_time_stamp - self.last_time_stamp
             self.last_time_stamp = current_time_stamp
-            print("[%2.2f sec] " % (delta) + self.name)
+            print(("[%2.2f sec] " % (delta) + self.name))

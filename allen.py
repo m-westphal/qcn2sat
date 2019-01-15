@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from six.moves import range
 def check_allen_signature(signature):
     """Check if signature is Allen signature."""
     if signature != frozenset([ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di',
@@ -272,9 +274,9 @@ def pham_support_pt_encode(qcn, instance): # pylint: disable=R0914,R0912
     pa_network = pham_pt_directDomEnc(qcn, instance, atoms)
 
     # encode PA theory
-    for i in xrange(0, qcn.size):
-        for j in xrange(i, qcn.size):
-            for k in xrange(j, qcn.size):
+    for i in range(0, qcn.size):
+        for j in range(i, qcn.size):
+            for k in range(j, qcn.size):
                 for s1 in ['-', '+']:  # pylint: disable=C0103
                     for s2 in ['-', '+']:  # pylint: disable=C0103
                         if i == j and s1 >= s2:
@@ -319,9 +321,9 @@ def pham_direct_pt_encode(qcn, instance):  # pylint: disable=R0914,R0912
     pa_network = pham_pt_directDomEnc(qcn, instance, atoms)
 
     # encode PA theory (direct)
-    for i in xrange(0, qcn.size):
-        for j in xrange(i, qcn.size):
-            for k in xrange(j, qcn.size):
+    for i in range(0, qcn.size):
+        for j in range(i, qcn.size):
+            for k in range(j, qcn.size):
                 for s1 in ['-', '+']:  # pylint: disable=C0103
                     for s2 in ['-', '+']:  # pylint: disable=C0103
                         if i == j and s1 >= s2:

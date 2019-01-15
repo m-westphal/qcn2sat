@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from six.moves import range
 def check_rcc8_signature(signature):
     """Check if signature is RCC8 signature."""
 
@@ -135,11 +137,11 @@ def rcc8_rcc4_encode_theory(qcn, instance, atoms):
         (False, Predicate("x P z")), (False, Predicate("z P y")) ],
         ]
 
-    for i in xrange(0, qcn.size):
-        for j in xrange(0, qcn.size):
+    for i in range(0, qcn.size):
+        for j in range(0, qcn.size):
             if i == j or (qcn.graph and (i, j) not in qcn.graph):
                 continue
-            for k in xrange(0, qcn.size):
+            for k in range(0, qcn.size):
                 if i == k or (qcn.graph and (i, k) not in qcn.graph):
                     continue
                 if j == k or (qcn.graph and (j, k) not in qcn.graph):

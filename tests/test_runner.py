@@ -21,6 +21,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import absolute_import
+from __future__ import print_function
 TEST_INSTANCES = {
     'test_instance_1.csp':
         'd0dffeb1e15c22b1b4f694325d4058868552b5d5f824502f901e8a85a6f3b4e7',
@@ -134,7 +136,7 @@ def check_instance(name, known_value):
               % (name, known_value, value)
 
         raise SystemExit(msg)
-    print "Found '%s'\t'%s'" % (name, known_value)
+    print("Found '%s'\t'%s'" % (name, known_value))
 
 def check_output(name, given_args, stdout, known_value):
     """Compute hash value of output (currently SHA256)."""
@@ -147,7 +149,7 @@ def check_output(name, given_args, stdout, known_value):
                % (given_args, known_value, value)
         raise SystemExit(msg)
 
-    print "Correct '%s'\n\t'%s'\n\t\t'%s'" % (name, given_args, known_value)
+    print("Correct '%s'\n\t'%s'\n\t\t'%s'" % (name, given_args, known_value))
 
 def run_test(with_args, calculus, inputname):
     """Run main script with_args < input."""
@@ -169,7 +171,7 @@ def run_test(with_args, calculus, inputname):
     comp = 'data/%s.comp' % calculus
     cmdline = parent+'python '+script_name+' '+with_args+' '+comp
 
-    print "Run '%s'" % cmdline
+    print("Run '%s'" % cmdline)
 
     out = subprocess.check_output(cmdline, stdin=inputfile,
                                   stderr=subprocess.STDOUT, shell=True)
@@ -192,4 +194,4 @@ if __name__ == '__main__':
 
             output = run_test(args, CALCULUS[instance], filename)
             check_output(instance, args, output, known_output_value)
-        print "Done '%s'" % instance
+        print("Done '%s'" % instance)
