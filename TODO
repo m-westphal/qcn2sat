@@ -1,0 +1,4 @@
+- Update waf (py3 compatibility)
+https://gitlab.com/ita1024/waf/
+- Fix Tests
+- pypy (2) no six support?
