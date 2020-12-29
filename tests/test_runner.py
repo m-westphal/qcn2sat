@@ -21,8 +21,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from __future__ import absolute_import
-from __future__ import print_function
 TEST_INSTANCES = {
     'test_instance_1.csp':
         'd0dffeb1e15c22b1b4f694325d4058868552b5d5f824502f901e8a85a6f3b4e7',
@@ -169,7 +167,7 @@ def run_test(with_args, calculus, inputname):
     inputfile = open(inputname, 'rb')
 
     comp = 'data/%s.comp' % calculus
-    cmdline = parent+'python '+script_name+' '+with_args+' '+comp
+    cmdline = parent+'python3 '+script_name+' '+with_args+' '+comp
 
     print("Run '%s'" % cmdline)
 

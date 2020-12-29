@@ -16,10 +16,10 @@ def build(ctx):
     # lint verifier
     ctx(rule="pylint ${SRC}", source="tests/verify_allen_interpretation.py")
     # verify ORD-Horn map
-    ctx(rule="python ../tests/${SRC[0]} ../data/${SRC[1]}",
+    ctx(rule="python3 ../tests/${SRC[0]} ../data/${SRC[1]}",
         source='tests/verify_allen_interpretation.py data/ia_ordclauses.map syntactic_map.py')
     # verify RCC8 map
-    ctx(rule="python ../tests/${SRC[0]} ../data/${SRC[1]}",
+    ctx(rule="python3 ../tests/${SRC[0]} ../data/${SRC[1]}",
         source='tests/verify_rcc8_interpretation.py data/rcc8_rcc4.map syntactic_map.py')
 
     # collect python files
@@ -34,7 +34,7 @@ def build(ctx):
     for csp in os.listdir('tests/'):
         csp_source = os.path.join('tests', csp)
         if csp.endswith('.csp') and os.path.isfile(csp_source):
-            ctx(rule="python ../tests/${SRC[0]} %s" % csp,
+            ctx(rule="python3 ../tests/${SRC[0]} %s" % csp,
                 source=['tests/test_runner.py', csp_source]+python_code_files_main_dir)
 
     for filename in python_code_files_main_dir:

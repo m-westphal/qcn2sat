@@ -20,9 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import print_function
-from six.moves import range
 def lex_bfs(vertices, edges):
     """Compute LexBFS order of vertices"""
     assert vertices
