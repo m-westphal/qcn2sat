@@ -22,6 +22,24 @@
 
 from __future__ import absolute_import
 from six.moves import range
+
+# The mu function defined by Pham et al.
+_PHAM_MU = {
+        '=': ['=--', '<-+', '>+-', '=++'],
+        '<': ['<--', '<-+', '<+-', '<++'],
+        '>': ['>--', '>-+', '>+-', '>++'],
+        'd': ['>--', '<-+', '>+-', '<++'],
+        'di':['<--', '<-+', '>+-', '>++'],
+        'o': ['<--', '<-+', '>+-', '<++'],
+        'oi':['>--', '<-+', '>+-', '>++'],
+        'm':['<--', '<-+', '=+-', '<++'],
+        'mi':['>--', '=-+', '>+-', '>++'],
+        's':['=--', '<-+', '>+-', '<++'],
+        'si':['=--', '<-+', '>+-', '>++'],
+        'f':['>--', '<-+', '>+-', '=++'],
+        'fi':['<--', '<-+', '>+-', '=++']
+    }
+
 def check_allen_signature(signature):
     """Check if signature is Allen signature."""
     if signature != frozenset([ '=', '<', '>', 's', 'si', 'f', 'fi', 'd', 'di',
@@ -167,26 +185,6 @@ def point_algebra_comptable():
 
     return point_algebra_ct
 
-def pham_mu(base_relation):
-    """The mu function defined by Pham et al."""
-
-    mu_fct = {
-        '=': ['=--', '<-+', '>+-', '=++'],
-        '<': ['<--', '<-+', '<+-', '<++'],
-        '>': ['>--', '>-+', '>+-', '>++'],
-        'd': ['>--', '<-+', '>+-', '<++'],
-        'di':['<--', '<-+', '>+-', '>++'],
-        'o': ['<--', '<-+', '>+-', '<++'],
-        'oi':['>--', '<-+', '>+-', '>++'],
-        'm':['<--', '<-+', '=+-', '<++'],
-        'mi':['>--', '=-+', '>+-', '>++'],
-        's':['=--', '<-+', '>+-', '<++'],
-        'si':['=--', '<-+', '>+-', '>++'],
-        'f':['>--', '<-+', '>+-', '=++'],
-        'fi':['<--', '<-+', '>+-', '=++']
-    }
-    return mu_fct[base_relation]
-
 def pham_pt_directDomEnc(qcn, out, atoms):#pylint: disable=C0103,R0914,R0912
     """Encode domains as in Pham et al. for point-based"""
 
@@ -196,7 +194,7 @@ def pham_pt_directDomEnc(qcn, out, atoms):#pylint: disable=C0103,R0914,R0912
         rel_ij = qcn.get(i, j)
         pa_set = set()
         for base_relation in rel_ij:
-            pa_set |= set(pham_mu(base_relation))
+            pa_set |= set(_PHAM_MU[base_relation])
         try:
             pa_network[i][j] = frozenset(pa_set)
         except KeyError:
@@ -251,13 +249,13 @@ def pham_pt_directDomEnc(qcn, out, atoms):#pylint: disable=C0103,R0914,R0912
         pa_set = pa_network[i][j]
         for base_relation in exclude:
             req = True
-            for mu_br in pham_mu(base_relation):
+            for mu_br in _PHAM_MU[base_relation]:
                 if not mu_br in pa_set: # CHANGED NOT
                     req = False
                     break
             if req or True:
                 clause = []
-                for mu_br in pham_mu(base_relation):
+                for mu_br in _PHAM_MU[base_relation]:
                     clause += [ -1 * atoms.encode(i, j, mu_br) ]
                 out.add_clause(clause)
     return pa_network
